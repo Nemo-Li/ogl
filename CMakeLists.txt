@@ -13,6 +13,10 @@ file(GLOB_RECURSE HEADER_FILES
         ${CMAKE_SOURCE_DIR}/src/*.h
         ${CMAKE_SOURCE_DIR}/src/*.hpp)
 
+# Configure assets header file
+configure_file(src/helpers/RootDir.h.in src/helpers/RootDir.h)
+include_directories(${CMAKE_BINARY_DIR}/src)
+
 # Add .lib files
 link_directories(${CMAKE_SOURCE_DIR}/lib)
 
@@ -52,6 +56,9 @@ set(LIBS ${ASSIMP_LIBRARY} ${GLFW3_LIBRARY} STB_IMAGE GLAD)
 include_directories(
         "${CMAKE_SOURCE_DIR}/src"
         "${CMAKE_SOURCE_DIR}/include"
+        ${GLM_INCLUDE_DIR}
+        ${GLFW3_INCLUDE_DIR}
+        ${ASSIMP_INCLUDE_DIR}
 )
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
