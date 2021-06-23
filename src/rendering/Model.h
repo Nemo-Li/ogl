@@ -62,11 +62,19 @@ private:
 
         // process ASSIMP's root node recursively
         processNode(scene->mRootNode, scene);
+        printf("动画数--%d\n", scene->mNumAnimations);
+        printf("动画时长--%f\n", scene->mAnimations[0]->mDuration);
+        printf("texture数--%d\n", scene->mNumTextures);
+        printf("materials数--%d\n", scene->mNumMaterials);
+        printf("materials--%s\n", scene->mMaterials[0]->mProperties[0]->mData);
     }
 
     // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
     void processNode(aiNode *node, const aiScene *scene)
     {
+//        printf("mesh数量为--%d\n", node->mNumMeshes);
+//        printf("子节点的数量%d\n", node->mNumChildren);
+
         // process each mesh located at the current node
         for (unsigned int i = 0; i < node->mNumMeshes; i++)
         {

@@ -1,5 +1,5 @@
 /** 
- * Copyright (C) 2018 Tomasz Ga³aj
+ * Copyright (C) 2018 Tomasz GaÂ³aj
  **/
 
 #include <iostream>
@@ -81,11 +81,15 @@ int init() {
 }
 
 int loadContent() {
-    mesh = new Model("res/models/alliance.obj");
+    mesh = new Model("res/models/TSZ-Attack.FBX");
 
     /* Create and apply basic shader */
     shader = new Shader("Basic.vert", "Basic.frag");
     shader->apply();
+
+    world_matrix = glm::scale(world_matrix, glm::vec3(0.5, 0.5, 0.5));
+    world_matrix = glm::rotate(world_matrix, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+    world_matrix = glm::rotate(world_matrix, glm::radians(180.0f), glm::vec3(0, 0, 1));
 
     shader->setUniformMatrix4fv("world", world_matrix);
     shader->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
@@ -94,7 +98,7 @@ int loadContent() {
     shader->setUniform3fv("cam_pos", cam_position);
 
     texture = new Texture();
-    texture->load("res/models/alliance.png");
+    texture->load("res/models/tsz.dds");
     texture->bind();
 
     return true;
@@ -104,7 +108,7 @@ void render(float time) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Draw our triangle */
-    world_matrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(-90.0f), glm::vec3(0, 1, 0));
+//    world_matrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(-90.0f), glm::vec3(0, 1, 0));
 
     shader->setUniformMatrix4fv("world", world_matrix);
     shader->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));

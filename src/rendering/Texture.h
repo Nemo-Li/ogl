@@ -3,21 +3,20 @@
  **/
 
 #pragma once
+
 #include <string>
 #include <glad/glad.h>
 
-class Texture
-{
+class Texture {
 public:
     Texture();
+
     ~Texture();
 
-    bool load(const std::string & file_name);
-    
-    void bind(int index = 0) const
-    {
-        if(to_id != 0)
-        {
+    bool load(const std::string &file_name);
+
+    void bind(int index = 0) const {
+        if (to_id != 0) {
             glActiveTexture(GL_TEXTURE0 + index);
             glBindTexture(GL_TEXTURE_2D, to_id);
         }
@@ -27,4 +26,6 @@ public:
 
 private:
     GLuint to_id;
+
+    void loadDds(const char *imagePath);
 };
