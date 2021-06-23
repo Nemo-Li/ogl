@@ -22,6 +22,7 @@ const int WINDOW_HEIGHT = 768;
 Model *mesh = nullptr;
 Shader *shader = nullptr;
 Texture *texture = nullptr;
+Texture *texture1 = nullptr;
 
 /* Matrices */
 glm::vec3 cam_position = glm::vec3(0.0f, 1.0f, 1.2f);
@@ -98,8 +99,12 @@ int loadContent() {
     shader->setUniform3fv("cam_pos", cam_position);
 
     texture = new Texture();
-    texture->load("res/models/tsz.dds");
+    texture->load("res/models/tsz.png");
     texture->bind();
+
+    texture1 = new Texture();
+    texture1->load("res/models/tsz1.png");
+    texture1->bind(1);
 
     return true;
 }
@@ -113,8 +118,12 @@ void render(float time) {
     shader->setUniformMatrix4fv("world", world_matrix);
     shader->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
 
+    shader->setUniform1i("tex_sampler", 0);
+    shader->setUniform1i("tex_sampler1", 1);
+
     shader->apply();
     texture->bind();
+    texture1->bind(1);
     mesh->Draw();
 }
 
