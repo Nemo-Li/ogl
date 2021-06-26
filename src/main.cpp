@@ -14,6 +14,7 @@
 #include "rendering/Shader.h"
 #include "rendering/Texture.h"
 #include "rendering/Model.h"
+#include "rendering/Player.h"
 
 GLFWwindow *window;
 const int WINDOW_WIDTH = 1024;
@@ -22,6 +23,7 @@ const int WINDOW_HEIGHT = 768;
 Model *mesh = nullptr;
 Shader *shader = nullptr;
 Texture *texture = nullptr;
+Player *player = nullptr;
 
 /* Matrices */
 glm::vec3 cam_position = glm::vec3(0.0f, 1.0f, 1.2f);
@@ -104,8 +106,23 @@ int loadContent() {
     return true;
 }
 
+void initPlayer() {
+    player = new Player();
+
+    /* Create and apply basic shader */
+    shader = new Shader("Player.vert", "Player.frag");
+    shader->apply();
+
+    shader->setUniformMatrix4fv("world", world_matrix);
+    shader->setUniformMatrix4fv("viewProj", projection_matrix * view_matrix);
+
+    player->initVideo();
+    player->loadShader();
+}
+
 void render(float time) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.6784f, 0.8f, 1.0f, 1.0f);
 
     /* Draw our triangle */
 //    world_matrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(-90.0f), glm::vec3(0, 1, 0));
@@ -120,6 +137,17 @@ void render(float time) {
     mesh->Draw();
 }
 
+void play() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.6784f, 0.8f, 1.0f, 1.0f);
+
+    shader->setUniformMatrix4fv("world", world_matrix);
+    shader->setUniformMatrix4fv("viewProj", projection_matrix * view_matrix);
+
+    shader->apply();
+    player->play();
+}
+
 void update() {
     float startTime = static_cast<float>(glfwGetTime());
     float newTime = 0.0f;
@@ -132,7 +160,8 @@ void update() {
         gameTime = newTime - startTime;
 
         /* Render here */
-        render(gameTime);
+//        render(gameTime);
+        play();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -143,11 +172,11 @@ void update() {
 }
 
 int main(void) {
-    if (!init())
+    if (!init()) {
         return -1;
+    }
 
-    if (!loadContent())
-        return -1;
+    initPlayer();
 
     update();
 

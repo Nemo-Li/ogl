@@ -43,6 +43,14 @@ find_package(ASSIMP REQUIRED)
 message(STATUS "Found ASSIMP in ${ASSIMP_INCLUDE_DIR}")
 message(STATUS "Found ASSIMP: ${ASSIMP_LIBRARY}")
 
+find_package(FFMPEG REQUIRED)
+message(STATUS "Found FFMPEG in ${FFMPEG_INCLUDE_DIR}")
+message(STATUS "Found FFMPEG in ${FFMPEG_LIBRARIES}")
+
+find_package(SDL2 REQUIRED)
+message(STATUS "Found SDL2 in ${SDL2_INCLUDE_DIR}")
+message(STATUS "Found SDL2 in ${SDL2_LIBRARY}")
+
 # STB_IMAGE
 add_library(STB_IMAGE "thirdparty/stb_image.cpp")
 
@@ -50,7 +58,7 @@ add_library(STB_IMAGE "thirdparty/stb_image.cpp")
 add_library(GLAD "thirdparty/glad.c")
 
 # Put all libraries into a variable
-set(LIBS ${ASSIMP_LIBRARY} ${GLFW3_LIBRARY} STB_IMAGE GLAD)
+set(LIBS ${ASSIMP_LIBRARY} ${GLFW3_LIBRARY} ${FFMPEG_LIBRARIES} ${SDL2_LIBRARY} GLAD STB_IMAGE)
 
 # Define the include DIRs
 include_directories(
@@ -59,11 +67,12 @@ include_directories(
         ${GLM_INCLUDE_DIR}
         ${GLFW3_INCLUDE_DIR}
         ${ASSIMP_INCLUDE_DIR}
+        ${FFMPEG_INCLUDE_DIR}
 )
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
-add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/rendering/Player.cpp src/rendering/Player.h src/util/Util.h)
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})
