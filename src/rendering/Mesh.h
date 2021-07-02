@@ -9,9 +9,11 @@
 #include <glad/glad.h> // holds all OpenGL type declarations
 #include <glm/glm.hpp>
 #include <vector>
+#include "math/math_3d.h"
 
-struct Vertex
-{
+#define NUM_BONES_PER_VEREX 40
+
+struct Vertex {
     // position
     glm::vec3 Position;
     // normal
@@ -20,8 +22,46 @@ struct Vertex
     glm::vec2 TexCoords;
 };
 
-class Mesh
-{
+struct BoneInfo {
+    Matrix4f BoneOffset;
+    Matrix4f FinalTransformation;
+
+    BoneInfo() {
+        BoneOffset.SetZero();
+        FinalTransformation.SetZero();
+    }
+};
+
+struct VertexBoneData {
+    uint IDs[NUM_BONES_PER_VEREX];
+    float Weights[NUM_BONES_PER_VEREX];
+
+    VertexBoneData() {
+        Reset();
+    };
+
+    void Reset() {
+        ZERO_MEM(IDs);
+        ZERO_MEM(Weights);
+    }
+
+    void AddBoneData(uint BoneID, float Weight);
+};
+
+
+void VertexBoneData::AddBoneData(uint BoneID, float Weight) {
+    for (uint i = 0; i < ARRAY_SIZE_IN_ELEMENTS(IDs); i++) {
+        if (Weights[i] == 0.0) {
+            IDs[i] = BoneID;
+            Weights[i] = Weight;
+            return;
+        }
+    }
+    // should never get here - more bones than we have space for
+    assert(0);
+}
+
+class Mesh {
 public:
     /*  Mesh Data  */
     std::vector<Vertex> vertices;
@@ -30,8 +70,7 @@ public:
 
     /*  Functions  */
     // constructor
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
-    {
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
         this->vertices = vertices;
         this->indices = indices;
 
@@ -39,9 +78,9 @@ public:
         setupMesh();
     }
 
+
     // render the mesh
-    void Draw()
-    {
+    void Draw() {
         // draw mesh
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -54,8 +93,7 @@ private:
 
     /*  Functions    */
     // initializes all the buffer objects/arrays
-    void setupMesh()
-    {
+    void setupMesh() {
         // create buffers/arrays
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
@@ -75,15 +113,16 @@ private:
         // set the vertex attribute pointers
         // vertex Positions
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) 0);
         // vertex normals
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, Normal));
         // vertex texture coords
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, TexCoords));
 
         glBindVertexArray(0);
     }
 };
+
 #endif
