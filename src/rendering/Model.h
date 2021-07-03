@@ -65,10 +65,12 @@ public:
             meshes[i].Draw();
     }
 
+    uint getBoneNum() {
+        return m_NumBones;
+    }
 private:
-    uint m_NumBones;
+    uint m_NumBones = 0;
     aiMatrix4x4 m_GlobalInverseTransform;
-    std::vector<VertexBoneData> Bones;
 
     /*  Functions   */
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
@@ -109,11 +111,11 @@ private:
             std::cout << "BaseVertex--" << NumVertices << std::endl;
             std::cout << "BaseIndex--" << NumIndices << std::endl;
         }
-        Bones.resize(NumVertices);
 
         // process ASSIMP's root node recursively
         processNode(scene->mRootNode, scene);
         initMaterial(scene);
+
     }
 
     void initMaterial(const aiScene *scene) {
@@ -185,6 +187,7 @@ private:
         // data to fill
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
+        std::vector<VertexBoneData> bones;
 
         // Walk through each of the mesh's vertices
         for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
@@ -222,11 +225,12 @@ private:
                 indices.push_back(face.mIndices[j]);
         }
         cout << "meshes的大小为" << meshes.size() << endl;
+        bones.resize(mesh->mNumVertices);
         //加载骨骼信息
-        LoadBones(meshes.size(), mesh, Bones);
+        LoadBones(meshes.size(), mesh, bones);
 
         // return a mesh object created from the extracted mesh data
-        return Mesh(vertices, indices);
+        return Mesh(vertices, indices, bones);
     }
 };
 

@@ -19,6 +19,9 @@ GLFWwindow *window;
 const int WINDOW_WIDTH = 1024;
 const int WINDOW_HEIGHT = 768;
 
+GLuint m_boneLocation[MAX_BONES];
+vector<Matrix4f> Transforms;
+
 Model *mesh = nullptr;
 Shader *shader = nullptr;
 Texture *texture = nullptr;
@@ -96,6 +99,27 @@ int loadContent() {
     shader->setUniformMatrix4fv("viewProj", projection_matrix * view_matrix);
 
     shader->setUniform3fv("cam_pos", cam_position);
+
+    for (unsigned int i = 0; i < ARRAY_SIZE_IN_ELEMENTS(m_boneLocation); i++) {
+        char Name[128];
+        memset(Name, 0, sizeof(Name));
+        SNPRINTF(Name, sizeof(Name), "gBones[%d]", i);
+        m_boneLocation[i] = glGetUniformLocation(shader->getProgram(), Name);
+    }
+
+    Transforms.resize(mesh->getBoneNum());
+    for (int i = 0; i < mesh->getBoneNum(); i++) {
+        Matrix4f f = Matrix4f();
+        f.InitIdentity();
+        Transforms[i] = f;
+    }
+
+    for (uint i = 0 ; i < Transforms.size() ; i++) {
+//        std::cout << m_boneLocation[i] << std::endl;
+        glUniformMatrix4fv(m_boneLocation[i], 1, GL_TRUE, (const GLfloat*)Transforms[i]);
+//        Transforms[i].Print();
+    }
+    assert(glGetError() == GL_NO_ERROR);
 
     texture = new Texture();
     texture->load("res/models/nanhai_D.png");

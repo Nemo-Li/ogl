@@ -33,6 +33,7 @@ public:
     void setUniformMatrix4fv(const std::string & uniformName, const glm::mat4 & matrix);
     
     void apply();
+    GLint getProgram();
 
 private:
     std::map<std::string, GLint> uniformsLocations;
