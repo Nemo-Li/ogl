@@ -335,3 +335,7 @@ void Shader::setUniformMatrix4fv(const std::string & uniformName, const glm::mat
         glProgramUniformMatrix4fv(program_id, uniformsLocations[uniformName], 1, GL_FALSE, glm::value_ptr(matrix));
     }
 }
+
+GLint Shader::getProgram() {
+    return program_id;
+}
