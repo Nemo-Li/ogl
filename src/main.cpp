@@ -75,12 +75,8 @@ int main() {
     }
 
     Shader ourShader("../res/shader/shader.vs", "../res/shader/shader.fs");
-    initTexture();
+    //initTexture();
     initVAO();
-
-    ourShader.use(); // 不要忘记在设置uniform变量之前激活着色器程序！
-    glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0); // 手动设置
-    ourShader.setInt("texture2", 1); // 或者使用着色器类设置
 
     // render loop
     // -----------
@@ -93,14 +89,12 @@ int main() {
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-//        ourShader.use();
+        ourShader.use();
+        auto timeValue = (float) glfwGetTime();
+        ourShader.setFloat("time", timeValue);
+        ourShader.setVec2("resolution", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
 
         glBindVertexArray(VAO);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);

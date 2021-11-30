@@ -24,11 +24,6 @@ find_package(OpenGL REQUIRED)
 message(STATUS "OpenGL included at ${OpenGL_INCLUDE_DIR}")
 message(STATUS "Found OpenGL: ${OpenGL_LIBRARY}")
 
-# GLM
-find_package(GLM REQUIRED)
-message(STATUS "GLM included at ${GLM_INCLUDE_DIR}")
-message(STATUS "Found GLM: ${GLM_LIBRARY}")
-
 # GLFW
 find_package(GLFW3 REQUIRED)
 message(STATUS "Found GLFW3 in ${GLFW3_INCLUDE_DIR}")
@@ -52,6 +47,7 @@ set(LIBS ${ASSIMP_LIBRARY} ${GLFW3_LIBRARY} STB_IMAGE GLAD)
 include_directories(
         "${CMAKE_SOURCE_DIR}/src"
         "${CMAKE_SOURCE_DIR}/include"
+        "${CMAKE_SOURCE_DIR}/thirdparty/glm"
         ${GLFW3_INCLUDE_DIR}
 )
 
