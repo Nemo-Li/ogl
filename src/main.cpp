@@ -12,6 +12,10 @@ unsigned int VAO;
 //索引缓冲对象：Element Buffer Object，EBO或Index Buffer Object，IBO
 //--------------------------------------------------------------
 
+//Using VAOs is required in the core profile. From the OpenGL 3.3 spec, page 342, in the section E.2.2 "Removed Features":
+//The default vertex array object (the name zero) is also deprecated.
+//This means that you can't set up vertex attributes without creating and binding your own VAO.
+
 void initVAO();
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
