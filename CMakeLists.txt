@@ -52,6 +52,7 @@ set(LIBS ${ASSIMP_LIBRARY} ${GLFW3_LIBRARY} STB_IMAGE GLAD)
 include_directories(
         "${CMAKE_SOURCE_DIR}/src"
         "${CMAKE_SOURCE_DIR}/include"
+        ${GLFW3_INCLUDE_DIR}
 )
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
