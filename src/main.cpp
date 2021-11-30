@@ -10,6 +10,7 @@ unsigned int VAO;
 unsigned int texture1;
 unsigned int texture2;
 
+
 //顶点数组对象：Vertex Array Object，VAO
 //顶点缓冲对象：Vertex Buffer Object，VBO
 //索引缓冲对象：Element Buffer Object，EBO或Index Buffer Object，IBO
@@ -27,16 +28,21 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 void processInput(GLFWwindow *window);
 
+void curse_pos_callback(GLFWwindow *window, double x, double y) {
+//    ourShader.setVec2("mouse", glm::vec2(x, y));
+//    std::cout << "(pos:" << x << "," << y << ")" << std::endl;
+}
+
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 float vertices[] = {
 //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // 右上
-        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // 右下
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // 左下
-        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f    // 左上
+        1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // 右上
+        1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // 右下
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // 左下
+        -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f    // 左上
 };
 
 unsigned int indices[] = { // 注意索引从0开始!
@@ -66,6 +72,8 @@ int main() {
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    // 使用回调函数
+    glfwSetCursorPosCallback(window, curse_pos_callback);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -74,9 +82,12 @@ int main() {
         return -1;
     }
 
-    Shader ourShader("../res/shader/shader.vs", "../res/shader/shader.fs");
     //initTexture();
     initVAO();
+    Shader ourShader("../res/shader/shader.vs", "../res/shader/CoolCircle.fs");
+
+    ourShader.use();
+    ourShader.setVec2("resolution", glm::vec2(SCR_WIDTH * 2, SCR_HEIGHT * 2));
 
     // render loop
     // -----------
@@ -92,7 +103,6 @@ int main() {
         ourShader.use();
         auto timeValue = (float) glfwGetTime();
         ourShader.setFloat("time", timeValue);
-        ourShader.setVec2("resolution", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
 
         glBindVertexArray(VAO);
 
