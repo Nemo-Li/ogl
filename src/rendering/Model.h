@@ -61,13 +61,15 @@ public:
 
     // draws the model, and thus all its meshes
     void Draw() {
-        for (unsigned int i = 0; i < meshes.size(); i++)
+        for (unsigned int i = 0; i < meshes.size(); i++) {
             meshes[i].Draw();
+        }
     }
 
     uint getBoneNum() {
         return m_NumBones;
     }
+
 private:
     uint m_NumBones = 0;
     aiMatrix4x4 m_GlobalInverseTransform;
@@ -159,9 +161,11 @@ private:
     }
 
     void LoadBones(uint MeshIndex, const aiMesh *pMesh, vector<VertexBoneData> &Bones) {
+        cout << "当前网格:" << MeshIndex << " 骨骼数量:" << pMesh->mNumBones << endl;
         for (uint i = 0; i < pMesh->mNumBones; i++) {
             uint BoneIndex = 0;
             string BoneName(pMesh->mBones[i]->mName.data);
+            cout << "骨骼名称:" << pMesh->mBones[i]->mName.data << endl;
 
             if (m_BoneMapping.find(BoneName) == m_BoneMapping.end()) {
                 // Allocate an index for a new bone

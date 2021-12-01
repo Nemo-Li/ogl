@@ -114,10 +114,8 @@ int loadContent() {
         Transforms[i] = f;
     }
 
-    for (uint i = 0 ; i < Transforms.size() ; i++) {
-//        std::cout << m_boneLocation[i] << std::endl;
-        glUniformMatrix4fv(m_boneLocation[i], 1, GL_TRUE, (const GLfloat*)Transforms[i]);
-//        Transforms[i].Print();
+    for (uint i = 0; i < Transforms.size(); i++) {
+        glUniformMatrix4fv(m_boneLocation[i], 1, GL_TRUE, (const GLfloat *) Transforms[i]);
     }
     assert(glGetError() == GL_NO_ERROR);
 
@@ -134,8 +132,8 @@ void render(float time) {
     /* Draw our triangle */
 //    world_matrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(-90.0f), glm::vec3(0, 1, 0));
 
-    shader->setUniformMatrix4fv("world", world_matrix);
-    shader->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
+//    shader->setUniformMatrix4fv("world", world_matrix);
+//    shader->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
 
     shader->setUniform1i("tex_sampler", 0);
 
