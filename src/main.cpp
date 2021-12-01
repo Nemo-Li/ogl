@@ -10,6 +10,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <helpers/util.h>
 
 #include "rendering/Shader.h"
 #include "rendering/Texture.h"
@@ -25,6 +26,7 @@ vector<Matrix4f> Transforms;
 Model *mesh = nullptr;
 Shader *shader = nullptr;
 Texture *texture = nullptr;
+long long m_startTime;
 
 /* Matrices */
 glm::vec3 cam_position = glm::vec3(0.0f, 1.0f, 1.2f);
@@ -63,6 +65,7 @@ int init() {
         return -1;
     }
 
+    m_startTime = GetCurrentTimeMillis();
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
@@ -126,35 +129,42 @@ int loadContent() {
     return true;
 }
 
+float GetRunningTime() {
+    float RunningTime = (float) ((double) GetCurrentTimeMillis() - (double) m_startTime) / 1000.0f;
+    return RunningTime;
+}
+
 void render(float time) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /* Draw our triangle */
-//    world_matrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(-90.0f), glm::vec3(0, 1, 0));
-
-//    shader->setUniformMatrix4fv("world", world_matrix);
-//    shader->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
-
+    shader->apply();
     shader->setUniform1i("tex_sampler", 0);
 
-    shader->apply();
     texture->bind();
+    float runningTime = GetRunningTime();
+    cout << "runningTime 时间:" << runningTime << endl;
+//    mesh->BoneTransform(runningTime, Transforms);
+
+    for (uint i = 0; i < Transforms.size(); i++) {
+        glUniformMatrix4fv(m_boneLocation[i], 1, GL_TRUE, (const GLfloat *) Transforms[i]);
+    }
+
     mesh->Draw();
 }
 
 void update() {
-    float startTime = static_cast<float>(glfwGetTime());
-    float newTime = 0.0f;
-    float gameTime = 0.0f;
+    float startTime = (float) glfwGetTime();
+    float newTime;
+    float gameTime;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         /* Update game time value */
-        newTime = static_cast<float>(glfwGetTime());
+        newTime = (float) glfwGetTime();
         gameTime = newTime - startTime;
 
         /* Render here */
-        render(gameTime);
+        render(newTime);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
