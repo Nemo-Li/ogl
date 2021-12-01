@@ -34,8 +34,8 @@ void curse_pos_callback(GLFWwindow *window, double x, double y) {
 }
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
 float vertices[] = {
 //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
@@ -84,7 +84,7 @@ int main() {
 
     //initTexture();
     initVAO();
-    Shader ourShader("../res/shader/shader.vs", "../res/shader/CoolCircle.fs");
+    Shader ourShader("../res/shader/shader.vs", "../res/shader/shader.fs");
 
     ourShader.use();
     ourShader.setVec2("resolution", glm::vec2(SCR_WIDTH * 2, SCR_HEIGHT * 2));
