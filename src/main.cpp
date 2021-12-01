@@ -34,8 +34,8 @@ void curse_pos_callback(GLFWwindow *window, double x, double y) {
 }
 
 // settings
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
 
 float vertices[] = {
 //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
@@ -82,12 +82,14 @@ int main() {
         return -1;
     }
 
-    //initTexture();
+    initTexture();
     initVAO();
-    Shader ourShader("../res/shader/shader.vs", "../res/shader/shader.fs");
+    Shader ourShader("../res/shader/shader.vs", "../res/shader/Heartfelt.fs");
 
     ourShader.use();
     ourShader.setVec2("resolution", glm::vec2(SCR_WIDTH * 2, SCR_HEIGHT * 2));
+    // 使用着色器类设置
+    ourShader.setInt("iChannel0", 0);
 
     // render loop
     // -----------
@@ -105,6 +107,8 @@ int main() {
         ourShader.setFloat("time", timeValue);
 
         glBindVertexArray(VAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
@@ -160,30 +164,10 @@ void initTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // 加载并生成纹理
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load("../res/pic/container.jpeg", &width, &height, &nrChannels, 0);
-
-    if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-
-    glGenTextures(1, &texture2);
-    glBindTexture(GL_TEXTURE_2D, texture2);
-
-    // 为当前绑定的纹理对象设置环绕、过滤方式
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
     stbi_set_flip_vertically_on_load(true);
     // 加载并生成纹理
-    data = stbi_load("../res/pic/awesomeface.png", &width, &height, &nrChannels, 0);
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load("../res/pic/rain.png", &width, &height, &nrChannels, 0);
 
     if (data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -192,6 +176,9 @@ void initTexture() {
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
+
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
