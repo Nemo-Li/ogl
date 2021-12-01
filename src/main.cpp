@@ -81,15 +81,16 @@ int init() {
 }
 
 int loadContent() {
-    mesh = new Model("res/models/juese_daiji.fbx");
+    mesh = new Model("res/models/TSZ-Attack.FBX");
 
     /* Create and apply basic shader */
     shader = new Shader("Basic.vert", "Basic.frag");
     shader->apply();
 
-    world_matrix = glm::scale(world_matrix, glm::vec3(0.004, 0.004, 0.004));
-    world_matrix = glm::rotate(world_matrix, glm::radians(0.0f), glm::vec3(1, 0, 0));
-    world_matrix = glm::rotate(world_matrix, glm::radians(0.0f), glm::vec3(0, 0, 1));
+    world_matrix = glm::scale(world_matrix, glm::vec3(.5, .5, .5));
+//    world_matrix = glm::rotate(world_matrix, glm::radians(0.0f), glm::vec3(1, 0, 0));
+    world_matrix = glm::rotate(world_matrix, glm::radians(90.0f), glm::vec3(1, 0, 0));
+    world_matrix = glm::rotate(world_matrix, glm::radians(180.0f), glm::vec3(0, 1, 0));
 
     shader->setUniformMatrix4fv("world", world_matrix);
     shader->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
@@ -98,7 +99,7 @@ int loadContent() {
     shader->setUniform3fv("cam_pos", cam_position);
 
     texture = new Texture();
-    texture->load("res/models/nanhai_D.png");
+    texture->load("res/models/tsz1.png");
     texture->bind();
 
     return true;
