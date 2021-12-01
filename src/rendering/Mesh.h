@@ -11,7 +11,7 @@
 #include <vector>
 #include "math/math_3d.h"
 
-#define NUM_BONES_PER_VEREX 8
+#define NUM_BONES_PER_VEREX 4
 #define SNPRINTF snprintf
 
 static const uint MAX_BONES = 100;
@@ -61,7 +61,7 @@ void VertexBoneData::AddBoneData(uint BoneID, float Weight) {
         }
     }
     // should never get here - more bones than we have space for
-    assert(0);
+//    assert(0);
 }
 
 class Mesh {
@@ -106,34 +106,10 @@ private:
         glGenBuffers(1, &BONE);
 
         glBindVertexArray(VAO);
+
         // load data into vertex buffers
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        // A great thing about structs is that their memory layout is sequential for all its items.
-        // The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
-        // again translates to 3/2 floats which translates to a byte array.
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
-
-//        for (int i = 0; i < bones.size(); i++) {
-//            std::cout << "第" << i << "个" << std::endl;
-//            for (auto weight : bones[i].Weights) {
-//                std::cout << weight << std::endl;
-//            }
-//        }
-
-        glBindBuffer(GL_ARRAY_BUFFER, BONE);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(bones[0]) * bones.size(), &bones[0], GL_STATIC_DRAW);
-        glEnableVertexAttribArray(3);
-        glVertexAttribIPointer(3, 4, GL_INT, sizeof(VertexBoneData), (const GLvoid *) 0);
-        glEnableVertexAttribArray(4);
-        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (const GLvoid *) 32);
-        glEnableVertexAttribArray(5);
-        glVertexAttribIPointer(5, 4, GL_INT, sizeof(VertexBoneData), (const GLvoid *) 16);
-        glEnableVertexAttribArray(6);
-        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (const GLvoid *) 48);
-        assert(glGetError() == GL_NO_ERROR);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
         // set the vertex attribute pointers
         // vertex Positions
@@ -145,6 +121,20 @@ private:
         // vertex texture coords
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, TexCoords));
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, BONE);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(bones[0]) * bones.size(), &bones[0], GL_STATIC_DRAW);
+
+        glEnableVertexAttribArray(3);
+        glVertexAttribIPointer(3, 4, GL_INT, sizeof(VertexBoneData), (void *) 0);
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData),
+                              (void *) offsetof(VertexBoneData, Weights));
+
+        assert(glGetError() == GL_NO_ERROR);
 
         glBindVertexArray(0);
         assert(glGetError() == GL_NO_ERROR);
