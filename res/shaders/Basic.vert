@@ -28,5 +28,5 @@ void main()
     o_normal   = normalMatrix * (BoneTransform * vec4(normal, 0)).xyz;
     o_texcoord = texcoord.xy;
 
-    gl_Position = viewProj * world * vec4(position, 1.0f);
+    gl_Position = viewProj * world * BoneTransform * vec4(position, 1.0f);
 }

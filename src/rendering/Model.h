@@ -25,7 +25,6 @@
 using namespace std;
 #define INVALID_MATERIAL 0xFFFFFFFF
 
-
 class Model {
 public:
     /*  Model Data */
@@ -33,9 +32,14 @@ public:
     std::string directory;
 
     map<string, uint> m_BoneMapping; // maps a bone name to its index
+    map<string, const aiNodeAnim *> m_NodeAnimMapping;
+
     vector<BoneInfo> m_BoneInfo;
     aiAnimation *pAnimation = nullptr;
     aiNode *rootNode;
+    float TicksPerSecond;
+    float Duration;
+    const aiScene *scene;
 
     struct MeshEntry {
         MeshEntry() {
@@ -74,45 +78,32 @@ public:
         Matrix4f Identity;
         Identity.InitIdentity();
 
-        cout << "动画数量为:" << scene->mNumAnimations << endl;
-        if (pAnimation == nullptr) {
-            processAnimation();
-        }
-        double perSecond = pAnimation->mTicksPerSecond;
-        cout << "scene中的mTicksPerSecond值:" << perSecond << endl;
-        float TicksPerSecond = (float) (perSecond != 0
-                                        ? perSecond : 25.0f);
-        cout << "TicksPerSecond:" << TicksPerSecond << endl;
+//        cout << "TicksPerSecond:" << TicksPerSecond << endl;
         float TimeInTicks = TimeInSeconds * TicksPerSecond;
-        cout << "TimeInTicks:" << TimeInTicks << endl;
-        float duration = (float) pAnimation->mDuration;
-        cout << "mDuration:" << duration << endl;
-        float AnimationTime = fmod(TimeInTicks, duration);
-        cout << "AnimationTime:" << AnimationTime << endl;
+//        cout << "TimeInTicks:" << TimeInTicks << endl;
+//        cout << "mDuration:" << Duration << endl;
+        float AnimationTime = fmod(TimeInTicks, Duration);
+//        cout << "AnimationTime:" << AnimationTime << endl;
 
-        rootNode = scene->mRootNode;
-        ReadNodeHierarchy(AnimationTime, rootNode, Identity);
+//        rootNode = scene->mRootNode;
+//        ReadNodeHierarchy(AnimationTime, rootNode, Identity);
 
+//        cout << "m_NumBones:" << m_NumBones << endl;
         Transforms.resize(m_NumBones);
 
-        for (uint i = 0; i < m_NumBones; i++) {
-            Transforms[i] = m_BoneInfo[i].FinalTransformation;
-        }
-    }
+        Matrix4f f;
+        f.InitIdentity();
 
-    void processAnimation() {
-        for (int i = 0; i < 8; ++i) {
-            pAnimation = scene->mAnimations[i];
-            if (pAnimation->mDuration == 475) {
-                break;
-            }
+        for (uint i = 0; i < m_NumBones; i++) {
+            f.InitRotateTransform(i, i, i);
+            Transforms[i] = f;
+//            Transforms[i] = m_BoneInfo[i].FinalTransformation;
         }
     }
 
 private:
     uint m_NumBones = 0;
     Matrix4f m_GlobalInverseTransform;
-    const aiScene *scene;
 
     /*  Functions   */
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
@@ -154,10 +145,18 @@ private:
             std::cout << "BaseIndex--" << NumIndices << std::endl;
         }
 
+        initAnimation(scene);
         // process ASSIMP's root node recursively
         processNode(scene->mRootNode, scene);
         initMaterial(scene);
+    }
 
+    void initAnimation(const aiScene *scene) {
+        unsigned int mNumAnimations = scene->mNumAnimations;
+        pAnimation = scene->mAnimations[0];
+        TicksPerSecond = pAnimation->mTicksPerSecond;
+        Duration = pAnimation->mDuration;
+        cout << "获取动画时间:" << pAnimation->mDuration << endl;
     }
 
     void initMaterial(const aiScene *scene) {
@@ -193,11 +192,16 @@ private:
             aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
             meshes.push_back(processMesh(mesh, scene));
         }
+
+        //处理骨骼动画信息
+        string NodeName(node->mName.data);
+        const aiNodeAnim *pNodeAnim = FindNodeAnim(pAnimation, NodeName);
+        m_NodeAnimMapping[NodeName] = pNodeAnim;
+
         // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
         for (unsigned int i = 0; i < node->mNumChildren; i++) {
             processNode(node->mChildren[i], scene);
         }
-
     }
 
     void LoadBones(uint MeshIndex, const aiMesh *pMesh, vector<VertexBoneData> &Bones) {
@@ -278,16 +282,12 @@ private:
     }
 
     void ReadNodeHierarchy(float AnimationTime, const aiNode *pNode, const Matrix4f &ParentTransform) {
-        if (pNode->mName.length == 0) {
-            return;
-        }
         cout << "ReadNodeHierarchy:" << pNode->mName.data << endl;
         string NodeName(pNode->mName.data);
 
         Matrix4f NodeTransformation(pNode->mTransformation);
 
-        const aiNodeAnim *pNodeAnim = FindNodeAnim(pAnimation, NodeName);
-
+        const aiNodeAnim *pNodeAnim = m_NodeAnimMapping[NodeName];
         if (pNodeAnim) {
             // Interpolate scaling and generate scaling transformation matrix
             aiVector3D Scaling;
@@ -416,15 +416,14 @@ private:
     }
 
     const aiNodeAnim *FindNodeAnim(const aiAnimation *pAnimation, const string NodeName) {
-        cout << "FindNodeAnim-" << NodeName << endl;
         for (uint i = 0; i < pAnimation->mNumChannels; i++) {
             const aiNodeAnim *pNodeAnim = pAnimation->mChannels[i];
 
             if (string(pNodeAnim->mNodeName.data) == NodeName) {
+                cout << "FindNodeAnim-" << NodeName << endl;
                 return pNodeAnim;
             }
         }
-
         return nullptr;
     }
 };
