@@ -107,6 +107,7 @@ int loadContent() {
         char Name[128];
         memset(Name, 0, sizeof(Name));
         SNPRINTF(Name, sizeof(Name), "gBones[%d]", i);
+//        cout << "Name:" << Name << endl;
         m_boneLocation[i] = glGetUniformLocation(shader->getProgram(), Name);
     }
 
@@ -118,6 +119,8 @@ int loadContent() {
     }
 
     for (uint i = 0; i < Transforms.size(); i++) {
+        cout << "第" << i << "个" << endl;
+        Transforms[i].Print();
         glUniformMatrix4fv(m_boneLocation[i], 1, GL_TRUE, (const GLfloat *) Transforms[i]);
     }
     assert(glGetError() == GL_NO_ERROR);
@@ -138,17 +141,16 @@ void render(float time) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader->apply();
-    shader->setUniform1i("tex_sampler", 0);
-
-    texture->bind();
     float runningTime = GetRunningTime();
-    cout << "runningTime 时间:" << runningTime << endl;
-//    mesh->BoneTransform(runningTime, Transforms);
+//    cout << "runningTime 时间:" << runningTime << endl;
+    mesh->BoneTransform(runningTime, Transforms);
 
     for (uint i = 0; i < Transforms.size(); i++) {
         glUniformMatrix4fv(m_boneLocation[i], 1, GL_TRUE, (const GLfloat *) Transforms[i]);
     }
 
+    shader->setUniform1i("tex_sampler", 0);
+    texture->bind();
     mesh->Draw();
 }
 
