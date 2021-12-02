@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <helpers/util.h>
+#include <zconf.h>
 
 #include "rendering/Shader.h"
 #include "rendering/Texture.h"
@@ -119,8 +120,8 @@ int loadContent() {
     }
 
     for (uint i = 0; i < Transforms.size(); i++) {
-        cout << "第" << i << "个" << endl;
-        Transforms[i].Print();
+//        cout << "第" << i << "个" << endl;
+//        Transforms[i].Print();
         glUniformMatrix4fv(m_boneLocation[i], 1, GL_TRUE, (const GLfloat *) Transforms[i]);
     }
     assert(glGetError() == GL_NO_ERROR);
