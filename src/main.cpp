@@ -6,8 +6,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#define  GLM_FORCE_RADIANS
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <helpers/util.h>
@@ -26,7 +24,6 @@ vector<Matrix4f> Transforms;
 
 Model *pModel = nullptr;
 Shader *shader = nullptr;
-//Texture *texture = nullptr;
 long long m_startTime;
 
 /* Matrices */
@@ -125,10 +122,6 @@ int loadContent() {
     shader->setUniform1b("animation", pModel->hasAnimation);
     assert(glGetError() == GL_NO_ERROR);
 
-//    texture = new Texture();
-//    texture->load("res/models/tsz0.png");
-//    texture->bind();
-
     return true;
 }
 
@@ -137,35 +130,28 @@ float GetRunningTime() {
     return RunningTime;
 }
 
-void render(float time) {
+void render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader->apply();
     float runningTime = GetRunningTime();
-//    pModel->BoneTransform(runningTime, Transforms);
+    pModel->BoneTransform(runningTime, Transforms);
 
     for (uint i = 0; i < Transforms.size(); i++) {
         glUniformMatrix4fv(m_boneLocation[i], 1, GL_TRUE, (const GLfloat *) Transforms[i]);
     }
 
     shader->setUniform1i("tex_sampler", 0);
-//    texture->bind();
     pModel->Draw();
 }
 
 void update() {
-    float startTime = (float) glfwGetTime();
-    float newTime;
-    float gameTime;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
-        /* Update game time value */
-        newTime = (float) glfwGetTime();
-        gameTime = newTime - startTime;
 
         /* Render here */
-        render(newTime);
+        render();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -175,7 +161,7 @@ void update() {
     }
 }
 
-int main(void) {
+int main() {
     if (!init())
         return -1;
 
@@ -188,7 +174,6 @@ int main(void) {
 
     delete pModel;
     delete shader;
-//    delete texture;
 
     return 0;
 }
