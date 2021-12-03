@@ -26,7 +26,7 @@ vector<Matrix4f> Transforms;
 
 Model *pModel = nullptr;
 Shader *shader = nullptr;
-Texture *texture = nullptr;
+//Texture *texture = nullptr;
 long long m_startTime;
 
 /* Matrices */
@@ -88,13 +88,13 @@ int init() {
 }
 
 int loadContent() {
-    pModel = new Model("res/models/alliance.obj");
+    pModel = new Model("res/models/juese_daiji.fbx");
 
     /* Create and apply basic shader */
     shader = new Shader("Basic.vert", "Basic.frag");
     shader->apply();
 
-    world_matrix = glm::scale(world_matrix, glm::vec3(1, 1, 1));
+    world_matrix = glm::scale(world_matrix, glm::vec3(0.004, 0.004, 0.004));
     world_matrix = glm::rotate(world_matrix, glm::radians(0.0f), glm::vec3(1, 0, 0));
     world_matrix = glm::rotate(world_matrix, glm::radians(0.0f), glm::vec3(0, 0, 1));
 
@@ -125,9 +125,9 @@ int loadContent() {
     shader->setUniform1b("animation", pModel->hasAnimation);
     assert(glGetError() == GL_NO_ERROR);
 
-    texture = new Texture();
-    texture->load("res/models/alliance.png");
-    texture->bind();
+//    texture = new Texture();
+//    texture->load("res/models/tsz1.png");
+//    texture->bind();
 
     return true;
 }
@@ -149,7 +149,7 @@ void render(float time) {
     }
 
     shader->setUniform1i("tex_sampler", 0);
-    texture->bind();
+//    texture->bind();
     pModel->Draw();
 }
 
@@ -188,7 +188,7 @@ int main(void) {
 
     delete pModel;
     delete shader;
-    delete texture;
+//    delete texture;
 
     return 0;
 }

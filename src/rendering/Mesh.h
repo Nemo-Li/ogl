@@ -51,7 +51,6 @@ struct VertexBoneData {
     void AddBoneData(uint BoneID, float Weight);
 };
 
-
 void VertexBoneData::AddBoneData(uint BoneID, float Weight) {
     for (uint i = 0; i < ARRAY_SIZE_IN_ELEMENTS(IDs); i++) {
         if (Weights[i] == 0.0) {
@@ -61,7 +60,8 @@ void VertexBoneData::AddBoneData(uint BoneID, float Weight) {
         }
     }
     // should never get here - more bones than we have space for
-//    assert(0);
+    // 这里可以优化，现在一个顶点只能由4个骨骼来控制
+    // assert(0);
 }
 
 class Mesh {
@@ -70,24 +70,32 @@ public:
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<VertexBoneData> bones;
+    Texture *pTexture;
+
     unsigned int VAO;
 
     /*  Functions  */
     // constructor
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<VertexBoneData> bones) {
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<VertexBoneData> bones,
+         Texture *texture) {
         this->vertices = vertices;
         this->indices = indices;
         this->bones = bones;
+        this->pTexture = texture;
 
         // now that we have all the required data, set the vertex buffers and its attribute pointers.
         setupMesh();
     }
 
-
     // render the pModel
     void Draw() {
         // draw pModel
         glBindVertexArray(VAO);
+
+        if (pTexture != nullptr) {
+            pTexture->bind();
+        }
+
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
     }
