@@ -6,8 +6,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#define  GLM_FORCE_RADIANS
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -21,7 +19,6 @@ const int WINDOW_HEIGHT = 768;
 
 Model *mesh = nullptr;
 Shader *shader = nullptr;
-Texture *texture = nullptr;
 
 /* Matrices */
 glm::vec3 cam_position = glm::vec3(0.0f, 1.0f, 1.2f);
@@ -88,7 +85,6 @@ int loadContent() {
     shader->apply();
 
     world_matrix = glm::scale(world_matrix, glm::vec3(.5, .5, .5));
-//    world_matrix = glm::rotate(world_matrix, glm::radians(0.0f), glm::vec3(1, 0, 0));
     world_matrix = glm::rotate(world_matrix, glm::radians(90.0f), glm::vec3(1, 0, 0));
     world_matrix = glm::rotate(world_matrix, glm::radians(180.0f), glm::vec3(0, 1, 0));
 
@@ -98,26 +94,18 @@ int loadContent() {
 
     shader->setUniform3fv("cam_pos", cam_position);
 
-    texture = new Texture();
-    texture->load("res/models/tsz1.png");
-    texture->bind();
-
     return true;
 }
 
 void render(float time) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /* Draw our triangle */
-//    world_matrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(-90.0f), glm::vec3(0, 1, 0));
-
     shader->setUniformMatrix4fv("world", world_matrix);
     shader->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
 
     shader->setUniform1i("tex_sampler", 0);
-
     shader->apply();
-    texture->bind();
+
     mesh->Draw();
 }
 
@@ -156,7 +144,6 @@ int main(void) {
 
     delete mesh;
     delete shader;
-    delete texture;
 
     return 0;
 }

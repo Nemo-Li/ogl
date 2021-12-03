@@ -16,6 +16,7 @@
 
 #include <string>
 #include <iostream>
+#include <algorithm>
 #include <map>
 #include <vector>
 
@@ -27,6 +28,7 @@ public:
     /*  Model Data */
     std::vector<Mesh> meshes;
     std::string directory;
+    std::vector<Texture *> m_Textures;
 
     /*  Functions   */
     // constructor, expects a filepath to a 3D model.
@@ -36,8 +38,11 @@ public:
 
     // draws the model, and thus all its meshes
     void Draw() {
-        for (unsigned int i = 0; i < meshes.size(); i++)
+        for (unsigned int i = 0; i < meshes.size(); i++) {
             meshes[i].Draw();
+        }
+
+//        meshes[1].Draw();
     }
 
 private:
@@ -57,18 +62,21 @@ private:
         // retrieve the directory path of the filepath
         directory = path.substr(0, path.find_last_of('/'));
 
+        m_Textures.resize(scene->mNumMaterials);
+
+        initMaterial(scene);
         // process ASSIMP's root node recursively
         processNode(scene->mRootNode, scene);
         printf("动画数--%d\n", scene->mNumAnimations);
         printf("texture数--%d\n", scene->mNumTextures);
         printf("materials数--%d\n", scene->mNumMaterials);
-        initMaterial(scene);
     }
 
     void initMaterial(const aiScene *scene) {
         // Initialize the materials
         for (uint i = 0; i < scene->mNumMaterials; i++) {
             const aiMaterial *pMaterial = scene->mMaterials[i];
+            m_Textures[i] = nullptr;
 
             if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
                 aiString Path;
@@ -80,12 +88,36 @@ private:
                     if (p.substr(0, 2) == ".\\") {
                         p = p.substr(2, p.size() - 2);
                     }
+                    p = p.substr(p.find_last_of("\\") + 1, p.length());
 
                     std::string FullPath = p;
-                    printf("%d - loaded texture '%s'\n", i, FullPath.c_str());
+                    std::string Prefix = "res/models/";
+                    //const string &basicString = subReplace(FullPath, ".tga", ".png");
+                    const std::string &basicString = subReplace(FullPath, "*", "tsz");
+                    std::string finalPath = Prefix.append(basicString).append(".png");
+                    auto *pTexture = new Texture(finalPath);
+                    m_Textures[i] = pTexture;
+
+                    if (!m_Textures[i]->load()) {
+                        printf("Error loading texture '%s'\n", finalPath.c_str());
+                        delete m_Textures[i];
+                        m_Textures[i] = nullptr;
+                    } else {
+                        printf("%d - loaded texture '%s'\n", i, finalPath.c_str());
+                    }
                 }
             }
         }
+    }
+
+    std::string subReplace(std::string resource_str, std::string sub_str, std::string new_str) {
+        std::string dst_str = resource_str;
+        std::string::size_type pos = 0;
+        while ((pos = dst_str.find(sub_str)) != std::string::npos)   //替换所有指定子串
+        {
+            dst_str.replace(pos, sub_str.length(), new_str);
+        }
+        return dst_str;
     }
 
     // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
@@ -148,8 +180,15 @@ private:
                 indices.push_back(face.mIndices[j]);
         }
 
+        unsigned int materialIndex = mesh->mMaterialIndex;
+
+        Texture *pTexture = nullptr;
+        if (materialIndex < m_Textures.size()) {
+            pTexture = m_Textures[materialIndex];
+        }
+
         // return a mesh object created from the extracted mesh data
-        return Mesh(vertices, indices);
+        return Mesh(vertices, indices, pTexture);
     }
 };
 

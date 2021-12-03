@@ -9,11 +9,11 @@
 
 class Texture {
 public:
-    Texture();
+    Texture(const std::string &file_name);
 
     ~Texture();
 
-    bool load(const std::string &file_name);
+    bool load();
 
     void bind(int index = 0) const {
         if (to_id != 0) {
@@ -26,6 +26,8 @@ public:
 
 private:
     GLuint to_id;
+
+    std::string mFile_name;
 
     void loadDds(const char *imagePath);
 };

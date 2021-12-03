@@ -27,13 +27,15 @@ public:
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     unsigned int VAO;
+    Texture *pTexture;
 
     /*  Functions  */
     // constructor
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Texture *texture)
     {
         this->vertices = vertices;
         this->indices = indices;
+        this->pTexture = texture;
 
         // now that we have all the required data, set the vertex buffers and its attribute pointers.
         setupMesh();
@@ -44,6 +46,9 @@ public:
     {
         // draw mesh
         glBindVertexArray(VAO);
+        if (pTexture != nullptr) {
+            pTexture->bind();
+        }
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
     }
