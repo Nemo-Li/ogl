@@ -84,9 +84,9 @@ public:
     }
 
 
-    // render the mesh
+    // render the pModel
     void Draw() {
-        // draw mesh
+        // draw pModel
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
@@ -123,7 +123,7 @@ private:
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, TexCoords));
 
         glBindBuffer(GL_ARRAY_BUFFER, BONE);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(bones[0]) * bones.size(), &bones[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, bones.size() * sizeof(VertexBoneData), &bones[0], GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(3);
         glVertexAttribIPointer(3, 4, GL_INT, sizeof(VertexBoneData), (void *) 0);

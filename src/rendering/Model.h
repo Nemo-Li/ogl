@@ -28,7 +28,7 @@ using namespace std;
 class Model {
 public:
     /*  Model Data */
-    std::vector<Mesh> meshes;
+    std::vector<Mesh *> meshes;
 
     map<string, uint> m_BoneMapping; // maps a bone name to its index
     map<string, const aiNodeAnim *> m_NodeAnimMapping;
@@ -65,7 +65,7 @@ public:
     // draws the model, and thus all its meshes
     void Draw() {
         for (unsigned int i = 0; i < meshes.size(); i++) {
-            meshes[i].Draw();
+            meshes[i]->Draw();
         }
     }
 
@@ -77,17 +77,10 @@ public:
         Matrix4f Identity;
         Identity.InitIdentity();
 
-//        cout << "TicksPerSecond:" << TicksPerSecond << endl;
         float TimeInTicks = TimeInSeconds * TicksPerSecond;
-//        cout << "TimeInTicks:" << TimeInTicks << endl;
-//        cout << "mDuration:" << Duration << endl;
         float AnimationTime = fmod(TimeInTicks, Duration);
-//        cout << "AnimationTime:" << AnimationTime << endl;
-
         ReadNodeHierarchy(AnimationTime, rootNode, Identity);
-//        readNodeAnim(AnimationTime, Identity);
 
-//        cout << "m_NumBones:" << m_NumBones << endl;
         Transforms.resize(m_NumBones);
 
         for (uint i = 0; i < m_NumBones; i++) {
@@ -142,16 +135,8 @@ private:
         }
 
         initAnimation(scene);
-        // process ASSIMP's root node recursively
         processNode(rootNode, scene);
         initMaterial(scene);
-
-//        int nodeAnimCount = 0;
-//        for (const auto &animMapping : m_NodeAnimMapping) {
-//            nodeAnimCount++;
-//            cout << "节点动画数量:" << nodeAnimCount << endl;
-//            cout << "节点名称:" << animMapping.first << " 动画名称:" << animMapping.second << endl;
-//        }
     }
 
     void initAnimation(const aiScene *scene) {
@@ -187,10 +172,10 @@ private:
 
     int nodeIndex = 0;
 
-    // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
+    // processes a node in a recursive fashion. Processes each individual pModel located at the node and repeats this process on its children nodes (if any).
     void processNode(aiNode *node, const aiScene *scene) {
 
-        // process each mesh located at the current node
+        // process each pModel located at the current node
         for (unsigned int i = 0; i < node->mNumMeshes; i++) {
             // the node object only contains indices to index the actual objects in the scene. 
             // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
@@ -219,7 +204,6 @@ private:
         for (uint i = 0; i < pMesh->mNumBones; i++) {
             uint BoneIndex = 0;
             string BoneName(pMesh->mBones[i]->mName.data);
-//            cout << "骨骼名称:" << pMesh->mBones[i]->mName.data << endl;
 
             if (m_BoneMapping.find(BoneName) == m_BoneMapping.end()) {
                 // Allocate an index for a new bone
@@ -236,18 +220,21 @@ private:
             for (uint j = 0; j < pMesh->mBones[i]->mNumWeights; j++) {
                 uint VertexID = m_Entries[MeshIndex].BaseVertex + pMesh->mBones[i]->mWeights[j].mVertexId;
                 float Weight = pMesh->mBones[i]->mWeights[j].mWeight;
+                if (VertexID >= Bones.size()) {
+                    Bones.resize(VertexID + 1);
+                }
                 Bones[VertexID].AddBoneData(BoneIndex, Weight);
             }
         }
     }
 
-    Mesh processMesh(aiMesh *mesh, const aiScene *scene) {
+    Mesh *processMesh(aiMesh *mesh, const aiScene *scene) {
         // data to fill
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
         std::vector<VertexBoneData> bones;
 
-        // Walk through each of the mesh's vertices
+        // Walk through each of the pModel's vertices
         for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
             Vertex vertex;
             glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
@@ -262,7 +249,7 @@ private:
             vector.z = mesh->mNormals[i].z;
             vertex.Normal = vector;
             // texture coordinates
-            if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
+            if (mesh->mTextureCoords[0]) // does the pModel contain texture coordinates?
             {
                 glm::vec2 vec;
                 // a vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't 
@@ -275,7 +262,7 @@ private:
 
             vertices.push_back(vertex);
         }
-        // now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
+        // now wak through each of the pModel's faces (a face is a pModel its triangle) and retrieve the corresponding vertex indices.
         for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
             aiFace face = mesh->mFaces[i];
             // retrieve all indices of the face and store them in the indices vector
@@ -284,11 +271,12 @@ private:
         }
         cout << "meshes的大小为" << meshes.size() << endl;
         bones.resize(mesh->mNumVertices);
+
         //加载骨骼信息
         LoadBones(meshes.size(), mesh, bones);
 
-        // return a mesh object created from the extracted mesh data
-        return Mesh(vertices, indices, bones);
+        // return a pModel object created from the extracted pModel data
+        return new Mesh(vertices, indices, bones);
     }
 
     void ReadNodeHierarchy(float AnimationTime, const aiNode *pNode, const Matrix4f &ParentTransform) {
@@ -329,44 +317,6 @@ private:
 
         for (uint i = 0; i < pNode->mNumChildren; i++) {
             ReadNodeHierarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
-        }
-    }
-
-    void readNodeAnim(float AnimationTime, const Matrix4f &ParentTransform) {
-        for (const auto &animMapping : m_NodeAnimMapping) {
-            cout << "节点名称:" << animMapping.first << " 动画名称:" << animMapping.second << endl;
-            const aiNodeAnim *pNodeAnim = animMapping.second;
-            string NodeName(animMapping.first);
-
-            Matrix4f NodeTransformation;
-
-            if (pNodeAnim) {
-                // Interpolate scaling and generate scaling transformation matrix
-                aiVector3D Scaling;
-                CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
-                Matrix4f ScalingM;
-                ScalingM.InitScaleTransform(Scaling.x, Scaling.y, Scaling.z);
-
-                // Interpolate rotation and generate rotation transformation matrix
-                aiQuaternion RotationQ;
-                CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-                Matrix4f RotationM = Matrix4f(RotationQ.GetMatrix());
-
-                // Interpolate translation and generate translation transformation matrix
-                aiVector3D Translation;
-                CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
-                Matrix4f TranslationM;
-                TranslationM.InitTranslationTransform(Translation.x, Translation.y, Translation.z);
-
-                // Combine the above transformations
-                NodeTransformation = TranslationM * RotationM * ScalingM;
-            }
-
-            if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
-                uint BoneIndex = m_BoneMapping[NodeName];
-                m_BoneInfo[BoneIndex].FinalTransformation =
-                        m_GlobalInverseTransform * NodeTransformation * m_BoneInfo[BoneIndex].BoneOffset;
-            }
         }
     }
 

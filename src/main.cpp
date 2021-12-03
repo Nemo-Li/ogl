@@ -24,7 +24,7 @@ const int WINDOW_HEIGHT = 768;
 GLuint m_boneLocation[MAX_BONES];
 vector<Matrix4f> Transforms;
 
-Model *mesh = nullptr;
+Model *pModel = nullptr;
 Shader *shader = nullptr;
 Texture *texture = nullptr;
 long long m_startTime;
@@ -88,15 +88,15 @@ int init() {
 }
 
 int loadContent() {
-    mesh = new Model("res/models/juese_daiji.fbx");
+    pModel = new Model("res/models/TSZ-Attack.FBX");
 
     /* Create and apply basic shader */
     shader = new Shader("Basic.vert", "Basic.frag");
     shader->apply();
 
-    world_matrix = glm::scale(world_matrix, glm::vec3(0.004, 0.004, 0.004));
-    world_matrix = glm::rotate(world_matrix, glm::radians(0.0f), glm::vec3(1, 0, 0));
-    world_matrix = glm::rotate(world_matrix, glm::radians(0.0f), glm::vec3(0, 0, 1));
+    world_matrix = glm::scale(world_matrix, glm::vec3(.5, .5, .5));
+    world_matrix = glm::rotate(world_matrix, glm::radians(90.0f), glm::vec3(1, 0, 0));
+    world_matrix = glm::rotate(world_matrix, glm::radians(180.0f), glm::vec3(0, 1, 0));
 
     shader->setUniformMatrix4fv("world", world_matrix);
     shader->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
@@ -112,8 +112,8 @@ int loadContent() {
         m_boneLocation[i] = glGetUniformLocation(shader->getProgram(), Name);
     }
 
-    Transforms.resize(mesh->getBoneNum());
-    for (int i = 0; i < mesh->getBoneNum(); i++) {
+    Transforms.resize(pModel->getBoneNum());
+    for (int i = 0; i < pModel->getBoneNum(); i++) {
         Matrix4f f = Matrix4f();
         f.InitIdentity();
         Transforms[i] = f;
@@ -127,7 +127,7 @@ int loadContent() {
     assert(glGetError() == GL_NO_ERROR);
 
     texture = new Texture();
-    texture->load("res/models/nanhai_D.png");
+    texture->load("res/models/tsz1.png");
     texture->bind();
 
     return true;
@@ -143,8 +143,7 @@ void render(float time) {
 
     shader->apply();
     float runningTime = GetRunningTime();
-//    cout << "runningTime 时间:" << runningTime << endl;
-    mesh->BoneTransform(runningTime, Transforms);
+    pModel->BoneTransform(runningTime, Transforms);
 
     for (uint i = 0; i < Transforms.size(); i++) {
         glUniformMatrix4fv(m_boneLocation[i], 1, GL_TRUE, (const GLfloat *) Transforms[i]);
@@ -152,7 +151,7 @@ void render(float time) {
 
     shader->setUniform1i("tex_sampler", 0);
     texture->bind();
-    mesh->Draw();
+    pModel->Draw();
 }
 
 void update() {
@@ -188,7 +187,7 @@ int main(void) {
 
     glfwTerminate();
 
-    delete mesh;
+    delete pModel;
     delete shader;
     delete texture;
 
