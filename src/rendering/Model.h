@@ -181,8 +181,9 @@ private:
 
                     std::string FullPath = p;
                     std::string Prefix = "res/models/";
-                    const string &basicString = subReplace(FullPath, ".tga", ".png");
-                    std::string finalPath = Prefix.append(basicString);
+                    //const string &basicString = subReplace(FullPath, ".tga", ".png");
+                    const string &basicString = subReplace(FullPath, "*", "tsz");
+                    std::string finalPath = Prefix.append(basicString).append(".png");
                     auto *pTexture = new Texture(finalPath);
                     m_Textures[i] = pTexture;
 
