@@ -88,15 +88,15 @@ int init() {
 }
 
 int loadContent() {
-    pModel = new Model("res/models/TSZ-Attack.FBX");
+    pModel = new Model("res/models/alliance.obj");
 
     /* Create and apply basic shader */
     shader = new Shader("Basic.vert", "Basic.frag");
     shader->apply();
 
-    world_matrix = glm::scale(world_matrix, glm::vec3(.5, .5, .5));
-    world_matrix = glm::rotate(world_matrix, glm::radians(90.0f), glm::vec3(1, 0, 0));
-    world_matrix = glm::rotate(world_matrix, glm::radians(180.0f), glm::vec3(0, 1, 0));
+    world_matrix = glm::scale(world_matrix, glm::vec3(1, 1, 1));
+    world_matrix = glm::rotate(world_matrix, glm::radians(0.0f), glm::vec3(1, 0, 0));
+    world_matrix = glm::rotate(world_matrix, glm::radians(0.0f), glm::vec3(0, 0, 1));
 
     shader->setUniformMatrix4fv("world", world_matrix);
     shader->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
@@ -108,7 +108,6 @@ int loadContent() {
         char Name[128];
         memset(Name, 0, sizeof(Name));
         SNPRINTF(Name, sizeof(Name), "gBones[%d]", i);
-//        cout << "Name:" << Name << endl;
         m_boneLocation[i] = glGetUniformLocation(shader->getProgram(), Name);
     }
 
@@ -120,14 +119,14 @@ int loadContent() {
     }
 
     for (uint i = 0; i < Transforms.size(); i++) {
-//        cout << "第" << i << "个" << endl;
-//        Transforms[i].Print();
         glUniformMatrix4fv(m_boneLocation[i], 1, GL_TRUE, (const GLfloat *) Transforms[i]);
     }
+
+    shader->setUniform1b("animation", pModel->hasAnimation);
     assert(glGetError() == GL_NO_ERROR);
 
     texture = new Texture();
-    texture->load("res/models/tsz1.png");
+    texture->load("res/models/alliance.png");
     texture->bind();
 
     return true;

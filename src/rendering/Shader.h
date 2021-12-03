@@ -21,6 +21,7 @@ public:
 
     virtual ~Shader();
 
+    void setUniform1b       (const std::string & uniformName, bool value);
     void setUniform1f       (const std::string & uniformName, float value);
     void setUniform1i       (const std::string & uniformName, int value);
     void setUniform1ui      (const std::string & uniformName, unsigned int value);
@@ -31,7 +32,7 @@ public:
     void setUniform4fv      (const std::string & uniformName, const glm::vec4 & vector);
     void setUniformMatrix3fv(const std::string & uniformName, const glm::mat3 & matrix);
     void setUniformMatrix4fv(const std::string & uniformName, const glm::mat4 & matrix);
-    
+
     void apply();
     GLint getProgram();
 

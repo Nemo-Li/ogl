@@ -39,6 +39,7 @@ public:
     float TicksPerSecond;
     float Duration;
     const aiScene *scene;
+    bool hasAnimation;
 
     struct MeshEntry {
         MeshEntry() {
@@ -74,6 +75,9 @@ public:
     }
 
     void BoneTransform(float TimeInSeconds, vector<Matrix4f> &Transforms) {
+        if (!hasAnimation) {
+            return;
+        }
         Matrix4f Identity;
         Identity.InitIdentity();
 
@@ -141,6 +145,11 @@ private:
 
     void initAnimation(const aiScene *scene) {
         unsigned int mNumAnimations = scene->mNumAnimations;
+        if (mNumAnimations == 0) {
+            hasAnimation = false;
+            return;
+        }
+        hasAnimation = true;
         pAnimation = scene->mAnimations[0];
         TicksPerSecond = pAnimation->mTicksPerSecond;
         Duration = pAnimation->mDuration;
@@ -170,8 +179,6 @@ private:
         }
     }
 
-    int nodeIndex = 0;
-
     // processes a node in a recursive fashion. Processes each individual pModel located at the node and repeats this process on its children nodes (if any).
     void processNode(aiNode *node, const aiScene *scene) {
 
@@ -183,14 +190,13 @@ private:
             meshes.push_back(processMesh(mesh, scene));
         }
 
-        nodeIndex++;
-        cout << "遍历节点Node:" << node->mName.data << endl;
-        cout << "节点数量:" << nodeIndex << endl;
-        //处理骨骼动画信息
-        string NodeName(node->mName.data);
-        static const aiNodeAnim *pNodeAnim = FindNodeAnim(pAnimation, NodeName);
-        if (pNodeAnim != nullptr) {
-            m_NodeAnimMapping[NodeName] = pNodeAnim;
+        if (hasAnimation) {
+            //处理骨骼动画信息
+            string NodeName(node->mName.data);
+            static const aiNodeAnim *pNodeAnim = FindNodeAnim(pAnimation, NodeName);
+            if (pNodeAnim != nullptr) {
+                m_NodeAnimMapping[NodeName] = pNodeAnim;
+            }
         }
 
         // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
@@ -272,8 +278,10 @@ private:
         cout << "meshes的大小为" << meshes.size() << endl;
         bones.resize(mesh->mNumVertices);
 
-        //加载骨骼信息
-        LoadBones(meshes.size(), mesh, bones);
+        if (hasAnimation) {
+            //加载骨骼信息
+            LoadBones(meshes.size(), mesh, bones);
+        }
 
         // return a pModel object created from the extracted pModel data
         return new Mesh(vertices, indices, bones);

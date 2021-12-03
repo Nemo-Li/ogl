@@ -210,6 +210,17 @@ std::string Shader::loadFile(const std::string & filename)
     }
 }
 
+void Shader::setUniform1b(const std::string &uniformName, bool value) {
+    if (uniformsLocations.count(uniformName))
+    {
+        glProgramUniform1i(program_id, uniformsLocations[uniformName], value);
+    }
+    else if (getUniformLocation(uniformName))
+    {
+        glProgramUniform1i(program_id, uniformsLocations[uniformName], value);
+    }
+}
+
 void Shader::setUniform1f(const std::string & uniformName, float value)
 {
     if (uniformsLocations.count(uniformName))
