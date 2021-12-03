@@ -8,8 +8,8 @@
 #include <iostream>
 #include <helpers/RootDir.h>
 
-Texture::Texture()
-        : use_linear(true), to_id(0) {
+Texture::Texture(const std::string &file_name) : use_linear(true), to_id(0) {
+    mFile_name = file_name;
 }
 
 Texture::~Texture() {
@@ -19,8 +19,8 @@ Texture::~Texture() {
     }
 }
 
-bool Texture::load(const std::string &file_name) {
-    if (file_name.empty()) {
+bool Texture::load() {
+    if (mFile_name.empty()) {
         return false;
     }
 
@@ -29,10 +29,11 @@ bool Texture::load(const std::string &file_name) {
 
     const std::string &dds = "dds";
     //文件为dds图片文件
-    if (file_name.rfind(dds) == (file_name.length() - dds.length()) ? 1 : 0) {
-        loadDds((ROOT_DIR + file_name).c_str());
+    if (mFile_name.rfind(dds) == (mFile_name.length() - dds.length()) ? 1 : 0) {
+        loadDds((ROOT_DIR + mFile_name).c_str());
     } else {
-        unsigned char *pixels = stbi_load((ROOT_DIR + file_name).c_str(), &width, &height, &components, 4);
+        std::cout << "加载图片全路径为:" << (ROOT_DIR + mFile_name).c_str() << std::endl;
+        unsigned char *pixels = stbi_load((ROOT_DIR + mFile_name).c_str(), &width, &height, &components, 4);
 
         if (pixels != nullptr) {
             glGenTextures(1, &to_id);
@@ -48,15 +49,13 @@ bool Texture::load(const std::string &file_name) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            is_loaded = true;
         } else {
-            std::cout << "Could not load file " << file_name << std::endl;
+            std::cout << "Could not load file " << mFile_name << std::endl;
         }
 
         stbi_image_free(pixels);
-
     }
-
-
     return is_loaded;
 }
 

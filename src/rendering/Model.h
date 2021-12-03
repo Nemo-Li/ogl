@@ -14,6 +14,7 @@
 
 #include <string>
 #include <iostream>
+#include <algorithm>
 #include <map>
 #include <vector>
 
@@ -29,8 +30,10 @@ class Model {
 public:
     /*  Model Data */
     std::vector<Mesh *> meshes;
+    std::vector<Texture *> m_Textures;
 
-    map<string, uint> m_BoneMapping; // maps a bone name to its index
+    // maps a bone name to its index
+    map<string, uint> m_BoneMapping;
     map<string, const aiNodeAnim *> m_NodeAnimMapping;
 
     vector<BoneInfo> m_BoneInfo;
@@ -120,6 +123,8 @@ private:
         std::cout << "mNumMeshes--" << scene->mNumMeshes << std::endl;
         //记录所有mesh的
         m_Entries.resize(scene->mNumMeshes);
+        m_Textures.resize(scene->mNumMaterials);
+
         uint NumVertices = 0;
         uint NumIndices = 0;
 
@@ -138,9 +143,9 @@ private:
             std::cout << "BaseIndex--" << NumIndices << std::endl;
         }
 
+        initMaterial(scene);
         initAnimation(scene);
         processNode(rootNode, scene);
-        initMaterial(scene);
     }
 
     void initAnimation(const aiScene *scene) {
@@ -160,23 +165,47 @@ private:
         // Initialize the materials
         for (uint i = 0; i < scene->mNumMaterials; i++) {
             const aiMaterial *pMaterial = scene->mMaterials[i];
+            m_Textures[i] = nullptr;
 
             if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
                 aiString Path;
 
-                if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &Path, NULL, NULL, NULL, NULL, NULL) ==
-                    AI_SUCCESS) {
+                if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &Path, nullptr, nullptr, nullptr, nullptr,
+                                          nullptr) == AI_SUCCESS) {
                     std::string p(Path.data);
 
                     if (p.substr(0, 2) == ".\\") {
                         p = p.substr(2, p.size() - 2);
                     }
+                    p = p.substr(p.find_last_of("\\") + 1, p.length());
 
                     std::string FullPath = p;
-                    printf("%d - loaded texture '%s'\n", i, FullPath.c_str());
+                    std::string Prefix = "res/models/";
+                    const string &basicString = subReplace(FullPath, ".tga", ".png");
+                    std::string finalPath = Prefix.append(basicString);
+                    auto *pTexture = new Texture(finalPath);
+                    m_Textures[i] = pTexture;
+
+                    if (!m_Textures[i]->load()) {
+                        printf("Error loading texture '%s'\n", finalPath.c_str());
+                        delete m_Textures[i];
+                        m_Textures[i] = nullptr;
+                    } else {
+                        printf("%d - loaded texture '%s'\n", i, finalPath.c_str());
+                    }
                 }
             }
         }
+    }
+
+    std::string subReplace(std::string resource_str, std::string sub_str, std::string new_str) {
+        std::string dst_str = resource_str;
+        std::string::size_type pos = 0;
+        while ((pos = dst_str.find(sub_str)) != std::string::npos)   //替换所有指定子串
+        {
+            dst_str.replace(pos, sub_str.length(), new_str);
+        }
+        return dst_str;
     }
 
     // processes a node in a recursive fashion. Processes each individual pModel located at the node and repeats this process on its children nodes (if any).
@@ -249,11 +278,15 @@ private:
             vector.y = mesh->mVertices[i].y;
             vector.z = mesh->mVertices[i].z;
             vertex.Position = vector;
+
             // normals
-            vector.x = mesh->mNormals[i].x;
-            vector.y = mesh->mNormals[i].y;
-            vector.z = mesh->mNormals[i].z;
-            vertex.Normal = vector;
+            if (mesh->mNormals != nullptr) {
+                vector.x = mesh->mNormals[i].x;
+                vector.y = mesh->mNormals[i].y;
+                vector.z = mesh->mNormals[i].z;
+                vertex.Normal = vector;
+            }
+
             // texture coordinates
             if (mesh->mTextureCoords[0]) // does the pModel contain texture coordinates?
             {
@@ -283,8 +316,14 @@ private:
             LoadBones(meshes.size(), mesh, bones);
         }
 
+        unsigned int materialIndex = mesh->mMaterialIndex;
+
+        Texture *pTexture = nullptr;
+        if (materialIndex < m_Textures.size()) {
+            pTexture = m_Textures[materialIndex];
+        }
         // return a pModel object created from the extracted pModel data
-        return new Mesh(vertices, indices, bones);
+        return new Mesh(vertices, indices, bones, pTexture);
     }
 
     void ReadNodeHierarchy(float AnimationTime, const aiNode *pNode, const Matrix4f &ParentTransform) {
