@@ -27,7 +27,7 @@ Shader *shader = nullptr;
 long long m_startTime;
 
 /* Matrices */
-glm::vec3 cam_position = glm::vec3(0.0f, 1.0f, 3.2f);
+glm::vec3 cam_position = glm::vec3(0.0f, 3.0f, 3.2f);
 glm::vec3 cam_look_at = glm::vec3(0.0f, 0.5f, 0.0f);
 glm::vec3 cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -85,13 +85,14 @@ int init() {
 }
 
 int loadContent() {
-    pModel = new Model("res/models/1.fbx");
+    pModel = new Model("res/models/taunt.fbx");
 
     /* Create and apply basic shader */
     shader = new Shader("Basic.vert", "Basic.frag");
     shader->apply();
 
-    world_matrix = glm::scale(world_matrix, glm::vec3(.006, .006, .006));
+    world_matrix = glm::scale(world_matrix, glm::vec3(.022, .022, .022));
+    world_matrix = glm::translate(world_matrix, glm::vec3(0, -20, 0));
 //    world_matrix = glm::rotate(world_matrix, glm::radians(90.0f), glm::vec3(1, 0, 0));
 //    world_matrix = glm::rotate(world_matrix, glm::radians(180.0f), glm::vec3(0, 1, 0));
 
