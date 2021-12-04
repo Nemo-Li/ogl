@@ -196,7 +196,7 @@ private:
                     }
                 }
             } else {
-                auto *pTexture = new Texture("res/models/jarvanIV_lubu_TX_CM1.png");
+                auto *pTexture = new Texture("res/models/brand_zombie_TX_CM.png");
                 m_Textures[i] = pTexture;
                 m_Textures[i]->load();
             }
