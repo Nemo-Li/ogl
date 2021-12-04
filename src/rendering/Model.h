@@ -195,6 +195,10 @@ private:
                         printf("%d - loaded texture '%s'\n", i, finalPath.c_str());
                     }
                 }
+            } else {
+                auto *pTexture = new Texture("res/models/jarvanIV_lubu_TX_CM1.png");
+                m_Textures[i] = pTexture;
+                m_Textures[i]->load();
             }
         }
     }
