@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD 14)
 # Add source files
 file(GLOB_RECURSE SOURCE_FILES
         ${CMAKE_SOURCE_DIR}/src/*.c
-        ${CMAKE_SOURCE_DIR}/src/*.cpp)
+        ${CMAKE_SOURCE_DIR}/src/*.cpp
+        ${CMAKE_SOURCE_DIR}/thirdparty/imgui/*.cpp
+        )
 
 # Add header files
 file(GLOB_RECURSE HEADER_FILES
@@ -48,6 +50,8 @@ include_directories(
         "${CMAKE_SOURCE_DIR}/src"
         "${CMAKE_SOURCE_DIR}/include"
         "${CMAKE_SOURCE_DIR}/thirdparty/glm"
+        "${CMAKE_SOURCE_DIR}/thirdparty/imgui"
+        "${CMAKE_SOURCE_DIR}/thirdparty/imgui/backends"
         ${GLFW3_INCLUDE_DIR}
 )
 
