@@ -43,6 +43,24 @@ public:
     float Duration;
     const aiScene *scene;
     bool hasAnimation;
+//    std::string path[17] = {"1v1_b03.Out.png", "Forest_building_floor001a.Out.png", "Forest_building_floor001b.Out.png",
+//                            "Forest_009.Out.png",
+//                            "3v3_plant.Out.png",
+//                            "3v3_plant.Out.png", "1v1_b02.Out.png", "3v3_2.Out.png",
+//                            "cpt02_fangyuta.Out.png", "cpt02_jidi_red.Out.png",
+//                            "cpt02_jidi.Out.png",
+//                            "cpt02_fangyuta_red.Out.png", "1v1_b04.Out.png",
+//                            "cpt02_jidi.Out.png", "Forest_building_floor001a.Out.png",
+//                            "Forest_building_floor001a.Out.png"};
+
+
+    std::string path[14] = {"1v1_b03.Out.png", "Forest_building_floor001a.Out.png", "Forest_building_floor001b.Out.png",
+                            "Forest_009.Out.png",
+                            "3v3_plant.Out.png", "1v1_b02.Out.png", "3v3_2.Out.png",
+                            "cpt02_fangyuta.Out.png", "cpt02_jidi_red.Out.png",
+                            "cpt02_jidi.Out.png",
+                            "cpt02_fangyuta_red.Out.png", "1v1_b04.Out.png", "cpt02_jidi.Out.png",
+                            "Forest_building_floor001a.Out.png"};
 
     struct MeshEntry {
         MeshEntry() {
@@ -128,7 +146,7 @@ private:
         uint NumVertices = 0;
         uint NumIndices = 0;
 
-        std::cout << "m_Entries size--" << m_Entries.size() << std::endl;
+//        std::cout << "m_Entries size--" << m_Entries.size() << std::endl;
 
         // Count the number of vertices and indices
         for (uint i = 0; i < m_Entries.size(); i++) {
@@ -139,8 +157,8 @@ private:
 
             NumVertices += scene->mMeshes[i]->mNumVertices;
             NumIndices += m_Entries[i].NumIndices;
-            std::cout << "BaseVertex--" << NumVertices << std::endl;
-            std::cout << "BaseIndex--" << NumIndices << std::endl;
+//            std::cout << "BaseVertex--" << NumVertices << std::endl;
+//            std::cout << "BaseIndex--" << NumIndices << std::endl;
         }
 
         initMaterial(scene);
@@ -181,9 +199,10 @@ private:
 
                     std::string FullPath = p;
                     std::string Prefix = "res/models/";
-                    //const string &basicString = subReplace(FullPath, ".tga", ".png");
-                    const string &basicString = subReplace(FullPath, "*", "tsz");
-                    std::string finalPath = Prefix.append(basicString).append(".png");
+//                    //const string &basicString = subReplace(FullPath, ".tga", ".png");
+//                    const string &basicString = subReplace(FullPath, "*", "tsz");
+                    std::string basicString = path[i];
+                    std::string finalPath = Prefix.append(basicString);
                     auto *pTexture = new Texture(finalPath);
                     m_Textures[i] = pTexture;
 
@@ -313,7 +332,7 @@ private:
             for (unsigned int j = 0; j < face.mNumIndices; j++)
                 indices.push_back(face.mIndices[j]);
         }
-        cout << "meshes的大小为" << meshes.size() << endl;
+//        cout << "meshes的大小为" << meshes.size() << endl;
         bones.resize(mesh->mNumVertices);
 
         if (hasAnimation) {
