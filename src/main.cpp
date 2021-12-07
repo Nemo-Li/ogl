@@ -10,10 +10,12 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include <pthread.h>
+
 unsigned int VAO;
+unsigned int threeDVAO;
 unsigned int texture1;
 unsigned int texture2;
-
 
 //顶点数组对象：Vertex Array Object，VAO
 //顶点缓冲对象：Vertex Buffer Object，VBO
@@ -25,6 +27,8 @@ unsigned int texture2;
 //This means that you can't set up vertex attributes without creating and binding your own VAO.
 
 void initVAO();
+
+void init3DVAO();
 
 void initTexture();
 
@@ -46,9 +50,16 @@ const unsigned int SCR_HEIGHT = 1080;
 float vertices[] = {
 //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
         1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // 右上
-        1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // 右下
-        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // 左下
-        -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f    // 左上
+        1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // 右下
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // 左下
+        0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f    // 左上
+};
+
+float threeDVertices[] = {
+        0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+        -1.0f, 0.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f
 };
 
 unsigned int indices[] = { // 注意索引从0开始!
@@ -67,6 +78,13 @@ glm::mat4 projection_matrix = glm::perspectiveFov(glm::radians(90.0f), float(SCR
 
 //正交投影， 从结果来看是标准化的
 glm::mat4 ortho_matrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 10.0f);
+
+// 线程的运行函数
+void *say_hello(void *window) {
+//    while (!glfwWindowShouldClose((GLFWwindow *) window)) {
+//    }
+    return nullptr;
+}
 
 int main() {
     // glfw: initialize and configure
@@ -117,9 +135,16 @@ int main() {
     // Our state
     bool show_another_window = false;
     float theta = 0;
+    ImVec4 left_window_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    pthread_t tid;
+    pthread_create(&tid, nullptr, say_hello, (void *) window);
 
     initTexture();
     initVAO();
+    init3DVAO();
+
+    Shader threeDShader("../res/shader/shader3d.vert", "../res/shader/shader3d.frag");
     Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
 
     ourShader.use();
@@ -196,6 +221,8 @@ int main() {
         ImGui::DragFloat4("texturez", (float *) &texv3, 0.01f, 0.0f, 1.0f);
         ImGui::DragFloat4("texturew", (float *) &texv4, 0.01f, 0.0f, 1.0f);
 
+        ImGui::ColorEdit3("3d window color", (float *) &left_window_color);
+
         ImGui::End();
 
         // 3. Show another simple window.
@@ -217,6 +244,7 @@ int main() {
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
         ourShader.use();
         auto timeValue = (float) glfwGetTime();
         ourShader.setFloat("time", timeValue);
@@ -231,6 +259,14 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
 
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+        threeDShader.use();
+        glUniform4f(glGetUniformLocation(threeDShader.ID, "bgColor"), left_window_color.x, left_window_color.y,
+                    left_window_color.z,
+                    left_window_color.w);
+        glBindVertexArray(threeDVAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
@@ -294,6 +330,29 @@ void initVAO() {
     // 纹理属性
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+}
+
+void init3DVAO() {
+    unsigned int VBO;
+    unsigned int EBO;
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    // 1. 绑定顶点数组对象
+    glGenVertexArrays(1, &threeDVAO);
+    glBindVertexArray(threeDVAO);
+    // 2. 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(threeDVertices), threeDVertices, GL_STATIC_DRAW);
+    // 3. 复制我们的索引数组到一个索引缓冲中，供OpenGL使用
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    // 4. 设定顶点属性指针
+    // 位置属性
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+    glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
 }
