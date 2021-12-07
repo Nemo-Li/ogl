@@ -28,6 +28,8 @@ void initVAO();
 
 void initTexture();
 
+void renderShader(Shader ourShader);
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 void processInput(GLFWwindow *window);
@@ -101,13 +103,12 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 150");
 
     // Our state
-    bool show_demo_window = true;
     bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    float theta = 0;
 
     initTexture();
     initVAO();
-    Shader ourShader("../res/shader/shader.vs", "../res/shader/Heartfelt.fs");
+    Shader ourShader("../res/shader/shader.vert", "../res/shader/Heartfelt.frag");
 
     ourShader.use();
     ourShader.setVec2("resolution", glm::vec2(SCR_WIDTH * 2, SCR_HEIGHT * 2));
@@ -126,30 +127,49 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        static float f = 0.0f;
-        static int counter = 0;
+        static ImVec4 v1 = ImVec4(1.0f, 0.0f, 0.0f, 0.0f);
+        static ImVec4 v2 = ImVec4(0.0f, 1.0f, 0.0f, 0.0f);
+        static ImVec4 v3 = ImVec4(0.0f, 0.0f, 1.0f, 0.0f);
+        static ImVec4 v4 = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+        glm::mat4x4 model(
+                v1.x, v2.x, v3.x, v4.x,
+                v1.y, v2.y, v3.y, v4.y,
+                v1.z, v2.z, v3.z, v4.z,
+                v1.w, v2.w, v3.w, v4.w
+        );
 
-        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-        ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-        ImGui::Checkbox("Another Window", &show_another_window);
+        ImGui::Begin(
+                "matrix demo");                          // Create a window called "Hello, world!" and append into it.
 
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+        ImGui::Text(
+                "model matrix:");               // Display some text (you can use a format strings too)
 
-        if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-            counter++;
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
+        ImGui::DragFloat4("x", (float *) &v1, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat4("y", (float *) &v2, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat4("z", (float *) &v3, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat4("w", (float *) &v4, 0.01f, 0.0f, 1.0f);
 
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        if (ImGui::Button("reset")) {
+            v1 = ImVec4(1.0f, 0.0f, 0.0f, 0.0f);
+            v2 = ImVec4(0.0f, 1.0f, 0.0f, 0.0f);
+            v3 = ImVec4(0.0f, 0.0f, 1.0f, 0.0f);
+            v4 = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+        }
+
+        if (ImGui::DragFloat("theta", &theta, 0.01f, 0.0f, 3.1415926f)) {
+            v1 = ImVec4(1.0f, 0.0f, 0.0f, 0.0f);
+            v2 = ImVec4(0.0f, cos(theta), -sin(theta), 0.0f);
+            v3 = ImVec4(0.0f, sin(theta), cos(theta), 0.0f);
+            v4 = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+        }
+
         ImGui::End();
 
         // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+        if (show_another_window) {
+            ImGui::Begin("Another Window",
+                         &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
             ImGui::Text("Hello from another window!");
             if (ImGui::Button("Close Me"))
                 show_another_window = false;
@@ -159,13 +179,16 @@ int main() {
         // Rendering
         ImGui::Render();
 
-        // render
-        // ------
+//        ourShader.use();
+//        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "model"), 1, GL_FALSE, &model[0][0]);
+//        renderShader(ourShader);
+
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         ourShader.use();
         auto timeValue = (float) glfwGetTime();
         ourShader.setFloat("time", timeValue);
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "model"), 1, GL_FALSE, &model[0][0]);
 
         glBindVertexArray(VAO);
         glActiveTexture(GL_TEXTURE0);
@@ -191,6 +214,22 @@ int main() {
 
     glfwTerminate();
     return 0;
+}
+
+void renderShader(Shader ourShader) {
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ourShader.use();
+    auto timeValue = (float) glfwGetTime();
+    ourShader.setFloat("time", timeValue);
+//    glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "model"), 1, GL_FALSE, &model[0][0]);
+
+    glBindVertexArray(VAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
 
 void initVAO() {
