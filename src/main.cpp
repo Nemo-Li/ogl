@@ -40,8 +40,8 @@ void curse_pos_callback(GLFWwindow *window, double x, double y) {
 }
 
 // settings
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
 float vertices[] = {
 //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
@@ -55,6 +55,18 @@ unsigned int indices[] = { // 注意索引从0开始!
         0, 1, 3, // 第一个三角形
         1, 2, 3  // 第二个三角形
 };
+
+/* Matrices */
+glm::vec3 cam_position = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cam_look_at = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
+
+glm::mat4 view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
+glm::mat4 projection_matrix = glm::perspectiveFov(glm::radians(90.0f), float(SCR_WIDTH), float(SCR_HEIGHT), 1.0f,
+                                                  10.0f);
+
+//正交投影， 从结果来看是标准化的
+glm::mat4 ortho_matrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 10.0f);
 
 int main() {
     // glfw: initialize and configure
@@ -108,7 +120,7 @@ int main() {
 
     initTexture();
     initVAO();
-    Shader ourShader("../res/shader/shader.vert", "../res/shader/Heartfelt.frag");
+    Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
 
     ourShader.use();
     ourShader.setVec2("resolution", glm::vec2(SCR_WIDTH * 2, SCR_HEIGHT * 2));
@@ -132,11 +144,23 @@ int main() {
         static ImVec4 v3 = ImVec4(0.0f, 0.0f, 1.0f, 0.0f);
         static ImVec4 v4 = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-        glm::mat4x4 model(
+        glm::mat4x4 modelMatrix(
                 v1.x, v2.x, v3.x, v4.x,
                 v1.y, v2.y, v3.y, v4.y,
                 v1.z, v2.z, v3.z, v4.z,
                 v1.w, v2.w, v3.w, v4.w
+        );
+
+        static ImVec4 texv1 = ImVec4(1.0f, 0.0f, 0.0f, 0.0f);
+        static ImVec4 texv2 = ImVec4(0.0f, 1.0f, 0.0f, 0.0f);
+        static ImVec4 texv3 = ImVec4(0.0f, 0.0f, 1.0f, 0.0f);
+        static ImVec4 texv4 = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+        glm::mat4x4 textureMatrix(
+                texv1.x, texv2.x, texv3.x, texv4.x,
+                texv1.y, texv2.y, texv3.y, texv4.y,
+                texv1.z, texv2.z, texv3.z, texv4.z,
+                texv1.w, texv2.w, texv3.w, texv4.w
         );
 
         ImGui::Begin(
@@ -164,6 +188,14 @@ int main() {
             v4 = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
         }
 
+        ImGui::Text(
+                "texture matrix:");               // Display some text (you can use a format strings too)
+
+        ImGui::DragFloat4("texturex", (float *) &texv1, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat4("texturey", (float *) &texv2, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat4("texturez", (float *) &texv3, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat4("texturew", (float *) &texv4, 0.01f, 0.0f, 1.0f);
+
         ImGui::End();
 
         // 3. Show another simple window.
@@ -188,7 +220,12 @@ int main() {
         ourShader.use();
         auto timeValue = (float) glfwGetTime();
         ourShader.setFloat("time", timeValue);
-        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "model"), 1, GL_FALSE, &model[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "modelMatrix"), 1, GL_FALSE, &modelMatrix[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "viewMatrix"), 1, GL_FALSE, &view_matrix[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "projectionMatrix"), 1, GL_FALSE,
+                           &ortho_matrix[0][0]);
+
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "textureMatrix"), 1, GL_FALSE, &textureMatrix[0][0]);
 
         glBindVertexArray(VAO);
         glActiveTexture(GL_TEXTURE0);
@@ -252,11 +289,11 @@ void initVAO() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, 0);
     glEnableVertexAttribArray(0);
     // 颜色属性
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *) (sizeof(float) * 3));
-    glEnableVertexAttribArray(1);
+//    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *) (sizeof(float) * 3));
+//    glEnableVertexAttribArray(1);
     // 纹理属性
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
 }
@@ -274,10 +311,10 @@ void initTexture() {
     stbi_set_flip_vertically_on_load(true);
     // 加载并生成纹理
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("../res/pic/rain.png", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("../res/pic/dragon.jpeg", &width, &height, &nrChannels, 0);
 
     if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     } else {
         std::cout << "Failed to load texture" << std::endl;
