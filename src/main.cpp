@@ -92,9 +92,14 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 void processInput(GLFWwindow *window);
 
+// settings
+int width = 3360;
+int height = 2010;
+
 void rotateModel(double deltaX, double deltaY) {
     float angleX = deltaX / 1920 * 10;
     float angleY = deltaY / 1920 * 10;
+
     threeDModelMatrix = glm::rotate(threeDModelMatrix, glm::radians(angleX), glm::vec3(0.0f, 1.0f, 0.0f));
     threeDModelMatrix = glm::rotate(threeDModelMatrix, glm::radians(angleY), glm::vec3(1.0f, 0.0f, 0.0f));
 }
@@ -104,6 +109,10 @@ double down_x_position;
 
 void curse_pos_callback(GLFWwindow *window, double x, double y) {
     if (l_button_down) {
+        cout << "down_x_position:" << down_x_position << " down_y_position" << down_y_position << endl;
+        if (down_x_position < width / 4 || down_y_position > height / 4) {
+            return;
+        }
         // do your drag here
         double deltaX = x - down_x_position;
         double deltaY = y - down_y_position;
@@ -126,11 +135,6 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     }
 }
 
-
-// settings
-int width = 3360;
-int height = 2010;
-
 float vertices[] = {
 //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
         1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // 右上
@@ -152,7 +156,7 @@ unsigned int indices[] = { // 注意索引从0开始!
 };
 
 /* Matrices */
-glm::vec3 cam_position = glm::vec3(0.0f, 1.0f, 3.0f);
+glm::vec3 cam_position = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cam_look_at = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -166,58 +170,6 @@ glm::mat4 ortho_matrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 10.0f);
 // 线程的运行函数
 void *say_hello(void *window) {
     return nullptr;
-}
-
-struct Vertex {
-    GLfloat x, y, z;
-    GLfloat r, g, b;
-};
-
-#define GRIDW 50
-#define GRIDH 50
-#define VERTEXNUM (GRIDW*GRIDH)
-#define QUADW (GRIDW - 1)
-#define QUADH (GRIDH - 1)
-#define QUADNUM (QUADW*QUADH)
-GLuint quad[4 * QUADNUM];
-struct Vertex vertex[VERTEXNUM];
-
-//========================================================================
-// Initialize grid geometry
-//========================================================================
-
-void init_vertices(void) {
-    int x, y, p;
-
-    // Place the vertices in a grid
-    for (y = 0; y < GRIDH; y++) {
-        for (x = 0; x < GRIDW; x++) {
-            p = y * GRIDW + x;
-
-            vertex[p].x = (GLfloat) (x - GRIDW / 2) / (GLfloat) (GRIDW / 2);
-            vertex[p].y = (GLfloat) (y - GRIDH / 2) / (GLfloat) (GRIDH / 2);
-            vertex[p].z = 0;
-
-            if ((x % 4 < 2) ^ (y % 4 < 2))
-                vertex[p].r = 0.0;
-            else
-                vertex[p].r = 1.0;
-
-            vertex[p].g = (GLfloat) y / (GLfloat) GRIDH;
-            vertex[p].b = 1.f - ((GLfloat) x / (GLfloat) GRIDW + (GLfloat) y / (GLfloat) GRIDH) / 2.f;
-        }
-    }
-
-    for (y = 0; y < QUADH; y++) {
-        for (x = 0; x < QUADW; x++) {
-            p = 4 * (y * QUADW + x);
-
-            quad[p + 0] = y * GRIDW + x;     // Some point
-            quad[p + 1] = y * GRIDW + x + 1; // Neighbor at the right side
-            quad[p + 2] = (y + 1) * GRIDW + x + 1; // Upper right neighbor
-            quad[p + 3] = (y + 1) * GRIDW + x;     // Upper neighbor
-        }
-    }
 }
 
 int main() {
@@ -240,7 +192,7 @@ int main() {
         glfwTerminate();
         return -1;
     }
-    glfwGetFramebufferSize(window, &width, &height);
+//    glfwGetFramebufferSize(window, &width, &height);
     cout << "窗口的大小为:" << "width " << width << "height " << height << endl;
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -255,8 +207,6 @@ int main() {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-
-    init_vertices();
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -283,6 +233,7 @@ int main() {
     initTexture();
     initVAO();
     init3DVAO();
+    initLineVAO();
 
     Shader threeDShader("../res/shader/shader3d.vert", "../res/shader/shader3d.frag");
     Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
@@ -386,6 +337,7 @@ int main() {
         // Upper left view (TOP VIEW)
         glViewport(0, height / 2, width / 2, height / 2);
         glScissor(0, height / 2, width / 2, height / 2);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         ourShader.use();
@@ -423,12 +375,25 @@ int main() {
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
 
-//        glBindVertexArray(lineVAO);
-//        threeDShader.setVec3("drawColor", 1.0f, 1.0f, 1.0f);
-//
-//        for (int i = 0; i < 10; ++i) {
-//            glDrawArrays(GL_LINES, 0, 1);
-//        }
+        threeDShader.setVec3("drawColor", 1.0f, 1.0f, 1.0f);
+        glBindVertexArray(lineVAO);
+
+        for (int i = 0; i < 80; ++i) {
+            glm::mat4 lineModel = glm::mat4(1.0f);
+            if (i < 20) {
+                lineModel = glm::translate(lineModel, glm::vec3(float(i) * 0.1f, 0.0, 0.0f));
+            } else if (i < 40) {
+                lineModel = glm::translate(lineModel, glm::vec3(float(20 - i) * 0.1f, 0.0, 0.0f));
+            } else if (i < 60) {
+                lineModel = glm::translate(lineModel, glm::vec3(0.0f, 0.0f, float(i - 40) * 0.1f));
+                lineModel = glm::rotate(lineModel, glm::radians(90.0f), glm::vec3(0.0, 1.0, 0.0f));
+            } else {
+                lineModel = glm::translate(lineModel, glm::vec3(0.0f, 0.0f, float(60 - i) * 0.1f));
+                lineModel = glm::rotate(lineModel, glm::radians(90.0f), glm::vec3(0.0, 1.0, 0.0f));
+            }
+            glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "modelMatrix"), 1, GL_FALSE, &lineModel[0][0]);
+            glDrawArrays(GL_LINES, 0, 2);
+        }
 
         glViewport(0, 0, width, height / 2);
         glScissor(0, 0, width, height / 2);
@@ -502,8 +467,8 @@ void init3DVAO() {
 }
 
 float lineVertices[] = {
-        0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, -1.0f
+        0.0f, 0.0f, -2.0f,
+        0.0f, 0.0f, 2.0f
 };
 
 void initLineVAO() {
