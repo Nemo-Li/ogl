@@ -88,7 +88,7 @@ void init3DVAO();
 
 void initLineVAO();
 
-void initFrustumVAO();
+void initFrustum(float fovY, float aspectRatio, float nearPlane, float farPlane);
 
 void initTexture();
 
@@ -160,7 +160,7 @@ unsigned int indices[] = { // 注意索引从0开始!
 };
 
 /* Matrices */
-glm::vec3 cam_position = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cam_position = glm::vec3(0.0f, 2.0f, 3.0f);
 glm::vec3 cam_look_at = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -238,7 +238,7 @@ int main() {
     initVAO();
     init3DVAO();
     initLineVAO();
-    initFrustumVAO();
+    initFrustum(45.0f, 1, 0.1, 1);
 
     Shader threeDShader("../res/shader/shader3d.vert", "../res/shader/shader3d.frag");
     Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
@@ -376,9 +376,9 @@ int main() {
         glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "projectionMatrix"), 1, GL_FALSE,
                            &projection_matrix[0][0]);
 
-//        glBindVertexArray(threeDVAO);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
-//        glBindVertexArray(0);
+        glBindVertexArray(threeDVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
 
         threeDShader.setVec3("drawColor", 1.0f, 1.0f, 1.0f);
         glBindVertexArray(lineVAO);
@@ -400,16 +400,16 @@ int main() {
             glDrawArrays(GL_LINES, 0, 2);
         }
 
-//        glm::mat4 identity = glm::mat4(1.0f);
-//        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "modelMatrix"), 1, GL_FALSE, &identity[0][0]);
-//        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "viewMatrix"), 1, GL_FALSE, &identity[0][0]);
-//        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "projectionMatrix"), 1, GL_FALSE,
-//                           &identity[0][0]);
+        glm::mat4 identity = glm::mat4(1.0f);
+        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "modelMatrix"), 1, GL_FALSE, &identity[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "viewMatrix"), 1, GL_FALSE, &identity[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "projectionMatrix"), 1, GL_FALSE,
+                           &identity[0][0]);
 
         threeDShader.setVec3("drawColor", 1.0f, 0.0f, 0.0f);
         glBindVertexArray(frustumVAO);
 
-        glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 
         glViewport(0, 0, width, height / 2);
         glScissor(0, 0, width, height / 2);
@@ -535,54 +535,81 @@ void initTexture() {
     glBindTexture(GL_TEXTURE_2D, texture2);
 }
 
-void initFrustumVAO() {
-    std::array<glm::vec3, 8> _cameraFrustumCornerVertices{
-            {
-                    {-0.5f, -0.5f, 0.5f}, {0.5f, -0.5f, 0.5f}, {0.5f, 0.5f, 0.5f}, {-0.5f, 0.5f, 0.5f},
-                    {-0.5f, -0.5f, -0.5f}, {0.5f, -0.5f, -0.5f}, {0.5f, 0.5f, -0.5f}, {-0.5f, 0.5f, -0.5f},
-            }
-    };
+// constants
+const float DEG2RAD = 3.1415926f / 180;
+const float FOV_Y = 45.0f;              // vertical FOV in degree
+const float NEAR_PLANE = 1.0f;
+const float FAR_PLANE = 100.0f;
+const float CAMERA_ANGLE_X = 45.0f;     // pitch in degree
+const float CAMERA_ANGLE_Y = -45.0f;    // heading in degree
+const float CAMERA_DISTANCE = 25.0f;    // camera distance
 
-    std::array<glm::vec3, 8> _test{
-            {
-                    {-0.13445, -0.0804298, 0.61165},
-                    {0.13445, -0.0804298, 0.61165},
-                    {0.13445, 0.0804298, 0.61165},
-                    {-0.13445, 0.0804298, 0.61165},
-                    {-0.0460078, -0.0275225, 0.867109},
-                    {0.0460078, -0.0275225, 0.867109},
-                    {0.0460078, 0.0275225, 0.867109},
-                    {-0.0460078, 0.0275225, 0.867109}
-            }
-    };
+void initFrustum(float fovY, float aspectRatio, float nearPlane, float farPlane) {
+    float tangent = tanf(fovY / 2 * DEG2RAD);
+    float nearHeight = nearPlane * tangent;
+    float nearWidth = nearHeight * aspectRatio;
+    float farHeight = farPlane * tangent;
+    float farWidth = farHeight * aspectRatio;
 
-    int indices[] = {
-            0, 1, 2,
-            2, 0, 3,
-            4, 5, 6,
-            6, 4, 7,
-            1, 2, 6,
-            6, 1, 5,
-            7, 3, 0,
-            0, 7, 4
-    };
-    const auto proj = glm::inverse(projection_matrix * view_matrix);
-    std::array<glm::vec3, 8> _frustumVertices{};
+    // compute 8 vertices of the frustum
+    float vertices[8][3];
+    // near top right
+    vertices[0][0] = nearWidth;
+    vertices[0][1] = nearHeight;
+    vertices[0][2] = -nearPlane;
+    // near top left
+    vertices[1][0] = -nearWidth;
+    vertices[1][1] = nearHeight;
+    vertices[1][2] = -nearPlane;
+    // near bottom left
+    vertices[2][0] = -nearWidth;
+    vertices[2][1] = -nearHeight;
+    vertices[2][2] = -nearPlane;
+    // near bottom right
+    vertices[3][0] = nearWidth;
+    vertices[3][1] = -nearHeight;
+    vertices[3][2] = -nearPlane;
+    // far top right
+    vertices[4][0] = farWidth;
+    vertices[4][1] = farHeight;
+    vertices[4][2] = -farPlane;
+    // far top left
+    vertices[5][0] = -farWidth;
+    vertices[5][1] = farHeight;
+    vertices[5][2] = -farPlane;
+    // far bottom left
+    vertices[6][0] = -farWidth;
+    vertices[6][1] = -farHeight;
+    vertices[6][2] = -farPlane;
+    // far bottom right
+    vertices[7][0] = farWidth;
+    vertices[7][1] = -farHeight;
+    vertices[7][2] = -farPlane;
 
-    std::transform(
-            _cameraFrustumCornerVertices.begin(),
-            _cameraFrustumCornerVertices.end(),
-            _frustumVertices.begin(),
-            [&](glm::vec3 p) {
-                auto v = proj * glm::vec4(p, 1.0f);
-                return glm::vec3(v) / v.w;
-            }
-    );
+    float colorLine1[4] = {0.7f, 0.7f, 0.7f, 0.7f};
+    float colorLine2[4] = {0.2f, 0.2f, 0.2f, 0.7f};
+    float colorPlane[4] = {0.5f, 0.5f, 0.5f, 0.5f};
 
     for (int i = 0; i < 8; ++i) {
-        glm::vec3 dot = _frustumVertices[i];
-        cout << "{" << dot.x << ", " << dot.y << " , " << dot.z << "}" << "," << endl;
+        for (int j = 0; j < 3; ++j) {
+            cout << "ixj " << i << "x" << j << " " << vertices[i][j] << endl;
+        }
     }
+
+    int indices[] = {
+            0, 1,
+            1, 2,
+            2, 3,
+            3, 0,
+            7, 4,
+            4, 5,
+            5, 6,
+            6, 7,
+            0, 4,
+            1, 5,
+            2, 6,
+            3, 7
+    };
 
     unsigned int VBO;
     unsigned int EBO;
@@ -594,7 +621,7 @@ void initFrustumVAO() {
     glBindVertexArray(frustumVAO);
     // 2. 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(_frustumVertices), &_frustumVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
     // 3. 复制我们的索引数组到一个索引缓冲中，供OpenGL使用
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
