@@ -160,7 +160,7 @@ unsigned int indices[] = { // 注意索引从0开始!
 };
 
 /* Matrices */
-glm::vec3 cam_position = glm::vec3(0.0f, 2.0f, 3.0f);
+glm::vec3 cam_position = glm::vec3(0.0f, 0.0f, -3.0f);
 glm::vec3 cam_look_at = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -384,7 +384,8 @@ int main() {
         glBindVertexArray(lineVAO);
 
         for (int i = 0; i < 80; ++i) {
-            glm::mat4 lineModel = glm::mat4(1.0f);
+//            glm::mat4 lineModel = glm::mat4(1.0f);
+            glm::mat4 lineModel = threeDModelMatrix;
             if (i < 20) {
                 lineModel = glm::translate(lineModel, glm::vec3(float(i) * 0.1f, 0.0, 0.0f));
             } else if (i < 40) {
@@ -401,15 +402,18 @@ int main() {
         }
 
         glm::mat4 identity = glm::mat4(1.0f);
-        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "modelMatrix"), 1, GL_FALSE, &identity[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "viewMatrix"), 1, GL_FALSE, &identity[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "projectionMatrix"), 1, GL_FALSE,
-                           &identity[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "modelMatrix"), 1, GL_FALSE, &threeDModelMatrix[0][0]);
+//        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "viewMatrix"), 1, GL_FALSE, &identity[0][0]);
+//        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "projectionMatrix"), 1, GL_FALSE,
+//                           &identity[0][0]);
 
         threeDShader.setVec3("drawColor", 1.0f, 0.0f, 0.0f);
         glBindVertexArray(frustumVAO);
 
-        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+
+        threeDShader.setVec3("drawColor", 0.0f, 1.0f, 0.0f);
+        glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, (void *) (sizeof(int) * 12));
 
         glViewport(0, 0, width, height / 2);
         glScissor(0, 0, width, height / 2);
@@ -597,14 +601,10 @@ void initFrustum(float fovY, float aspectRatio, float nearPlane, float farPlane)
     }
 
     int indices[] = {
-            0, 1,
-            1, 2,
-            2, 3,
-            3, 0,
-            7, 4,
-            4, 5,
-            5, 6,
-            6, 7,
+            0, 1, 3,
+            1, 3, 2,
+            5, 4, 7,
+            5, 7, 6,
             0, 4,
             1, 5,
             2, 6,
