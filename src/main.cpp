@@ -11,10 +11,12 @@
 #include "imgui_impl_opengl3.h"
 
 #include <pthread.h>
+#include <array>
 
 unsigned int VAO;
 unsigned int threeDVAO;
 unsigned int lineVAO;
+unsigned int frustumVAO;
 
 unsigned int texture1;
 unsigned int texture2;
@@ -85,6 +87,8 @@ void initVAO();
 void init3DVAO();
 
 void initLineVAO();
+
+void initFrustumVAO();
 
 void initTexture();
 
@@ -234,6 +238,7 @@ int main() {
     initVAO();
     init3DVAO();
     initLineVAO();
+    initFrustumVAO();
 
     Shader threeDShader("../res/shader/shader3d.vert", "../res/shader/shader3d.frag");
     Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
@@ -371,9 +376,9 @@ int main() {
         glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "projectionMatrix"), 1, GL_FALSE,
                            &projection_matrix[0][0]);
 
-        glBindVertexArray(threeDVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
+//        glBindVertexArray(threeDVAO);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
+//        glBindVertexArray(0);
 
         threeDShader.setVec3("drawColor", 1.0f, 1.0f, 1.0f);
         glBindVertexArray(lineVAO);
@@ -394,6 +399,17 @@ int main() {
             glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "modelMatrix"), 1, GL_FALSE, &lineModel[0][0]);
             glDrawArrays(GL_LINES, 0, 2);
         }
+
+//        glm::mat4 identity = glm::mat4(1.0f);
+//        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "modelMatrix"), 1, GL_FALSE, &identity[0][0]);
+//        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "viewMatrix"), 1, GL_FALSE, &identity[0][0]);
+//        glUniformMatrix4fv(glGetUniformLocation(threeDShader.ID, "projectionMatrix"), 1, GL_FALSE,
+//                           &identity[0][0]);
+
+        threeDShader.setVec3("drawColor", 1.0f, 0.0f, 0.0f);
+        glBindVertexArray(frustumVAO);
+
+        glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
 
         glViewport(0, 0, width, height / 2);
         glScissor(0, 0, width, height / 2);
@@ -517,6 +533,77 @@ void initTexture() {
 
     glGenTextures(1, &texture2);
     glBindTexture(GL_TEXTURE_2D, texture2);
+}
+
+void initFrustumVAO() {
+    std::array<glm::vec3, 8> _cameraFrustumCornerVertices{
+            {
+                    {-0.5f, -0.5f, 0.5f}, {0.5f, -0.5f, 0.5f}, {0.5f, 0.5f, 0.5f}, {-0.5f, 0.5f, 0.5f},
+                    {-0.5f, -0.5f, -0.5f}, {0.5f, -0.5f, -0.5f}, {0.5f, 0.5f, -0.5f}, {-0.5f, 0.5f, -0.5f},
+            }
+    };
+
+    std::array<glm::vec3, 8> _test{
+            {
+                    {-0.13445, -0.0804298, 0.61165},
+                    {0.13445, -0.0804298, 0.61165},
+                    {0.13445, 0.0804298, 0.61165},
+                    {-0.13445, 0.0804298, 0.61165},
+                    {-0.0460078, -0.0275225, 0.867109},
+                    {0.0460078, -0.0275225, 0.867109},
+                    {0.0460078, 0.0275225, 0.867109},
+                    {-0.0460078, 0.0275225, 0.867109}
+            }
+    };
+
+    int indices[] = {
+            0, 1, 2,
+            2, 0, 3,
+            4, 5, 6,
+            6, 4, 7,
+            1, 2, 6,
+            6, 1, 5,
+            7, 3, 0,
+            0, 7, 4
+    };
+    const auto proj = glm::inverse(projection_matrix * view_matrix);
+    std::array<glm::vec3, 8> _frustumVertices{};
+
+    std::transform(
+            _cameraFrustumCornerVertices.begin(),
+            _cameraFrustumCornerVertices.end(),
+            _frustumVertices.begin(),
+            [&](glm::vec3 p) {
+                auto v = proj * glm::vec4(p, 1.0f);
+                return glm::vec3(v) / v.w;
+            }
+    );
+
+    for (int i = 0; i < 8; ++i) {
+        glm::vec3 dot = _frustumVertices[i];
+        cout << "{" << dot.x << ", " << dot.y << " , " << dot.z << "}" << "," << endl;
+    }
+
+    unsigned int VBO;
+    unsigned int EBO;
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    // 1. 绑定顶点数组对象
+    glGenVertexArrays(1, &frustumVAO);
+    glBindVertexArray(frustumVAO);
+    // 2. 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(_frustumVertices), &_frustumVertices, GL_STATIC_DRAW);
+    // 3. 复制我们的索引数组到一个索引缓冲中，供OpenGL使用
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    // 4. 设定顶点属性指针
+    // 位置属性
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
