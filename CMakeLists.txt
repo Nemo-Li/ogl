@@ -15,6 +15,10 @@ file(GLOB_RECURSE HEADER_FILES
         ${CMAKE_SOURCE_DIR}/src/*.h
         ${CMAKE_SOURCE_DIR}/src/*.hpp)
 
+# Configure assets header file
+configure_file(src/helpers/RootDir.h.in src/helpers/RootDir.h)
+include_directories(${CMAKE_BINARY_DIR}/src)
+
 # Add .lib files
 link_directories(${CMAKE_SOURCE_DIR}/lib)
 
@@ -57,7 +61,7 @@ include_directories(
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
-add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/Model.cpp src/Model.h)
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})
