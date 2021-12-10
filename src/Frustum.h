@@ -10,7 +10,7 @@
 #include "Shader.h"
 #include "Model.h"
 
-class Frustum : Model{
+class Frustum : Model {
 public:
     const float DEG2RAD = 3.1415926f / 180;
     unsigned int frustumVAO;

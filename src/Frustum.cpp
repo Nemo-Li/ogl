@@ -88,13 +88,14 @@ void Frustum::initFrustum(float fovY, float aspectRatio, float nearPlane, float 
 }
 
 void Frustum::draw() {
-    glUniformMatrix4fv(glGetUniformLocation(shader->ID, "modelMatrix"), 1, GL_FALSE, &(*modelMatrix)[0][0]);
+    glm::mat4 frustumMatrix = glm::translate(*modelMatrix, glm::vec3(0.0f, 0.0f, 3.0f));
+    glUniformMatrix4fv(glGetUniformLocation(shader->ID, "modelMatrix"), 1, GL_FALSE, &frustumMatrix[0][0]);
 
-    shader->setVec3("drawColor", 0.0f, 1.0f, 1.0f);
+    shader->setVec4("drawColor", 0.0f, 1.0f, 1.0f, 0.3f);
     glBindVertexArray(frustumVAO);
     glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 
-    shader->setVec3("drawColor", 0.0f, 1.0f, 0.0f);
+    shader->setVec4("drawColor", 0.0f, 1.0f, 0.0f, 1.0f);
     glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, (void *) (sizeof(int) * 12));
 
 }

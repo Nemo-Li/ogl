@@ -26,7 +26,7 @@ void Grid::initVAO() {
 
 void Grid::draw() {
     shader->use();
-    shader->setVec3("drawColor", 1.0f, 1.0f, 1.0f);
+    shader->setVec4("drawColor", 1.0f, 1.0f, 1.0f, 1.0f);
     shader->setBool("useTexture", false);
     glBindVertexArray(lineVAO);
 

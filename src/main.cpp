@@ -97,11 +97,14 @@ unsigned int indices[] = { // 注意索引从0开始!
 };
 
 /* Matrices */
-glm::vec3 cam_position = glm::vec3(2.0f, 2.0f, 2.0f);
+glm::vec3 cam_position = glm::vec3(3.0f, 3.0f, 3.0f);
 glm::vec3 cam_look_at = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-glm::mat4 view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
+glm::mat4 threed_view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
+
+glm::mat4 view_matrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), cam_look_at, cam_up);
+
 glm::mat4 projection_matrix = glm::perspectiveFov(glm::radians(45.0f), float(width), float(height), 0.1f,
                                                   10.0f);
 //正交投影， 从结果来看是标准化的
@@ -168,7 +171,7 @@ int main() {
     Rectangle rectangle3d(&threeDShader);
     rectangle3d.initVAO();
     rectangle3d.modelMatrix = &threeDModelMatrix;
-    rectangle3d.viewMatrix = &view_matrix;
+    rectangle3d.viewMatrix = &threed_view_matrix;
     rectangle3d.projectionMatrix = &projection_matrix;
     rectangle3d.useTexture = true;
     rectangle3d.setTexture(&texture);
@@ -194,6 +197,10 @@ int main() {
         // Enable depth test
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
+
+        // enable blending
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         // Upper left view (TOP VIEW)
         glViewport(0, height / 2, width / 2, height / 2);
