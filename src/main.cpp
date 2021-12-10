@@ -30,10 +30,16 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 void processInput(GLFWwindow *window);
 
+void mouse_scroll_callback(GLFWwindow *window, double x_offset, double y_offset);
+
 // settings
 int width = 3360;
 int height = 2010;
 bool l_button_down;
+
+float projection_fov = 45;
+float projection_near = 0.1f;
+float projection_far = 3.0f;
 
 double down_y_position;
 double down_x_position;
@@ -83,6 +89,7 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     }
 }
 
+
 float vertices[] = {
 //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
         1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // 右上
@@ -105,8 +112,15 @@ glm::mat4 threed_view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
 
 glm::mat4 view_matrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), cam_look_at, cam_up);
 
-glm::mat4 projection_matrix = glm::perspectiveFov(glm::radians(45.0f), float(width), float(height), 0.1f,
-                                                  10.0f);
+//透视投影，观察纹理图片的视角，可变
+glm::mat4 projection_matrix = glm::perspectiveFov(glm::radians(projection_fov), float(width), float(height),
+                                                  projection_near,
+                                                  projection_far);
+
+//透视投影，固定的3维空间视角
+glm::mat4 projection_matrix_threed = glm::perspectiveFov(glm::radians(45.0f), float(width), float(height), 0.1f,
+                                                         10.0f);
+
 //正交投影， 从结果来看是标准化的
 glm::mat4 ortho_matrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 10.0f);
 
@@ -138,6 +152,8 @@ int main() {
     glfwSetCursorPosCallback(window, curse_pos_callback);
     // 设置鼠标点击回调
     glfwSetMouseButtonCallback(window, mouse_callback);
+    // 鼠标滚动
+    glfwSetScrollCallback(window, mouse_scroll_callback);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -157,11 +173,11 @@ int main() {
     Shader threeDShader("../res/shader/shader3d.vert", "../res/shader/shader3d.frag");
     Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
 
-    Rectangle rectangle(&ourShader);
+    Rectangle rectangle = Rectangle(&ourShader);
     rectangle.initVAO();
     rectangle.modelMatrix = &ui.modelMatrix;
     rectangle.viewMatrix = &view_matrix;
-    rectangle.projectionMatrix = &ortho_matrix;
+    rectangle.projectionMatrix = &projection_matrix;
     rectangle.textureMatrix = &ui.textureMatrix;
     rectangle.setTexture(&texture);
 
@@ -170,14 +186,15 @@ int main() {
 
     Rectangle rectangle3d(&threeDShader);
     rectangle3d.initVAO();
-    rectangle3d.modelMatrix = &threeDModelMatrix;
+    rectangle3d.modelMatrix = &ui.modelMatrix;
+    rectangle3d.modelTransMatrix = &threeDModelMatrix;
     rectangle3d.viewMatrix = &threed_view_matrix;
-    rectangle3d.projectionMatrix = &projection_matrix;
+    rectangle3d.projectionMatrix = &projection_matrix_threed;
     rectangle3d.useTexture = true;
     rectangle3d.setTexture(&texture);
 
     Frustum frustum(&threeDShader, &threeDModelMatrix);
-    frustum.initFrustum(45.0f, 1, 0.1, 3.0);
+    frustum.initFrustum(projection_fov, float(width) / float(height), projection_near, projection_far);
 
     // render loop
     // -----------
@@ -255,4 +272,11 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+
+void mouse_scroll_callback(GLFWwindow *window, double x_offset, double y_offset) {
+    cout << "x_offset:" << x_offset << " y_offset:" << y_offset << endl;
+    float scale = 1.0f;
+    scale -= y_offset / 10.0f;
+    threeDModelMatrix = glm::scale(threeDModelMatrix, glm::vec3(scale, scale, scale));
 }

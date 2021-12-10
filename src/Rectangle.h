@@ -16,6 +16,7 @@ public:
     Shader *shader;
     Texture *texture;
     glm::mat4 *modelMatrix;
+    glm::mat4 *modelTransMatrix;
     glm::mat4 *viewMatrix;
     glm::mat4 *projectionMatrix;
     glm::mat4 *textureMatrix;

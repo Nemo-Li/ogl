@@ -42,7 +42,8 @@ void Rectangle::draw() {
     if (useTexture) {
         shader->setBool("useTexture", true);
     }
-    glUniformMatrix4fv(glGetUniformLocation(shader->ID, "modelMatrix"), 1, GL_FALSE, &(*modelMatrix)[0][0]);
+    glm::mat4 combineMatrix = (*modelTransMatrix) * (*modelMatrix);
+    glUniformMatrix4fv(glGetUniformLocation(shader->ID, "modelMatrix"), 1, GL_FALSE, &(combineMatrix)[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(shader->ID, "viewMatrix"), 1, GL_FALSE, &(*viewMatrix)[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(shader->ID, "projectionMatrix"), 1, GL_FALSE,
                        &(*projectionMatrix)[0][0]);
@@ -58,6 +59,7 @@ void Rectangle::draw() {
 
 Rectangle::Rectangle(Shader *shader) {
     this->shader = shader;
+    modelTransMatrix = new glm::mat4(1.0f);
 }
 
 void Rectangle::setTexture(Texture *texture) {
