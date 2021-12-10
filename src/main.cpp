@@ -61,14 +61,14 @@ void rotateModel(double deltaX, double deltaY) {
 
 void curse_pos_callback(GLFWwindow *window, double x, double y) {
     if (l_button_down) {
-        cout << "down_x_position:" << down_x_position << " down_y_position" << down_y_position << endl;
+//        cout << "down_x_position:" << down_x_position << " down_y_position" << down_y_position << endl;
         if (down_x_position < width / 4 || down_y_position > height / 4) {
             return;
         }
         // do your drag here
         double deltaX = x - down_x_position;
         double deltaY = y - down_y_position;
-        cout << "x移动距离:" << deltaX << " y移动距离：" << deltaY << endl;
+//        cout << "x移动距离:" << deltaX << " y移动距离：" << deltaY << endl;
         rotateModel(deltaX, deltaY);
         down_x_position = x;
         down_y_position = y;
@@ -168,7 +168,7 @@ int main() {
     Texture texture;
     texture.load("res/pic/dragon.jpeg");
 
-    UI ui(window);
+    UI ui(window, width, height);
 
     Shader threeDShader("../res/shader/shader3d.vert", "../res/shader/shader3d.frag");
     Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
@@ -180,6 +180,7 @@ int main() {
     rectangle.projectionMatrix = &projection_matrix;
     rectangle.textureMatrix = &ui.textureMatrix;
     rectangle.setTexture(&texture);
+    ui.addOnProjectionListener(&rectangle);
 
     Grid grid(&threeDShader, &threeDModelMatrix);
     grid.initVAO();
@@ -195,6 +196,7 @@ int main() {
 
     Frustum frustum(&threeDShader, &threeDModelMatrix);
     frustum.initFrustum(projection_fov, float(width) / float(height), projection_near, projection_far);
+    ui.addOnProjectionListener(&frustum);
 
     // render loop
     // -----------

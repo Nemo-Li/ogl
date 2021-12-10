@@ -2,9 +2,10 @@
 // Created by Nemo li on 2021/12/9.
 //
 
+#include <iostream>
 #include "UI.h"
 
-UI::UI(GLFWwindow *window) {
+UI::UI(GLFWwindow *window, float width, float height) {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -19,6 +20,8 @@ UI::UI(GLFWwindow *window) {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 150");
 
+    this->width = width;
+    this->height = height;
 }
 
 UI::UI() {
@@ -55,6 +58,7 @@ void UI::renderUI() {
             texv1.w, texv2.w, texv3.w, texv4.w
     );
 
+    ImGui::SetNextWindowBgAlpha(0.35f);
     ImGui::Begin(
             "matrix demo");                          // Create a window called "Hello, world!" and append into it.
 
@@ -89,16 +93,37 @@ void UI::renderUI() {
     ImGui::DragFloat4("texturew", (float *) &texv4, 0.01f, 0.0f, 1.0f);
 
     ImGui::ColorEdit3("3d window color", (float *) &left_window_color);
+    ImGui::Checkbox("Projection Window", &show_another_window);
 
     ImGui::End();
 
+    ImGui::SetNextWindowBgAlpha(0.35f);
     // 3. Show another simple window.
     if (show_another_window) {
-        ImGui::Begin("Another Window",
+        ImGui::Begin("Projection Window",
                      &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-        ImGui::Text("Hello from another window!");
-        if (ImGui::Button("Close Me"))
-            show_another_window = false;
+        ImGui::Text("Demonstration projection effect!");
+
+        if (ImGui::DragFloat("projection_fov", &projection_fov, 1.0f, 0.0f, 90.0f)) {
+//            cout << "UI 拖动回调" << " " << projection_fov << " " << projection_near << " " << projection_far << endl;
+            for (auto onProjectionListener: listeners) {
+                onProjectionListener->onProjectionChange(projection_fov, projection_near, projection_far, width,
+                                                         height);
+            }
+        }
+        if (ImGui::DragFloat("projection_near", &projection_near, 0.1f, 0.0f, 3.0f)) {
+            for (auto onProjectionListener: listeners) {
+                onProjectionListener->onProjectionChange(projection_fov, projection_near, projection_far, width,
+                                                         height);
+            }
+        }
+        if (ImGui::DragFloat("projection_far", &projection_far, 0.1f, 0.0f, 3.0f)) {
+            for (auto onProjectionListener: listeners) {
+                onProjectionListener->onProjectionChange(projection_fov, projection_near, projection_far, width,
+                                                         height);
+            }
+        }
+
         ImGui::End();
     }
 
@@ -108,4 +133,8 @@ void UI::renderUI() {
 
 void UI::draw() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void UI::addOnProjectionListener(OnProjectionListener *onProjectionListener) {
+    listeners.push_back(onProjectionListener);
 }

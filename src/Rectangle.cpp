@@ -65,3 +65,10 @@ Rectangle::Rectangle(Shader *shader) {
 void Rectangle::setTexture(Texture *texture) {
     Rectangle::texture = texture;
 }
+
+void Rectangle::onProjectionChange(float fov, float near, float far, float width, float height) {
+    cout << "Rectangle::onProjectionChange" << endl;
+    *projectionMatrix = glm::perspectiveFov(glm::radians(fov), float(width), float(height),
+                                      near,
+                                      far);
+}

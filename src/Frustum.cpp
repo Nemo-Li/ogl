@@ -8,6 +8,11 @@ Frustum::Frustum() {
 
 }
 
+void Frustum::onProjectionChange(float fov, float near, float far, float width, float height) {
+    cout << "Frustum::onProjectionChange" << endl;
+    initFrustum(fov, width / height, near, far);
+}
+
 void Frustum::initFrustum(float fovY, float aspectRatio, float nearPlane, float farPlane) {
     float tangent = tanf(fovY / 2 * DEG2RAD);
     float nearHeight = nearPlane * tangent;

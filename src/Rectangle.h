@@ -9,8 +9,9 @@
 #include "glad/glad.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "OnProjectionListener.h"
 
-class Rectangle : Model {
+class Rectangle : Model, public OnProjectionListener {
 public:
     unsigned int VAO;
     Shader *shader;
@@ -44,6 +45,8 @@ public:
     void initVAO() override;
 
     void draw() override;
+
+    void onProjectionChange(float fov, float near, float far, float width, float height) override;
 };
 
 

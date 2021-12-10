@@ -61,7 +61,7 @@ include_directories(
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
-add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/Model.cpp src/Model.h)
+add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/Model.cpp src/Model.h src/OnProjectionListener.h src/OnProjectionListener.cpp)
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})

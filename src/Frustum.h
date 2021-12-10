@@ -9,8 +9,9 @@
 #include "math.h"
 #include "Shader.h"
 #include "Model.h"
+#include "OnProjectionListener.h"
 
-class Frustum : Model {
+class Frustum : Model, public OnProjectionListener {
 public:
     const float DEG2RAD = 3.1415926f / 180;
     unsigned int frustumVAO;
@@ -23,7 +24,9 @@ public:
 
     void initFrustum(float fovY, float aspectRatio, float nearPlane, float farPlane);
 
-    void draw();
+    void draw() override;
+
+    void onProjectionChange(float fov, float near, float far, float width, float height) override;
 };
 
 
