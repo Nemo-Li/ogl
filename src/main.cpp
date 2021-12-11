@@ -16,6 +16,7 @@
 #include "UI.h"
 #include "Texture.h"
 #include "Rectangle.h"
+#include "Orthogonal.h"
 
 //顶点数组对象：Vertex Array Object，VAO
 //顶点缓冲对象：Vertex Buffer Object，VBO
@@ -39,7 +40,7 @@ bool l_button_down;
 
 float projection_fov = 45;
 float projection_near = 0.1f;
-float projection_far = 3.0f;
+float projection_far = 4.0f;
 
 double down_y_position;
 double down_x_position;
@@ -198,6 +199,9 @@ int main() {
     frustum.initFrustum(projection_fov, float(width) / float(height), projection_near, projection_far);
     ui.addOnProjectionListener(&frustum);
 
+    Orthogonal orthogonal(&threeDShader, &threeDModelMatrix);
+    orthogonal.initVAO(projection_near, projection_far, float(1.0f), float(1.0f));
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)) {
@@ -237,7 +241,11 @@ int main() {
 
         rectangle3d.draw();
         grid.draw();
-        frustum.draw();
+        if (ui.projection_type == 0) {
+            frustum.draw();
+        } else {
+            orthogonal.draw();
+        }
 
         glViewport(0, 0, width, height / 2);
         glScissor(0, 0, width, height / 2);

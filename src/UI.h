@@ -21,14 +21,14 @@ using namespace std;
 class UI {
 public:
     // Our state
-    bool show_another_window = true;
     float theta = 0;
     ImVec4 left_window_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     float projection_fov = 45;
     float projection_near = 0.1f;
-    float projection_far = 3.0f;
+    float projection_far = 4.0f;
     float width;
     float height;
+    int projection_type = 0;
 
     glm::mat4x4 modelMatrix;
     glm::mat4x4 textureMatrix;

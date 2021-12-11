@@ -93,39 +93,53 @@ void UI::renderUI() {
     ImGui::DragFloat4("texturew", (float *) &texv4, 0.01f, 0.0f, 1.0f);
 
     ImGui::ColorEdit3("3d window color", (float *) &left_window_color);
-    ImGui::Checkbox("Projection Window", &show_another_window);
+
+    ImGui::RadioButton("perspective", &projection_type, 0);
+    ImGui::SameLine();
+    ImGui::RadioButton("Orthogonal", &projection_type, 1);
+    ImGui::SameLine();
 
     ImGui::End();
 
     ImGui::SetNextWindowBgAlpha(0.35f);
     // 3. Show another simple window.
-    if (show_another_window) {
-        ImGui::Begin("Projection Window",
-                     &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-        ImGui::Text("Demonstration projection effect!");
+    ImGui::Begin(
+            "Projection Window");   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+    ImGui::Text("Demonstration projection effect!");
 
-        if (ImGui::DragFloat("projection_fov", &projection_fov, 1.0f, 0.0f, 90.0f)) {
+    if (ImGui::DragFloat("projection_fov", &projection_fov, 1.0f, 1.0f, 90.0f)) {
 //            cout << "UI 拖动回调" << " " << projection_fov << " " << projection_near << " " << projection_far << endl;
-            for (auto onProjectionListener: listeners) {
-                onProjectionListener->onProjectionChange(projection_fov, projection_near, projection_far, width,
-                                                         height);
-            }
+        for (auto onProjectionListener: listeners) {
+            onProjectionListener->onProjectionChange(projection_fov, projection_near, projection_far, width,
+                                                     height);
         }
-        if (ImGui::DragFloat("projection_near", &projection_near, 0.1f, 0.0f, 3.0f)) {
-            for (auto onProjectionListener: listeners) {
-                onProjectionListener->onProjectionChange(projection_fov, projection_near, projection_far, width,
-                                                         height);
-            }
-        }
-        if (ImGui::DragFloat("projection_far", &projection_far, 0.1f, 0.0f, 3.0f)) {
-            for (auto onProjectionListener: listeners) {
-                onProjectionListener->onProjectionChange(projection_fov, projection_near, projection_far, width,
-                                                         height);
-            }
-        }
-
-        ImGui::End();
     }
+    if (ImGui::DragFloat("projection_near", &projection_near, 0.2f, 0.0f, 4.0f)) {
+        for (auto onProjectionListener: listeners) {
+            onProjectionListener->onProjectionChange(projection_fov, projection_near, projection_far, width,
+                                                     height);
+        }
+    }
+    if (ImGui::DragFloat("projection_far", &projection_far, 0.2f, 0.0f, 4.0f)) {
+        for (auto onProjectionListener: listeners) {
+            onProjectionListener->onProjectionChange(projection_fov, projection_near, projection_far, width,
+                                                     height);
+        }
+    }
+    ImGui::End();
+
+    ImGui::SetNextWindowBgAlpha(0.35f);
+    ImGui::Begin("Orthogonal");
+
+    ImGui::Text("Orthogonal projection effect!");
+    ImGui::DragFloat("left", &projection_fov, 1.0f, 0.0f, 90.0f);
+    ImGui::DragFloat("right", &projection_fov, 1.0f, 0.0f, 90.0f);
+    ImGui::DragFloat("top", &projection_fov, 1.0f, 0.0f, 90.0f);
+    ImGui::DragFloat("bottom", &projection_fov, 1.0f, 0.0f, 90.0f);
+    ImGui::DragFloat("near", &projection_fov, 1.0f, 0.0f, 90.0f);
+    ImGui::DragFloat("far", &projection_fov, 1.0f, 0.0f, 90.0f);
+
+    ImGui::End();
 
     // Rendering
     ImGui::Render();
