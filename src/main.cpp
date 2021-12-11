@@ -285,7 +285,13 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 }
 
 void mouse_scroll_callback(GLFWwindow *window, double x_offset, double y_offset) {
-    cout << "x_offset:" << x_offset << " y_offset:" << y_offset << endl;
+    double cursorX;
+    double cursorY;
+    glfwGetCursorPos(window, &cursorX, &cursorY);
+    if (cursorX < width / 4 || cursorY > height / 4) {
+        return;
+    }
+
     float scale = 1.0f;
     scale -= y_offset / 10.0f;
     threeDModelMatrix = glm::scale(threeDModelMatrix, glm::vec3(scale, scale, scale));
