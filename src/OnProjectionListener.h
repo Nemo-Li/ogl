@@ -9,6 +9,9 @@ class OnProjectionListener {
 public:
     virtual ~OnProjectionListener() = default;;
 
-    virtual void onProjectionChange(float fov, float near, float far, float width, float height);
+    virtual void onPerspectiveChange(float fov, float near, float far, float width, float height);
+
+    virtual void onOrthoChange(float left, float right, float top, float bottom, float near, float far);
 };
+
 #endif //OGL_ONPROJECTIONLISTENER_H

@@ -8,8 +8,8 @@ Frustum::Frustum() {
 
 }
 
-void Frustum::onProjectionChange(float fov, float near, float far, float width, float height) {
-    cout << "Frustum::onProjectionChange" << endl;
+void Frustum::onPerspectiveChange(float fov, float near, float far, float width, float height) {
+    cout << "Frustum::onPerspectiveChange" << endl;
     initFrustum(fov, width / height, near, far);
 }
 

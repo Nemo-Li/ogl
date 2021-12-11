@@ -4,6 +4,10 @@
 
 #include "OnProjectionListener.h"
 
-void OnProjectionListener::onProjectionChange(float fov, float near, float far, float width, float height) {
+void OnProjectionListener::onPerspectiveChange(float fov, float near, float far, float width, float height) {
+
+}
+
+void OnProjectionListener::onOrthoChange(float left, float right, float top, float bottom, float near, float far) {
 
 }

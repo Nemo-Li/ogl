@@ -66,9 +66,14 @@ void Rectangle::setTexture(Texture *texture) {
     Rectangle::texture = texture;
 }
 
-void Rectangle::onProjectionChange(float fov, float near, float far, float width, float height) {
-    cout << "Rectangle::onProjectionChange" << " near" << near << " far " << far << endl;
+void Rectangle::onPerspectiveChange(float fov, float near, float far, float width, float height) {
+    cout << "Rectangle::onPerspectiveChange" << " near" << near << " far " << far << endl;
     *projectionMatrix = glm::perspectiveFov(glm::radians(fov), float(width), float(height),
                                             near,
                                             far);
+}
+
+void Rectangle::onOrthoChange(float left, float right, float top, float bottom, float near, float far) {
+    glm::mat4 ortho_matrix = glm::ortho(left, right, bottom, top, near, far);
+    *projectionMatrix = ortho_matrix;
 }

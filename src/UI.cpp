@@ -94,52 +94,69 @@ void UI::renderUI() {
 
     ImGui::ColorEdit3("3d window color", (float *) &left_window_color);
 
-    ImGui::RadioButton("perspective", &projection_type, 0);
+    if (ImGui::RadioButton("perspective", &projection_type, 0)) {
+        perspectiveChange();
+    }
     ImGui::SameLine();
-    ImGui::RadioButton("Orthogonal", &projection_type, 1);
+    if (ImGui::RadioButton("Orthogonal", &projection_type, 1)) {
+        orthoChange();
+    }
     ImGui::SameLine();
 
     ImGui::End();
 
     ImGui::SetNextWindowBgAlpha(0.35f);
+
     // 3. Show another simple window.
+    if (projection_type == 1)
+        ImGui::BeginDisabled();
     ImGui::Begin(
             "Projection Window");   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
     ImGui::Text("Demonstration projection effect!");
 
     if (ImGui::DragFloat("projection_fov", &projection_fov, 1.0f, 1.0f, 90.0f)) {
-//            cout << "UI 拖动回调" << " " << projection_fov << " " << projection_near << " " << projection_far << endl;
-        for (auto onProjectionListener: listeners) {
-            onProjectionListener->onProjectionChange(projection_fov, projection_near, projection_far, width,
-                                                     height);
-        }
+        perspectiveChange();
     }
     if (ImGui::DragFloat("projection_near", &projection_near, 0.2f, 0.0f, 4.0f)) {
-        for (auto onProjectionListener: listeners) {
-            onProjectionListener->onProjectionChange(projection_fov, projection_near, projection_far, width,
-                                                     height);
-        }
+        perspectiveChange();
     }
     if (ImGui::DragFloat("projection_far", &projection_far, 0.2f, 0.0f, 4.0f)) {
-        for (auto onProjectionListener: listeners) {
-            onProjectionListener->onProjectionChange(projection_fov, projection_near, projection_far, width,
-                                                     height);
-        }
+        perspectiveChange();
     }
     ImGui::End();
+    if (projection_type == 1)
+        ImGui::EndDisabled();
+
 
     ImGui::SetNextWindowBgAlpha(0.35f);
+    if (projection_type == 0)
+        ImGui::BeginDisabled();
     ImGui::Begin("Orthogonal");
 
     ImGui::Text("Orthogonal projection effect!");
-    ImGui::DragFloat("left", &projection_fov, 1.0f, 0.0f, 90.0f);
-    ImGui::DragFloat("right", &projection_fov, 1.0f, 0.0f, 90.0f);
-    ImGui::DragFloat("top", &projection_fov, 1.0f, 0.0f, 90.0f);
-    ImGui::DragFloat("bottom", &projection_fov, 1.0f, 0.0f, 90.0f);
-    ImGui::DragFloat("near", &projection_fov, 1.0f, 0.0f, 90.0f);
-    ImGui::DragFloat("far", &projection_fov, 1.0f, 0.0f, 90.0f);
+
+    if (ImGui::DragFloat("left", &ortho_left, 0.1f, -1.0f, 1.0f)) {
+        orthoChange();
+    }
+    if (ImGui::DragFloat("right", &ortho_right, 0.1f, -1.0f, 1.0f)) {
+        orthoChange();
+    }
+    if (ImGui::DragFloat("top", &ortho_top, 0.1f, -1.0f, 1.0f)) {
+        orthoChange();
+    }
+    if (ImGui::DragFloat("bottom", &ortho_bottom, 0.1f, -1.0f, 1.0f)) {
+        orthoChange();
+    }
+    if (ImGui::DragFloat("near", &ortho_near, 0.1, 0.0f, 4.0f)) {
+        orthoChange();
+    }
+    if (ImGui::DragFloat("far", &ortho_far, 0.1f, 0.0f, 4.0f)) {
+        orthoChange();
+    }
 
     ImGui::End();
+    if (projection_type == 0)
+        ImGui::EndDisabled();
 
     // Rendering
     ImGui::Render();
@@ -151,4 +168,17 @@ void UI::draw() {
 
 void UI::addOnProjectionListener(OnProjectionListener *onProjectionListener) {
     listeners.push_back(onProjectionListener);
+}
+
+void UI::orthoChange() {
+    for (auto onProjectionListener: listeners) {
+        onProjectionListener->onOrthoChange(ortho_left, ortho_right, ortho_top, ortho_bottom, ortho_near, ortho_far);
+    }
+}
+
+void UI::perspectiveChange() {
+    for (auto onProjectionListener: listeners) {
+        onProjectionListener->onPerspectiveChange(projection_fov, projection_near, projection_far, width,
+                                                  height);
+    }
 }

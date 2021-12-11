@@ -46,7 +46,9 @@ public:
 
     void draw() override;
 
-    void onProjectionChange(float fov, float near, float far, float width, float height) override;
+    void onPerspectiveChange(float fov, float near, float far, float width, float height) override;
+
+    void onOrthoChange(float left, float right, float top, float bottom, float near, float far) override;
 };
 
 

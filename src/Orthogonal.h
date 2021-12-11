@@ -8,8 +8,9 @@
 #include "Model.h"
 #include <glad/glad.h>
 #include "Shader.h"
+#include "OnProjectionListener.h"
 
-class Orthogonal : Model {
+class Orthogonal : Model, public OnProjectionListener {
 public:
     unsigned int OrthogonalVAO;
     Shader *shader;
@@ -19,9 +20,11 @@ public:
 
     Orthogonal(Shader *shader, glm::mat4 *modelMatrix);
 
-    void initVAO(float nearPlane, float farPlane, float width, float height);
+    void initVAO(float left, float right, float top, float bottom, float near, float far);
 
     void draw() override;
+
+    void onOrthoChange(float left, float right, float top, float bottom, float near, float far) override;
 };
 
 

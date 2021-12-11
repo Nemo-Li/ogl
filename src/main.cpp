@@ -90,7 +90,6 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     }
 }
 
-
 float vertices[] = {
 //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
         1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // 右上
@@ -200,7 +199,8 @@ int main() {
     ui.addOnProjectionListener(&frustum);
 
     Orthogonal orthogonal(&threeDShader, &threeDModelMatrix);
-    orthogonal.initVAO(projection_near, projection_far, float(1.0f), float(1.0f));
+    orthogonal.initVAO(-1.0f, 1.0f, 1.0f, -1.0f, 0.1f, 4.0f);
+    ui.addOnProjectionListener(&orthogonal);
 
     // render loop
     // -----------

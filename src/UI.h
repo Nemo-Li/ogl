@@ -30,6 +30,13 @@ public:
     float height;
     int projection_type = 0;
 
+    float ortho_left = -1.0f;
+    float ortho_right = 1.0f;
+    float ortho_bottom = -1.0f;
+    float ortho_top = 1.0f;
+    float ortho_near = 0.1f;
+    float ortho_far = 4.0f;
+
     glm::mat4x4 modelMatrix;
     glm::mat4x4 textureMatrix;
 
@@ -44,6 +51,10 @@ public:
     void renderUI();
 
     void draw();
+
+    void orthoChange();
+
+    void perspectiveChange();
 };
 
 

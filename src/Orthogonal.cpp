@@ -8,46 +8,41 @@ Orthogonal::Orthogonal() {
 
 }
 
-void Orthogonal::initVAO(float nearPlane, float farPlane, float width, float height) {
-    float nearHeight = height;
-    float nearWidth = width;
-    float farHeight = height;
-    float farWidth = width;
-
-    // compute 8 vertices of the frustum
+void Orthogonal::initVAO(float left, float right, float top, float bottom, float near, float far) {
+    // compute 8 vertices of the orthogonal
     float vertices[8][3];
     // near top right
-    vertices[0][0] = nearWidth;
-    vertices[0][1] = nearHeight;
-    vertices[0][2] = -nearPlane;
+    vertices[0][0] = right;
+    vertices[0][1] = top;
+    vertices[0][2] = -near;
     // near top left
-    vertices[1][0] = -nearWidth;
-    vertices[1][1] = nearHeight;
-    vertices[1][2] = -nearPlane;
+    vertices[1][0] = left;
+    vertices[1][1] = top;
+    vertices[1][2] = -near;
     // near bottom left
-    vertices[2][0] = -nearWidth;
-    vertices[2][1] = -nearHeight;
-    vertices[2][2] = -nearPlane;
+    vertices[2][0] = left;
+    vertices[2][1] = bottom;
+    vertices[2][2] = -near;
     // near bottom right
-    vertices[3][0] = nearWidth;
-    vertices[3][1] = -nearHeight;
-    vertices[3][2] = -nearPlane;
+    vertices[3][0] = right;
+    vertices[3][1] = bottom;
+    vertices[3][2] = -near;
     // far top right
-    vertices[4][0] = farWidth;
-    vertices[4][1] = farHeight;
-    vertices[4][2] = -farPlane;
+    vertices[4][0] = right;
+    vertices[4][1] = top;
+    vertices[4][2] = -far;
     // far top left
-    vertices[5][0] = -farWidth;
-    vertices[5][1] = farHeight;
-    vertices[5][2] = -farPlane;
+    vertices[5][0] = left;
+    vertices[5][1] = top;
+    vertices[5][2] = -far;
     // far bottom left
-    vertices[6][0] = -farWidth;
-    vertices[6][1] = -farHeight;
-    vertices[6][2] = -farPlane;
+    vertices[6][0] = left;
+    vertices[6][1] = bottom;
+    vertices[6][2] = -far;
     // far bottom right
-    vertices[7][0] = farWidth;
-    vertices[7][1] = -farHeight;
-    vertices[7][2] = -farPlane;
+    vertices[7][0] = right;
+    vertices[7][1] = bottom;
+    vertices[7][2] = -far;
 
     int indices[] = {
             0, 1, 3,
@@ -99,3 +94,6 @@ Orthogonal::Orthogonal(Shader *shader, glm::mat4 *modelMatrix) {
     this->modelMatrix = modelMatrix;
 }
 
+void Orthogonal::onOrthoChange(float left, float right, float top, float bottom, float near, float far) {
+    initVAO(left, right, top, bottom, near, far);
+}
