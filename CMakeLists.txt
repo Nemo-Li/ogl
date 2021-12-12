@@ -40,6 +40,10 @@ find_package(ASSIMP REQUIRED)
 message(STATUS "Found ASSIMP in ${ASSIMP_INCLUDE_DIR}")
 message(STATUS "Found ASSIMP: ${ASSIMP_LIBRARY}")
 
+# OPENCV
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+
 # STB_IMAGE
 add_library(STB_IMAGE "thirdparty/stb_image.cpp")
 
@@ -61,7 +65,7 @@ include_directories(
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
-add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/Model.cpp src/Model.h src/OnProjectionListener.h src/OnProjectionListener.cpp src/Orthogonal.cpp src/Orthogonal.h)
+add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/ImCamera.cpp src/ImCamera.h)
 
 # Define the link libraries
-target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})
+target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS} ${OpenCV_LIBS})

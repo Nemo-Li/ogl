@@ -22,6 +22,7 @@ UI::UI(GLFWwindow *window, float width, float height) {
 
     this->width = width;
     this->height = height;
+    imCamera = ImCamera();
 }
 
 UI::UI() {
@@ -58,7 +59,7 @@ void UI::renderUI() {
             texv1.w, texv2.w, texv3.w, texv4.w
     );
 
-    ImGui::SetNextWindowBgAlpha(0.35f);
+    ImGui::SetNextWindowBgAlpha(0.15f);
     ImGui::Begin(
             "matrix demo");                          // Create a window called "Hello, world!" and append into it.
 
@@ -105,7 +106,7 @@ void UI::renderUI() {
 
     ImGui::End();
 
-    ImGui::SetNextWindowBgAlpha(0.35f);
+    ImGui::SetNextWindowBgAlpha(0.15f);
 
     // 3. Show another simple window.
     if (projection_type == 1)
@@ -128,7 +129,7 @@ void UI::renderUI() {
         ImGui::EndDisabled();
 
 
-    ImGui::SetNextWindowBgAlpha(0.35f);
+    ImGui::SetNextWindowBgAlpha(0.15f);
     if (projection_type == 0)
         ImGui::BeginDisabled();
     ImGui::Begin("Orthogonal");
@@ -154,9 +155,14 @@ void UI::renderUI() {
         orthoChange();
     }
 
+    if (ImGui::Button("camera"))
+        imCamera.WetCamera_window = true;
+
     ImGui::End();
     if (projection_type == 0)
         ImGui::EndDisabled();
+
+    imCamera.draw();
 
     // Rendering
     ImGui::Render();

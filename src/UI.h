@@ -15,6 +15,7 @@
 
 #include "OnProjectionListener.h"
 #include <vector>
+#include "ImCamera.h"
 
 using namespace std;
 
@@ -39,6 +40,7 @@ public:
 
     glm::mat4x4 modelMatrix;
     glm::mat4x4 textureMatrix;
+    ImCamera imCamera;
 
     std::vector<OnProjectionListener *> listeners;
 

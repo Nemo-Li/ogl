@@ -26,7 +26,6 @@
 //Using VAOs is required in the core profile. From the OpenGL 3.3 spec, page 342, in the section E.2.2 "Removed Features":
 //The default vertex array object (the name zero) is also deprecated.
 //This means that you can't set up vertex attributes without creating and binding your own VAO.
-
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 void processInput(GLFWwindow *window);
@@ -247,9 +246,14 @@ int main() {
             orthogonal.draw();
         }
 
-        glViewport(0, 0, width, height / 2);
-        glScissor(0, 0, width, height / 2);
+        glViewport(width / 2, 0, width / 2, height / 2);
+        glScissor(width / 2, 0, width / 2, height / 2);
+        glClearColor(0.887, 0.925, 0.801, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glViewport(0, 0, width / 2, height / 2);
+        glScissor(0, 0, width / 2, height / 2);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         ui.draw();
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
