@@ -12,7 +12,6 @@
 class ImCamera {
 public:
     unsigned int cameraTextureId;
-    bool FlagWetCamera = false;
     bool FlagOpenCamera = false;
     bool WetCamera_window;
     cv::VideoCapture capture;
