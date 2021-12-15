@@ -102,7 +102,12 @@ void UI::renderUI() {
     if (ImGui::RadioButton("Orthogonal", &projection_type, 1)) {
         orthoChange();
     }
+
+    ImGui::Text("switch demo type");               // Display some text (you can use a format strings too)
+
+    ImGui::RadioButton("mvp matrix", &demo_type, 0);
     ImGui::SameLine();
+    ImGui::RadioButton("text demo", &demo_type, 1);
 
     ImGui::End();
 

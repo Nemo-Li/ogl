@@ -17,6 +17,7 @@
 #include "Texture.h"
 #include "Rectangle.h"
 #include "Orthogonal.h"
+#include "Text.h"
 
 //顶点数组对象：Vertex Array Object，VAO
 //顶点缓冲对象：Vertex Buffer Object，VBO
@@ -171,6 +172,10 @@ int main() {
 
     Shader threeDShader("../res/shader/shader3d.vert", "../res/shader/shader3d.frag");
     Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
+    Shader textShader("../res/shader/textShader.vert", "../res/shader/textShader.frag");
+
+    Text text = Text();
+    text.init(&textShader);
 
     Rectangle rectangle = Rectangle(&ourShader);
     rectangle.initVAO();
@@ -210,51 +215,67 @@ int main() {
 
         ui.renderUI();
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if (ui.demo_type == 0) {
+            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Enable scissor test
-        glEnable(GL_SCISSOR_TEST);
+            // Enable scissor test
+            glEnable(GL_SCISSOR_TEST);
 
-        // Enable depth test
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
+            // Enable depth test
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_LEQUAL);
 
-        // enable blending
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            // enable blending
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        // Upper left view (TOP VIEW)
-        glViewport(0, height / 2, width / 2, height / 2);
-        glScissor(0, height / 2, width / 2, height / 2);
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            // Upper left view (TOP VIEW)
+            glViewport(0, height / 2, width / 2, height / 2);
+            glScissor(0, height / 2, width / 2, height / 2);
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        rectangle.draw();
+            rectangle.draw();
 
-        //upper right view
-        glViewport(width / 2, height / 2, width / 2, height / 2);
-        glScissor(width / 2, height / 2, width / 2, height / 2);
-        glClearColor(ui.left_window_color.x, ui.left_window_color.y, ui.left_window_color.z, ui.left_window_color.w);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            //upper right view
+            glViewport(width / 2, height / 2, width / 2, height / 2);
+            glScissor(width / 2, height / 2, width / 2, height / 2);
+            glClearColor(ui.left_window_color.x, ui.left_window_color.y, ui.left_window_color.z,
+                         ui.left_window_color.w);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        rectangle3d.draw();
-        grid.draw();
-        if (ui.projection_type == 0) {
-            frustum.draw();
-        } else {
-            orthogonal.draw();
+            rectangle3d.draw();
+            grid.draw();
+            if (ui.projection_type == 0) {
+                frustum.draw();
+            } else {
+                orthogonal.draw();
+            }
+
+            glViewport(width / 2, 0, width / 2, height / 2);
+            glScissor(width / 2, 0, width / 2, height / 2);
+            glClearColor(0.887, 0.925, 0.801, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            glViewport(0, 0, width / 2, height / 2);
+            glScissor(0, 0, width / 2, height / 2);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            ui.draw();
+        } else if (ui.demo_type == 1) {
+            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glViewport(0, 0, width, height);
+            glScissor(0, 0, width, height);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            // Set OpenGL options
+            glEnable(GL_CULL_FACE);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+            text.RenderText(textShader, "This is sample text 我的", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
+            text.RenderText(textShader, "(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
         }
-
-        glViewport(width / 2, 0, width / 2, height / 2);
-        glScissor(width / 2, 0, width / 2, height / 2);
-        glClearColor(0.887, 0.925, 0.801, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glViewport(0, 0, width / 2, height / 2);
-        glScissor(0, 0, width / 2, height / 2);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        ui.draw();
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------

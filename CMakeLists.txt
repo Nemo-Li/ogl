@@ -51,7 +51,7 @@ add_library(STB_IMAGE "thirdparty/stb_image.cpp")
 add_library(GLAD "thirdparty/glad.c")
 
 # Put all libraries into a variable
-set(LIBS ${ASSIMP_LIBRARY} ${GLFW3_LIBRARY} STB_IMAGE GLAD)
+set(LIBS ${ASSIMP_LIBRARY} ${GLFW3_LIBRARY} STB_IMAGE GLAD "/usr/local/Cellar/freetype/2.11.0/lib/libfreetype.6.dylib")
 
 # Define the include DIRs
 include_directories(
@@ -60,7 +60,8 @@ include_directories(
         "${CMAKE_SOURCE_DIR}/thirdparty/glm"
         "${CMAKE_SOURCE_DIR}/thirdparty/imgui"
         "${CMAKE_SOURCE_DIR}/thirdparty/imgui/backends"
-        ${GLFW3_INCLUDE_DIR}
+        "${GLFW3_INCLUDE_DIR}"
+        "/usr/local/Cellar/freetype/2.11.0/include/freetype2"
 )
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})

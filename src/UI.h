@@ -30,6 +30,7 @@ public:
     float width;
     float height;
     int projection_type = 0;
+    int demo_type = 0;
 
     float ortho_left = -1.0f;
     float ortho_right = 1.0f;
