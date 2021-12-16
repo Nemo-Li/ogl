@@ -124,6 +124,9 @@ glm::mat4 projection_matrix_threed = glm::perspectiveFov(glm::radians(45.0f), fl
 //正交投影， 从结果来看是标准化的
 glm::mat4 ortho_matrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 10.0f);
 
+static const wchar_t BYTE_FLOW[] = L",,hahaxixi渲染中文字体";
+static const int MAX_SHORT_VALUE = 65536;
+
 int main() {
     // glfw: initialize and configure
     // ------------------------------
@@ -175,7 +178,7 @@ int main() {
     Shader textShader("../res/shader/textShader.vert", "../res/shader/textShader.frag");
 
     Text text = Text();
-    text.init(&textShader);
+    text.loadFacesByUnicode(&textShader, BYTE_FLOW, sizeof(BYTE_FLOW) / sizeof(BYTE_FLOW[0]) - 1);
 
     Rectangle rectangle = Rectangle(&ourShader);
     rectangle.initVAO();
@@ -265,16 +268,18 @@ int main() {
         } else if (ui.demo_type == 1) {
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glViewport(0, 0, width, height);
-            glScissor(0, 0, width, height);
+//            glScissor(0, 0, width, height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            // Set OpenGL options
+//
+//            // Set OpenGL options
             glEnable(GL_CULL_FACE);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            text.RenderText(textShader, "This is sample text 我的", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
-            text.RenderText(textShader, "(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
+            text.RenderText(textShader, BYTE_FLOW, sizeof(BYTE_FLOW) / sizeof(BYTE_FLOW[0]) - 1, 1420.0f, 870.0f, 1.0f,
+                            glm::vec3(0.5, 0.8f, 0.2f));
+//            text.RenderText(textShader, BYTE_FLOW, sizeof(BYTE_FLOW) / sizeof(BYTE_FLOW[0]) - 1, 1420.0f, 870.0f,
+//                            1.0f, glm::vec3(0.3, 0.7f, 0.9f));
         }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

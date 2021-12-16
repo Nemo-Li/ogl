@@ -10,6 +10,7 @@
 #include "map"
 #include "Model.h"
 #include "ft2build.h"
+#include "freetype/ftglyph.h"
 #include FT_FREETYPE_H
 
 class Text : Model {
@@ -26,10 +27,14 @@ public:
     unsigned int VAO;
     unsigned int VBO;
     Shader *shader;
+    static const int MAX_SHORT_VALUE = 65536;
 
-    void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
+    void
+    RenderText(Shader &shader, const wchar_t *text, int textLen, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
 
     void init(Shader *shader);
+
+    void loadFacesByUnicode(Shader *shader, const wchar_t *text, int size);
 };
 
 
