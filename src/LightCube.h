@@ -74,6 +74,7 @@ public:
 
     Texture diffuseMap;
     Texture specularMap;
+    Texture lightDiffuseMap;
 
     LightCube(Camera &camera);
 

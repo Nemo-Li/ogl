@@ -33,12 +33,16 @@ void LightCube::initVAO() {
     diffuseMap.load("res/pic/container2.png");
     specularMap = Texture();
     specularMap.load("res/pic/container2_specular.png");
+    lightDiffuseMap = Texture();
+    lightDiffuseMap.load("res/pic/qiaoba.jpeg");
+
 }
 
 void LightCube::draw(Shader &shader, glm::mat4 &modelMatrix, float currentFrame) {
     shader.use();
     shader.setInt("material.diffuse", 0);
     shader.setInt("material.specular", 1);
+    shader.setInt("spotLight.spotDiffuse", 2);
 
     shader.setVec3("viewPos", camera.Position);
     shader.setFloat("material.shininess", 32.0f);
@@ -90,7 +94,7 @@ void LightCube::draw(Shader &shader, glm::mat4 &modelMatrix, float currentFrame)
     shader.setVec3("spotLight.position", camera.Position);
     shader.setVec3("spotLight.direction", camera.Front);
     shader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-    shader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+//    shader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
     shader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
     shader.setFloat("spotLight.constant", 1.0f);
     shader.setFloat("spotLight.linear", 0.09);
@@ -100,6 +104,7 @@ void LightCube::draw(Shader &shader, glm::mat4 &modelMatrix, float currentFrame)
 
     diffuseMap.bind(0);
     specularMap.bind(1);
+    lightDiffuseMap.bind(2);
 
     shader.setMat4("modelMatrix", modelMatrix);
     // pass projection matrix to shader (note that in this case it could change every frame)
