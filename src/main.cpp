@@ -178,6 +178,7 @@ int main() {
     Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
     Shader textShader("../res/shader/textShader.vert", "../res/shader/textShader.frag");
     Shader sampleShader("../res/shader/sampleShader.vert", "../res/shader/sampleShader.frag");
+    Shader singleColorShader("../res/shader/sampleShader.vert", "../res/shader/singleColorShader.frag");
 
     Text text = Text();
     text.loadFacesByUnicode(&textShader, BYTE_FLOW, sizeof(BYTE_FLOW) / sizeof(BYTE_FLOW[0]) - 1);
@@ -273,18 +274,30 @@ int main() {
         } else if (ui.demo_type == 1) {
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glViewport(0, 0, width, height);
-//            glScissor(0, 0, width, height);
+            //glScissor(0, 0, width, height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             // Enable depth test
             glEnable(GL_DEPTH_TEST);
             glDepthFunc(GL_LEQUAL);
-//
-//            // Set OpenGL options
-//            glEnable(GL_CULL_FACE);
-//            glEnable(GL_BLEND);
-//            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            cube.draw(sampleShader);
+            glEnable(GL_STENCIL_TEST);
+            glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+            glStencilFunc(GL_ALWAYS, 1, 0xFF); // 所有的片段都应该更新模板缓冲
+            glStencilMask(0xFF); // 启用模板缓冲写入
+            glm::mat4 model = glm::mat4(1.0f);
+            cube.draw(sampleShader, model);
+
+            glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+            glStencilMask(0x00);
+            glDisable(GL_DEPTH_TEST);
+            singleColorShader.use();
+            float scale = 1.1;
+            model = glm::mat4(1.0f);
+            model = glm::scale(model, glm::vec3(scale, scale, scale));
+            cube.draw(singleColorShader, model);
+            glStencilMask(0xFF);
+            glStencilFunc(GL_ALWAYS, 0, 0xFF);
+            glEnable(GL_DEPTH_TEST);
         }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

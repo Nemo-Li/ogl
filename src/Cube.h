@@ -66,7 +66,7 @@ public:
 
     void initVAO() override;
 
-    void draw(Shader &shader);
+    void draw(Shader &shader, glm::mat4 &modelMatrix);
 };
 
 

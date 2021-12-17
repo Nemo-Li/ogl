@@ -42,10 +42,10 @@ void Cube::initVAO() {
                                             10.0f);
 }
 
-void Cube::draw(Shader &shader) {
+void Cube::draw(Shader &shader, glm::mat4 &modelMatrix) {
     shader.use();
 
-    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
+    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
     glUniformMatrix4fv(glGetUniformLocation(shader.ID, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(view_matrix));
     glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projectionMatrix"), 1, GL_FALSE,
                        glm::value_ptr(projection_matrix));
