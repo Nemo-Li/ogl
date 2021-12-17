@@ -9,6 +9,7 @@
 #include "glad/glad.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "camera/Camera.h"
 
 class Cube : Model {
 public:
@@ -64,7 +65,13 @@ public:
     glm::mat4 view_matrix;
     glm::mat4 projection_matrix;
 
-    void initVAO() override;
+    //如果要定义为引用，必须构造函数里面进行传递，其它方法传递的都没用
+    //按照理解，如果定义为对象 方法传递应该还是为对象的副本
+    Camera &camera;
+
+    Cube(Camera &camera);
+
+    void initVAO();
 
     void draw(Shader &shader, glm::mat4 &modelMatrix);
 };

@@ -4,6 +4,9 @@
 
 #include "Cube.h"
 
+extern const int width;
+extern const int height;
+
 void Cube::initVAO() {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -45,12 +48,22 @@ void Cube::initVAO() {
 void Cube::draw(Shader &shader, glm::mat4 &modelMatrix) {
     shader.use();
 
-    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
-    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(view_matrix));
-    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projectionMatrix"), 1, GL_FALSE,
-                       glm::value_ptr(projection_matrix));
+    shader.setMat4("modelMatrix", modelMatrix);
+    // pass projection matrix to shader (note that in this case it could change every frame)
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float) 3360 / (float) 2010, 0.1f,
+                                            100.0f);
+    shader.setMat4("projectionMatrix", projection);
+
+    // camera/view transformation
+    glm::mat4 view = camera.GetViewMatrix();
+    shader.setMat4("viewMatrix", view);
 
     glBindVertexArray(VAO);
     texture.bind();
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
+
+Cube::Cube(Camera &camera) : camera(camera) {
+}
+
+

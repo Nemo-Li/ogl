@@ -19,6 +19,7 @@
 #include "Orthogonal.h"
 #include "Text.h"
 #include "Cube.h"
+#include "camera/Camera.h"
 
 //顶点数组对象：Vertex Array Object，VAO
 //顶点缓冲对象：Vertex Buffer Object，VBO
@@ -35,8 +36,8 @@ void processInput(GLFWwindow *window);
 void mouse_scroll_callback(GLFWwindow *window, double x_offset, double y_offset);
 
 // settings
-int width = 3360;
-int height = 2010;
+extern const int width = 3360;
+extern const int height = 2010;
 bool l_button_down;
 
 float projection_fov = 45;
@@ -45,6 +46,12 @@ float projection_far = 4.0f;
 
 double down_y_position;
 double down_x_position;
+bool firstMouse = true;
+float lastX = width / 2.0f;
+float lastY = height / 2.0f;
+
+// camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 glm::mat4 threeDModelMatrix = {
         1.0f, 0.0f, 0.0f, 0.0f,
@@ -62,23 +69,36 @@ void rotateModel(double deltaX, double deltaY) {
 }
 
 void curse_pos_callback(GLFWwindow *window, double x, double y) {
-    if (l_button_down) {
-//        cout << "down_x_position:" << down_x_position << " down_y_position" << down_y_position << endl;
-        if (down_x_position < width / 4 || down_y_position > height / 4) {
-            return;
-        }
-        // do your drag here
-        double deltaX = x - down_x_position;
-        double deltaY = y - down_y_position;
-//        cout << "x移动距离:" << deltaX << " y移动距离：" << deltaY << endl;
-        rotateModel(deltaX, deltaY);
-        down_x_position = x;
-        down_y_position = y;
+//    if (l_button_down) {
+////        cout << "down_x_position:" << down_x_position << " down_y_position" << down_y_position << endl;
+//        if (down_x_position < width / 4 || down_y_position > height / 4) {
+//            return;
+//        }
+//        // do your drag here
+//        double deltaX = x - down_x_position;
+//        double deltaY = y - down_y_position;
+////        cout << "x移动距离:" << deltaX << " y移动距离：" << deltaY << endl;
+//        rotateModel(deltaX, deltaY);
+//        down_x_position = x;
+//        down_y_position = y;
+//    }
+
+    if (firstMouse) {
+        lastX = x;
+        lastY = y;
+        firstMouse = false;
     }
+
+    float xoffset = x - lastX;
+    float yoffset = lastY - y; // reversed since y-coordinates go from bottom to top
+
+    lastX = x;
+    lastY = y;
+
+    camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
-
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
         if (GLFW_PRESS == action) {
             glfwGetCursorPos(window, &down_x_position, &down_y_position);
@@ -125,8 +145,12 @@ glm::mat4 projection_matrix_threed = glm::perspectiveFov(glm::radians(45.0f), fl
 //正交投影， 从结果来看是标准化的
 glm::mat4 ortho_matrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 10.0f);
 
-static const wchar_t BYTE_FLOW[] = L",,hahaxixi渲染中文字体";
-static const int MAX_SHORT_VALUE = 65536;
+static const wchar_t BYTE_FLOW[] = L"渲染中文字体";
+
+// timing
+// time between current frame and last frame
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 int main() {
     // glfw: initialize and configure
@@ -183,7 +207,7 @@ int main() {
     Text text = Text();
     text.loadFacesByUnicode(&textShader, BYTE_FLOW, sizeof(BYTE_FLOW) / sizeof(BYTE_FLOW[0]) - 1);
 
-    Cube cube = Cube();
+    Cube cube = Cube(camera);
     cube.initVAO();
 
     Rectangle rectangle = Rectangle(&ourShader);
@@ -219,7 +243,10 @@ int main() {
     // -----------
     while (!glfwWindowShouldClose(window)) {
         // input
-        // -----
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         processInput(window);
 
         ui.renderUI();
@@ -322,6 +349,17 @@ int main() {
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+        cout << "按键w按下" << endl;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -333,14 +371,15 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 }
 
 void mouse_scroll_callback(GLFWwindow *window, double x_offset, double y_offset) {
-    double cursorX;
-    double cursorY;
-    glfwGetCursorPos(window, &cursorX, &cursorY);
-    if (cursorX < width / 4 || cursorY > height / 4) {
-        return;
-    }
-
-    float scale = 1.0f;
-    scale -= y_offset / 10.0f;
-    threeDModelMatrix = glm::scale(threeDModelMatrix, glm::vec3(scale, scale, scale));
+//    double cursorX;
+//    double cursorY;
+//    glfwGetCursorPos(window, &cursorX, &cursorY);
+//    if (cursorX < width / 4 || cursorY > height / 4) {
+//        return;
+//    }
+//
+//    float scale = 1.0f;
+//    scale -= y_offset / 10.0f;
+//    threeDModelMatrix = glm::scale(threeDModelMatrix, glm::vec3(scale, scale, scale));
+    camera.ProcessMouseScroll(y_offset);
 }

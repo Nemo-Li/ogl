@@ -66,7 +66,7 @@ include_directories(
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
-add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/Cube.cpp src/Cube.h)
+add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/Cube.cpp src/Cube.h src/camera/Camera.h)
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS} ${OpenCV_LIBS})
