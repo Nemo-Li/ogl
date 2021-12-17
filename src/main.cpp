@@ -18,6 +18,7 @@
 #include "Rectangle.h"
 #include "Orthogonal.h"
 #include "Text.h"
+#include "Cube.h"
 
 //顶点数组对象：Vertex Array Object，VAO
 //顶点缓冲对象：Vertex Buffer Object，VBO
@@ -176,9 +177,13 @@ int main() {
     Shader threeDShader("../res/shader/shader3d.vert", "../res/shader/shader3d.frag");
     Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
     Shader textShader("../res/shader/textShader.vert", "../res/shader/textShader.frag");
+    Shader sampleShader("../res/shader/sampleShader.vert", "../res/shader/sampleShader.frag");
 
     Text text = Text();
     text.loadFacesByUnicode(&textShader, BYTE_FLOW, sizeof(BYTE_FLOW) / sizeof(BYTE_FLOW[0]) - 1);
+
+    Cube cube = Cube();
+    cube.initVAO();
 
     Rectangle rectangle = Rectangle(&ourShader);
     rectangle.initVAO();
@@ -270,16 +275,16 @@ int main() {
             glViewport(0, 0, width, height);
 //            glScissor(0, 0, width, height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            // Enable depth test
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_LEQUAL);
 //
 //            // Set OpenGL options
-            glEnable(GL_CULL_FACE);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//            glEnable(GL_CULL_FACE);
+//            glEnable(GL_BLEND);
+//            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            text.RenderText(textShader, BYTE_FLOW, sizeof(BYTE_FLOW) / sizeof(BYTE_FLOW[0]) - 1, 1420.0f, 870.0f, 1.0f,
-                            glm::vec3(0.5, 0.8f, 0.2f));
-//            text.RenderText(textShader, BYTE_FLOW, sizeof(BYTE_FLOW) / sizeof(BYTE_FLOW[0]) - 1, 1420.0f, 870.0f,
-//                            1.0f, glm::vec3(0.3, 0.7f, 0.9f));
+            cube.draw(sampleShader);
         }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
