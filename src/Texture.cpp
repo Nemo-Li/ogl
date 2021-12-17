@@ -27,12 +27,19 @@ bool Texture::load(const std::string &file_name) {
     unsigned char *pixels = stbi_load((ROOT_DIR + file_name).c_str(), &width, &height, &components, 4);
 
     if (pixels != nullptr) {
+        GLenum format = GL_RGBA;
+        if (components == 1)
+            format = GL_RED;
+        else if (components == 3)
+            format = GL_RGB;
+        else if (components == 4)
+            format = GL_RGBA;
+
         glGenTextures(1, &to_id);
         glBindTexture(GL_TEXTURE_2D, to_id);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-        glTexSubImage2D(GL_TEXTURE_2D, 0 /* mip map level */, 0 /* xoffset */, 0 /* yoffset */, width, height, GL_RGBA,
-                        GL_UNSIGNED_BYTE, pixels);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, pixels);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, pixels);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -44,6 +51,5 @@ bool Texture::load(const std::string &file_name) {
     }
 
     stbi_image_free(pixels);
-
     return is_loaded;
 }

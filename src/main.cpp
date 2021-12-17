@@ -249,6 +249,28 @@ int main() {
     orthogonal.initVAO(-1.0f, 1.0f, 1.0f, -1.0f, 0.1f, 4.0f);
     ui.addOnProjectionListener(&orthogonal);
 
+    // positions all containers
+    glm::vec3 cubePositions[] = {
+            glm::vec3(0.0f, 0.0f, 0.0f),
+            glm::vec3(2.0f, 5.0f, -15.0f),
+            glm::vec3(-1.5f, -2.2f, -2.5f),
+            glm::vec3(-3.8f, -2.0f, -12.3f),
+            glm::vec3(2.4f, -0.4f, -3.5f),
+            glm::vec3(-1.7f, 3.0f, -7.5f),
+            glm::vec3(1.3f, -2.0f, -2.5f),
+            glm::vec3(1.5f, 2.0f, -2.5f),
+            glm::vec3(1.5f, 0.2f, -1.5f),
+            glm::vec3(-1.3f, 1.0f, -1.5f)
+    };
+
+    // positions of the point lights
+    glm::vec3 pointLightPositions[] = {
+            glm::vec3(0.7f, 0.2f, 2.0f),
+            glm::vec3(2.3f, -3.3f, -4.0f),
+            glm::vec3(-4.0f, 2.0f, -12.0f),
+            glm::vec3(0.0f, 0.0f, -3.0f)
+    };
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)) {
@@ -317,17 +339,27 @@ int main() {
             glEnable(GL_DEPTH_TEST);
             glDepthFunc(GL_LEQUAL);
 
-            glEnable(GL_STENCIL_TEST);
-            glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-            glStencilFunc(GL_ALWAYS, 1, 0xFF); // 所有的片段都应该更新模板缓冲
-            glStencilMask(0xFF); // 启用模板缓冲写入
-            glm::mat4 model = glm::mat4(1.0f);
-            lightCube.draw(lightCubeShader, model, currentFrame);
+//            glEnable(GL_STENCIL_TEST);
+//            glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+//            glStencilFunc(GL_ALWAYS, 1, 0xFF); // 所有的片段都应该更新模板缓冲
+//            glStencilMask(0xFF); // 启用模板缓冲写入
 
-            glm::mat4 lightModel = glm::mat4(1.0f);
-            lightModel = glm::translate(lightModel, glm::vec3(1.0f, 1.0f, 2.0f));
-            lightModel = glm::scale(lightModel, glm::vec3(0.2f)); // a smaller cube
-            light.draw(lightShader, lightModel);
+            for (unsigned int i = 0; i < 10; i++) {
+                // calculate the model matrix for each object and pass it to shader before drawing
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, cubePositions[i]);
+                float angle = 20.0f * i;
+                model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+                lightCube.draw(lightCubeShader, model, currentFrame);
+            }
+
+
+            for (unsigned int i = 0; i < 4; i++) {
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, pointLightPositions[i]);
+                model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+                light.draw(lightShader, model);
+            }
 
 //            glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 //            glStencilMask(0x00);
@@ -367,7 +399,6 @@ void processInput(GLFWwindow *window) {
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         camera.ProcessKeyboard(FORWARD, deltaTime);
-        cout << "按键w按下" << endl;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         camera.ProcessKeyboard(BACKWARD, deltaTime);
