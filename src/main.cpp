@@ -20,6 +20,7 @@
 #include "Text.h"
 #include "Cube.h"
 #include "camera/Camera.h"
+#include "LightCube.h"
 
 //顶点数组对象：Vertex Array Object，VAO
 //顶点缓冲对象：Vertex Buffer Object，VBO
@@ -203,12 +204,21 @@ int main() {
     Shader textShader("../res/shader/textShader.vert", "../res/shader/textShader.frag");
     Shader sampleShader("../res/shader/sampleShader.vert", "../res/shader/sampleShader.frag");
     Shader singleColorShader("../res/shader/sampleShader.vert", "../res/shader/singleColorShader.frag");
+    //表示光源本身
+    Shader lightShader("../res/shader/lightShader.vert", "../res/shader/lightShader.frag");
+    //表示被光源照射的物体
+    Shader lightCubeShader("../res/shader/lightCubeShader.vert", "../res/shader/lightCubeShader.frag");
 
     Text text = Text();
     text.loadFacesByUnicode(&textShader, BYTE_FLOW, sizeof(BYTE_FLOW) / sizeof(BYTE_FLOW[0]) - 1);
 
-    Cube cube = Cube(camera);
-    cube.initVAO();
+    //被光源照射的物体 立方体
+    LightCube lightCube = LightCube(camera);
+    lightCube.initVAO();
+
+    //光源
+    Cube light = Cube(camera);
+    light.initVAO();
 
     Rectangle rectangle = Rectangle(&ourShader);
     rectangle.initVAO();
@@ -312,19 +322,24 @@ int main() {
             glStencilFunc(GL_ALWAYS, 1, 0xFF); // 所有的片段都应该更新模板缓冲
             glStencilMask(0xFF); // 启用模板缓冲写入
             glm::mat4 model = glm::mat4(1.0f);
-            cube.draw(sampleShader, model);
+            lightCube.draw(lightCubeShader, model, currentFrame);
 
-            glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-            glStencilMask(0x00);
-            glDisable(GL_DEPTH_TEST);
-            singleColorShader.use();
-            float scale = 1.1;
-            model = glm::mat4(1.0f);
-            model = glm::scale(model, glm::vec3(scale, scale, scale));
-            cube.draw(singleColorShader, model);
-            glStencilMask(0xFF);
-            glStencilFunc(GL_ALWAYS, 0, 0xFF);
-            glEnable(GL_DEPTH_TEST);
+            glm::mat4 lightModel = glm::mat4(1.0f);
+            lightModel = glm::translate(lightModel, glm::vec3(1.0f, 1.0f, 2.0f));
+            lightModel = glm::scale(lightModel, glm::vec3(0.2f)); // a smaller cube
+            light.draw(lightShader, lightModel);
+
+//            glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+//            glStencilMask(0x00);
+//            glDisable(GL_DEPTH_TEST);
+//            singleColorShader.use();
+//            float scale = 1.1;
+//            model = glm::mat4(1.0f);
+//            model = glm::scale(model, glm::vec3(scale, scale, scale));
+//            lightCube.draw(singleColorShader, lightShader, model, currentFrame);
+//            glStencilMask(0xFF);
+//            glStencilFunc(GL_ALWAYS, 0, 0xFF);
+//            glEnable(GL_DEPTH_TEST);
         }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
