@@ -46,6 +46,9 @@ void LightCube::draw(Shader &shader, glm::mat4 &modelMatrix, float currentFrame)
 
     shader.setVec3("viewPos", camera.Position);
     shader.setFloat("material.shininess", 32.0f);
+    shader.setVec3("material.rimColor", glm::vec3(0.3f, 0.0f, 0.0f));
+    shader.setFloat("material.rimPower", 2.0f);
+    shader.setFloat("material.rimIntensity", 1.0f);
 
     /*
        Here we set all the uniforms for the 5/6 types of lights we have. We have to set them manually and index

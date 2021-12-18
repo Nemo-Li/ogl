@@ -5,6 +5,9 @@ struct Material {
     sampler2D diffuse;
     sampler2D specular;
     float shininess;
+    vec3 rimColor;
+    float rimPower;
+    float rimIntensity;
 };
 
 struct DirLight {
@@ -78,6 +81,12 @@ void main()
     result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
     // phase 3: spot light
     result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
+
+    //计算边缘强度
+    float Rim = 1.0 - max(0, dot(norm, viewDir));
+    //计算出边缘自发光强度
+    vec3 Emissive = material.rimColor.rgb * pow(Rim, material.rimPower) * material.rimIntensity;
+    result += Emissive;
 
     FragColor = vec4(result, 1.0);
 }
