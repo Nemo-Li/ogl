@@ -8,6 +8,7 @@
 #include <glad/glad.h>
 #include <opencv2/opencv.hpp>
 #include "imgui.h"
+#include "detect/dnnfacedetect.h"
 
 class ImCamera {
 public:
@@ -15,6 +16,13 @@ public:
     bool FlagOpenCamera = false;
     bool WetCamera_window;
     cv::VideoCapture capture;
+
+    //定义模型文件
+    std::string ModelBinary = "../res/detector/opencv_face_detector_uint8.pb";
+    std::string ModelDesc = "../res/detector/opencv_face_detector.pbtxt";
+    dnnfacedetect *fdetect;
+
+    ImCamera();
 
     virtual ~ImCamera();
 

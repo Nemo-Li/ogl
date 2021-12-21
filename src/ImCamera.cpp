@@ -6,27 +6,32 @@
 
 void ImCamera::CreateCameraTexture(cv::VideoCapture capture) {
     cv::Mat image;
-    if (!capture.read(image)) {
+    capture >> image;
+    if (image.empty()) {
         printf("Can not load Cameras\n");
     } else {
-        //设置长宽
-        int width = image.cols;
-        int height = image.rows;
-        int channel = image.channels();
+        vector<Mat> dst = fdetect->detectRect(image);
+        if (!dst.empty()) {
+            cv::Mat result = dst[0];
+            //设置长宽
+            int width = result.cols;
+            int height = result.rows;
+            int channel = result.channels();
 
-        //获取图像指针
-        int pixellength = width * height * channel;
-        GLubyte *pixels = new GLubyte[pixellength];
-        memcpy(pixels, image.data, pixellength * sizeof(char));
+            //获取图像指针
+            int pixellength = width * height * channel;
+            GLubyte *pixels = new GLubyte[pixellength];
+            memcpy(pixels, result.data, pixellength * sizeof(char));
 
-        glBindTexture(GL_TEXTURE_2D, cameraTextureId);
-        //必须一个RGB  一个BGR（opencv的mat类的颜色通道是BGR） 否则会出现颜色偏差
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, pixels);
-        //纹理放大缩小使用线性插值
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        free(pixels);
+            glBindTexture(GL_TEXTURE_2D, cameraTextureId);
+            //必须一个RGB  一个BGR（opencv的mat类的颜色通道是BGR） 否则会出现颜色偏差
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, pixels);
+            //纹理放大缩小使用线性插值
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            free(pixels);
+        }
     }
 }
 
@@ -52,8 +57,9 @@ void ImCamera::draw() {
             FlagOpenCamera = false;
         }
 
-        if (FlagOpenCamera)
+        if (FlagOpenCamera) {
             CreateCameraTexture(capture);
+        }
 
         ImTextureID image_id = reinterpret_cast<ImTextureID>(cameraTextureId);
         ImGui::Image(image_id, ImGui::GetContentRegionAvail());
@@ -73,4 +79,9 @@ void ImCamera::startCamera() {
 }
 
 ImCamera::~ImCamera() {
+}
+
+ImCamera::ImCamera() {
+    fdetect = new dnnfacedetect(ModelBinary, ModelDesc);
+    fdetect->initdnnNet();
 }
