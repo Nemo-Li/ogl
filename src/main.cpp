@@ -17,6 +17,7 @@
 #include "Texture.h"
 #include "Rectangle.h"
 #include "Orthogonal.h"
+#include "CameraTexture.h"
 
 //顶点数组对象：Vertex Array Object，VAO
 //顶点缓冲对象：Vertex Buffer Object，VBO
@@ -171,6 +172,7 @@ int main() {
 
     Shader threeDShader("../res/shader/shader3d.vert", "../res/shader/shader3d.frag");
     Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
+    Shader cameraShader("../res/shader/cameraShader.vert", "../res/shader/cameraShader.frag");
 
     Rectangle rectangle = Rectangle(&ourShader);
     rectangle.initVAO();
@@ -200,6 +202,9 @@ int main() {
     Orthogonal orthogonal(&threeDShader, &threeDModelMatrix);
     orthogonal.initVAO(-1.0f, 1.0f, 1.0f, -1.0f, 0.1f, 4.0f);
     ui.addOnProjectionListener(&orthogonal);
+
+    CameraTexture cameraTexture;
+    cameraTexture.initVAO(&cameraShader);
 
     // render loop
     // -----------
@@ -250,6 +255,7 @@ int main() {
         glScissor(width / 2, 0, width / 2, height / 2);
         glClearColor(0.887, 0.925, 0.801, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        cameraTexture.draw();
 
         glViewport(0, 0, width / 2, height / 2);
         glScissor(0, 0, width / 2, height / 2);

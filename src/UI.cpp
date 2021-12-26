@@ -155,14 +155,14 @@ void UI::renderUI() {
         orthoChange();
     }
 
-    if (ImGui::Button("camera"))
-        imCamera.WetCamera_window = true;
+//    if (ImGui::Button("camera"))
+//        imCamera.WetCamera_window = true;
 
     ImGui::End();
     if (projection_type == 0)
         ImGui::EndDisabled();
 
-    imCamera.draw();
+//    imCamera.draw();
 
     // Rendering
     ImGui::Render();
