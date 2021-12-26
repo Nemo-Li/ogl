@@ -18,11 +18,8 @@
 #include "Rectangle.h"
 #include "Orthogonal.h"
 #include "CameraTexture.h"
-
-//顶点数组对象：Vertex Array Object，VAO
-//顶点缓冲对象：Vertex Buffer Object，VBO
-//索引缓冲对象：Element Buffer Object，EBO或Index Buffer Object，IBO
-//--------------------------------------------------------------
+#include "filter/IFilter.h"
+#include "filter/SoulOut.h"
 
 //Using VAOs is required in the core profile. From the OpenGL 3.3 spec, page 342, in the section E.2.2 "Removed Features":
 //The default vertex array object (the name zero) is also deprecated.
@@ -133,14 +130,9 @@ glm::mat4 projection_matrix_threed = glm::perspectiveFov(glm::radians(45.0f), fl
 //正交投影， 从结果来看是标准化的
 glm::mat4 ortho_matrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 10.0f);
 
-//当前动画进度
-float mProgress = 0.0f;
-//当前地帧数
-int mFrames = 0;
-//动画最大帧数
-int mMaxFrames = 15;
-//动画完成后跳过的帧数
-int mSkipFrames = 8;
+// create a color attachment texture
+unsigned int textureColorbuffer;
+unsigned int quadVAO, quadVBO;
 
 int main() {
     // glfw: initialize and configure
@@ -188,15 +180,15 @@ int main() {
 
     UI ui(window, width, height);
 
-    Shader fboShader("../res/shader/fboShader.vert", "../res/shader/fboShader.frag");
     Shader threeDShader("../res/shader/shader3d.vert", "../res/shader/shader3d.frag");
     Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
     Shader cameraShader("../res/shader/cameraShader.vert", "../res/shader/cameraShader.frag");
 
     cameraShader.use();
     cameraShader.setInt("ourTexture", 0);
-    fboShader.use();
-    fboShader.setInt("screenTexture", 0);
+
+    Filter *filter = new SoulOut();
+    filter->init();
 
     Rectangle rectangle = Rectangle(&ourShader);
     rectangle.initVAO();
@@ -231,7 +223,6 @@ int main() {
     cameraTexture.initVAO(&cameraShader);
 
     // screen quad VAO
-    unsigned int quadVAO, quadVBO;
     glGenVertexArrays(1, &quadVAO);
     glGenBuffers(1, &quadVBO);
     glBindVertexArray(quadVAO);
@@ -247,8 +238,6 @@ int main() {
     unsigned int framebuffer;
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    // create a color attachment texture
-    unsigned int textureColorbuffer;
     glGenTextures(1, &textureColorbuffer);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
@@ -267,6 +256,8 @@ int main() {
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    filter->setVAOTexture(quadVAO, textureColorbuffer);
 
     // render loop
     // -----------
@@ -331,47 +322,7 @@ int main() {
         glClearColor(0.887, 0.925, 0.801, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        mProgress = (float) mFrames / mMaxFrames;
-        if (mProgress > 1.0f) {
-            mProgress = 0.0f;
-        }
-        mFrames++;
-        if (mFrames > mMaxFrames + mSkipFrames) {
-            mFrames = 0;
-        }
-
-        //底层图层的透明度
-        float backAlpha = 1.0f;
-        //放大图层的透明度
-        float alpha = 0.0f;
-        if (mProgress > 0.0f) {
-            alpha = 0.2f - mProgress * 0.2f;
-            backAlpha = 1 - alpha;
-        }
-
-        fboShader.use();
-        fboShader.setMat4("uMvpMatrix", glm::mat4(1.0f));
-        fboShader.setMat4("uTexMatrix", glm::mat4(1.0f));
-        fboShader.setFloat("uAlpha", backAlpha);
-        glBindVertexArray(quadVAO);
-        glBindTexture(GL_TEXTURE_2D,
-                      textureColorbuffer);    // use the color attachment texture as the texture of the quad plane
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        if (mProgress > 0.0f) {
-            float scale = 1.0f + 1.0f * mProgress;
-
-            fboShader.use();
-            glm::mat4 mvpMatrix = glm::mat4(1.0f);
-            mvpMatrix = glm::scale(mvpMatrix, glm::vec3(scale, scale, scale));
-            fboShader.setMat4("uMvpMatrix", mvpMatrix);
-            fboShader.setMat4("uTexMatrix", glm::mat4(1.0f));
-            fboShader.setFloat("uAlpha", alpha);
-            glBindVertexArray(quadVAO);
-            glBindTexture(GL_TEXTURE_2D,
-                          textureColorbuffer);    // use the color attachment texture as the texture of the quad plane
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-        }
+        filter->drawFilter();
 
         glViewport(0, 0, width / 2, height / 2);
         glScissor(0, 0, width / 2, height / 2);
