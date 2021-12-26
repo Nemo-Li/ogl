@@ -20,6 +20,5 @@ public:
 
     bool use_linear;
 
-private:
     GLuint to_id;
 };

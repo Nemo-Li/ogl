@@ -36,6 +36,10 @@ void processInput(GLFWwindow *window);
 
 void mouse_scroll_callback(GLFWwindow *window, double x_offset, double y_offset);
 
+void renderQuad();
+
+void renderCube();
+
 // settings
 extern const int width = 3360;
 extern const int height = 2010;
@@ -50,6 +54,9 @@ double down_x_position;
 bool firstMouse = true;
 float lastX = width / 2.0f;
 float lastY = height / 2.0f;
+
+bool hdr = true;
+float exposure = 5.0f;
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -195,12 +202,12 @@ int main() {
 //    pthread_create(&tid, nullptr, say_hello, (void *) window);
 
     Texture texture;
-    texture.load("res/pic/dragon.jpeg");
+    texture.load("res/pic/wood.jpeg");
 
     UI ui(window, width, height);
 
     Shader threeDShader("../res/shader/shader3d.vert", "../res/shader/shader3d.frag");
-    Shader ourShader("../res/shader/shader.vert", "../res/shader/shader.frag");
+    Shader shader("../res/shader/shader.vert", "../res/shader/shader.frag");
     Shader textShader("../res/shader/textShader.vert", "../res/shader/textShader.frag");
     Shader sampleShader("../res/shader/sampleShader.vert", "../res/shader/sampleShader.frag");
     Shader singleColorShader("../res/shader/sampleShader.vert", "../res/shader/singleColorShader.frag");
@@ -208,6 +215,7 @@ int main() {
     Shader lightShader("../res/shader/lightShader.vert", "../res/shader/lightShader.frag");
     //表示被光源照射的物体
     Shader lightCubeShader("../res/shader/lightCubeShader.vert", "../res/shader/lightCubeShader.frag");
+    Shader hdrShader("../res/shader/hdrShader.vert", "../res/shader/hdrShader.frag");
 
     Text text = Text();
     text.loadFacesByUnicode(&textShader, BYTE_FLOW, sizeof(BYTE_FLOW) / sizeof(BYTE_FLOW[0]) - 1);
@@ -220,14 +228,14 @@ int main() {
     Cube light = Cube(camera);
     light.initVAO();
 
-    Rectangle rectangle = Rectangle(&ourShader);
-    rectangle.initVAO();
-    rectangle.modelMatrix = &ui.modelMatrix;
-    rectangle.viewMatrix = &view_matrix;
-    rectangle.projectionMatrix = &projection_matrix;
-    rectangle.textureMatrix = &ui.textureMatrix;
-    rectangle.setTexture(&texture);
-    ui.addOnProjectionListener(&rectangle);
+//    Rectangle rectangle = Rectangle(&ourShader);
+//    rectangle.initVAO();
+//    rectangle.modelMatrix = &ui.modelMatrix;
+//    rectangle.viewMatrix = &view_matrix;
+//    rectangle.projectionMatrix = &projection_matrix;
+//    rectangle.textureMatrix = &ui.textureMatrix;
+//    rectangle.setTexture(&texture);
+//    ui.addOnProjectionListener(&rectangle);
 
     Grid grid(&threeDShader, &threeDModelMatrix);
     grid.initVAO();
@@ -249,27 +257,44 @@ int main() {
     orthogonal.initVAO(-1.0f, 1.0f, 1.0f, -1.0f, 0.1f, 4.0f);
     ui.addOnProjectionListener(&orthogonal);
 
-    // positions all containers
-    glm::vec3 cubePositions[] = {
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3(2.0f, 5.0f, -15.0f),
-            glm::vec3(-1.5f, -2.2f, -2.5f),
-            glm::vec3(-3.8f, -2.0f, -12.3f),
-            glm::vec3(2.4f, -0.4f, -3.5f),
-            glm::vec3(-1.7f, 3.0f, -7.5f),
-            glm::vec3(1.3f, -2.0f, -2.5f),
-            glm::vec3(1.5f, 2.0f, -2.5f),
-            glm::vec3(1.5f, 0.2f, -1.5f),
-            glm::vec3(-1.3f, 1.0f, -1.5f)
-    };
+    // configure floating point framebuffer
+    // ------------------------------------
+    unsigned int hdrFBO;
+    glGenFramebuffers(1, &hdrFBO);
+    // create floating point color buffer
+    unsigned int colorBuffer;
+    glGenTextures(1, &colorBuffer);
+    glBindTexture(GL_TEXTURE_2D, colorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // create depth buffer (renderbuffer)
+    unsigned int rboDepth;
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+    // attach buffers
+    glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "Framebuffer not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // positions of the point lights
-    glm::vec3 pointLightPositions[] = {
-            glm::vec3(0.7f, 0.2f, 2.0f),
-            glm::vec3(2.3f, -3.3f, -4.0f),
-            glm::vec3(-4.0f, 2.0f, -12.0f),
-            glm::vec3(0.0f, 0.0f, -3.0f)
-    };
+    // lighting info
+    // -------------
+    // positions
+    std::vector<glm::vec3> lightPositions;
+    lightPositions.push_back(glm::vec3(0.0f, 0.0f, 49.5f)); // back light
+    lightPositions.push_back(glm::vec3(-1.4f, -1.9f, 9.0f));
+    lightPositions.push_back(glm::vec3(0.0f, -1.8f, 4.0f));
+    lightPositions.push_back(glm::vec3(0.8f, -1.7f, 6.0f));
+    // colors
+    std::vector<glm::vec3> lightColors;
+    lightColors.push_back(glm::vec3(200.0f, 200.0f, 200.0f));
+    lightColors.push_back(glm::vec3(0.1f, 0.0f, 0.0f));
+    lightColors.push_back(glm::vec3(0.0f, 0.0f, 0.2f));
+    lightColors.push_back(glm::vec3(0.0f, 0.1f, 0.0f));
 
     // render loop
     // -----------
@@ -283,96 +308,48 @@ int main() {
 
         ui.renderUI();
 
-        if (ui.demo_type == 0) {
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            // Enable scissor test
-            glEnable(GL_SCISSOR_TEST);
-
-            // Enable depth test
-            glEnable(GL_DEPTH_TEST);
-            glDepthFunc(GL_LEQUAL);
-
-            // enable blending
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-            // Upper left view (TOP VIEW)
-            glViewport(0, height / 2, width / 2, height / 2);
-            glScissor(0, height / 2, width / 2, height / 2);
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            rectangle.draw();
-
-            //upper right view
-            glViewport(width / 2, height / 2, width / 2, height / 2);
-            glScissor(width / 2, height / 2, width / 2, height / 2);
-            glClearColor(ui.left_window_color.x, ui.left_window_color.y, ui.left_window_color.z,
-                         ui.left_window_color.w);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            rectangle3d.draw();
-            grid.draw();
-            if (ui.projection_type == 0) {
-                frustum.draw();
-            } else {
-                orthogonal.draw();
-            }
-
-            glViewport(width / 2, 0, width / 2, height / 2);
-            glScissor(width / 2, 0, width / 2, height / 2);
-            glClearColor(0.887, 0.925, 0.801, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            glViewport(0, 0, width / 2, height / 2);
-            glScissor(0, 0, width / 2, height / 2);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            ui.draw();
-        } else if (ui.demo_type == 1) {
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            glViewport(0, 0, width, height);
-            //glScissor(0, 0, width, height);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            // Enable depth test
-            glEnable(GL_DEPTH_TEST);
-            glDepthFunc(GL_LEQUAL);
-
-//            glEnable(GL_STENCIL_TEST);
-//            glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-//            glStencilFunc(GL_ALWAYS, 1, 0xFF); // 所有的片段都应该更新模板缓冲
-//            glStencilMask(0xFF); // 启用模板缓冲写入
-
-            for (unsigned int i = 0; i < 10; i++) {
-                // calculate the model matrix for each object and pass it to shader before drawing
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, cubePositions[i]);
-                float angle = 20.0f * i;
-                model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-                lightCube.draw(lightCubeShader, model, currentFrame);
-            }
-
-
-            for (unsigned int i = 0; i < 4; i++) {
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, pointLightPositions[i]);
-                model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-                light.draw(lightShader, model);
-            }
-
-//            glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-//            glStencilMask(0x00);
-//            glDisable(GL_DEPTH_TEST);
-//            singleColorShader.use();
-//            float scale = 1.1;
-//            model = glm::mat4(1.0f);
-//            model = glm::scale(model, glm::vec3(scale, scale, scale));
-//            lightCube.draw(singleColorShader, lightShader, model, currentFrame);
-//            glStencilMask(0xFF);
-//            glStencilFunc(GL_ALWAYS, 0, 0xFF);
-//            glEnable(GL_DEPTH_TEST);
+        // 1. render scene into floating point framebuffer
+        // -----------------------------------------------
+        glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (GLfloat) width / (GLfloat) height,
+                                                0.1f, 100.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+        shader.use();
+        shader.setMat4("projection", projection);
+        shader.setMat4("view", view);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture.to_id);
+        // set lighting uniforms
+        for (unsigned int i = 0; i < lightPositions.size(); i++) {
+            shader.setVec3("lights[" + std::to_string(i) + "].Position", lightPositions[i]);
+            shader.setVec3("lights[" + std::to_string(i) + "].Color", lightColors[i]);
         }
+        shader.setVec3("viewPos", camera.Position);
+        // render tunnel
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 25.0));
+        model = glm::scale(model, glm::vec3(2.5f, 2.5f, 27.5f));
+        shader.setMat4("model", model);
+        shader.setInt("inverse_normals", true);
+        renderCube();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // 2. now render floating point color buffer to 2D quad and tonemap HDR colors to default framebuffer's (clamped) color range
+        // --------------------------------------------------------------------------------------------------------------------------
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        hdrShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, colorBuffer);
+        hdrShader.setInt("hdr", hdr);
+        hdrShader.setFloat("exposure", exposure);
+        renderQuad();
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -428,4 +405,108 @@ void mouse_scroll_callback(GLFWwindow *window, double x_offset, double y_offset)
 //    scale -= y_offset / 10.0f;
 //    threeDModelMatrix = glm::scale(threeDModelMatrix, glm::vec3(scale, scale, scale));
     camera.ProcessMouseScroll(y_offset);
+}
+
+// renderQuad() renders a 1x1 XY quad in NDC
+// -----------------------------------------
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+
+void renderQuad() {
+    if (quadVAO == 0) {
+        float quadVertices[] = {
+                // positions        // texture Coords
+                -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+                -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+                1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+        // setup plane VAO
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
+    }
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+}
+
+// renderCube() renders a 1x1 3D cube in NDC.
+// -------------------------------------------------
+unsigned int cubeVAO = 0;
+unsigned int cubeVBO = 0;
+
+void renderCube() {
+    // initialize (if necessary)
+    if (cubeVAO == 0) {
+        float vertices[] = {
+                // back face
+                -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+                1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, // top-right
+                1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, // bottom-right
+                1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, // top-right
+                -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+                -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, // top-left
+                // front face
+                -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
+                1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // bottom-right
+                1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top-right
+                1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top-right
+                -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // top-left
+                -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
+                // left face
+                -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-right
+                -1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top-left
+                -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
+                -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
+                -1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom-right
+                -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-right
+                // right face
+                1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-left
+                1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-right
+                1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top-right
+                1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-right
+                1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // top-left
+                1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom-left
+                // bottom face
+                -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // top-right
+                1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top-left
+                1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
+                1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
+                -1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, // bottom-right
+                -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // top-right
+                // top face
+                -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top-left
+                1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
+                1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // top-right
+                1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
+                -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top-left
+                -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f  // bottom-left
+        };
+        glGenVertexArrays(1, &cubeVAO);
+        glGenBuffers(1, &cubeVBO);
+        // fill buffer
+        glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        // link vertex attributes
+        glBindVertexArray(cubeVAO);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+    // render Cube
+    glBindVertexArray(cubeVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
 }

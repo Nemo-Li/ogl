@@ -38,7 +38,7 @@ bool Texture::load(const std::string &file_name) {
         glGenTextures(1, &to_id);
         glBindTexture(GL_TEXTURE_2D, to_id);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, pixels);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 //        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, pixels);
         glGenerateMipmap(GL_TEXTURE_2D);
 
