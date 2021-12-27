@@ -128,7 +128,6 @@ void UI::renderUI() {
     if (projection_type == 1)
         ImGui::EndDisabled();
 
-
     ImGui::SetNextWindowBgAlpha(0.15f);
     if (projection_type == 0)
         ImGui::BeginDisabled();
@@ -155,14 +154,19 @@ void UI::renderUI() {
         orthoChange();
     }
 
-//    if (ImGui::Button("camera"))
-//        imCamera.WetCamera_window = true;
-
     ImGui::End();
     if (projection_type == 0)
         ImGui::EndDisabled();
 
-//    imCamera.draw();
+    ImGui::SetNextWindowBgAlpha(0.15f);
+    ImGui::Begin("tiktok effect");
+    ImGui::RadioButton("none", &tiktok_effect, 0);
+    ImGui::RadioButton("soulOut", &tiktok_effect, 1);
+    ImGui::RadioButton("jitter", &tiktok_effect, 2);
+    ImGui::RadioButton("glitch", &tiktok_effect, 3);
+    ImGui::RadioButton("scale", &tiktok_effect, 4);
+    ImGui::RadioButton("shineWhite", &tiktok_effect, 5);
+    ImGui::End();
 
     // Rendering
     ImGui::Render();

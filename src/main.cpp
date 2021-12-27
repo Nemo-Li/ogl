@@ -192,13 +192,17 @@ int main() {
     cameraShader.use();
     cameraShader.setInt("ourTexture", 0);
 
-//    Filter *filter = new SoulOut();
-//    Filter *filter = new JitterFilter();
-//    Filter *filter = new GlitchFilter();
-//    Filter *filter = new ScaleFilter();
-//    Filter *filter = new ShineWhiteFilter();
-    Filter *filter = new VertigoFilter();
-    filter->init();
+    Filter *soulOutFilter = new SoulOut();
+    Filter *jitterFilter = new JitterFilter();
+    Filter *glitchFilter = new GlitchFilter();
+    Filter *scaleFilter = new ScaleFilter();
+    Filter *shineWhiteFilter = new ShineWhiteFilter();
+//    Filter *filter = new VertigoFilter();
+    soulOutFilter->init();
+    jitterFilter->init();
+    glitchFilter->init();
+    scaleFilter->init();
+    shineWhiteFilter->init();
 
     Rectangle rectangle = Rectangle(&ourShader);
     rectangle.initVAO();
@@ -267,7 +271,11 @@ int main() {
         cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    filter->setVAOTexture(quadVAO, textureColorbuffer);
+    soulOutFilter->setVAOTexture(quadVAO, textureColorbuffer);
+    jitterFilter->setVAOTexture(quadVAO, textureColorbuffer);
+    glitchFilter->setVAOTexture(quadVAO, textureColorbuffer);
+    scaleFilter->setVAOTexture(quadVAO, textureColorbuffer);
+    shineWhiteFilter->setVAOTexture(quadVAO, textureColorbuffer);
 
     // render loop
     // -----------
@@ -332,7 +340,27 @@ int main() {
         glClearColor(0.887, 0.925, 0.801, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        filter->drawFilter();
+        switch (ui.tiktok_effect) {
+            case 0:
+                break;
+            case 1:
+                soulOutFilter->drawFilter();
+                break;
+            case 2:
+                jitterFilter->drawFilter();
+                break;
+            case 3:
+                glitchFilter->drawFilter();
+                break;
+            case 4:
+                scaleFilter->drawFilter();
+                break;
+            case 5:
+                shineWhiteFilter->drawFilter();
+                break;
+            default:
+                break;
+        }
 
         glViewport(0, 0, width / 2, height / 2);
         glScissor(0, 0, width / 2, height / 2);

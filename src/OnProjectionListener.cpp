@@ -11,3 +11,7 @@ void OnProjectionListener::onPerspectiveChange(float fov, float near, float far,
 void OnProjectionListener::onOrthoChange(float left, float right, float top, float bottom, float near, float far) {
 
 }
+
+void OnProjectionListener::onTiktokEffect() {
+
+}

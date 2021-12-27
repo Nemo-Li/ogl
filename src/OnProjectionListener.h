@@ -12,6 +12,8 @@ public:
     virtual void onPerspectiveChange(float fov, float near, float far, float width, float height);
 
     virtual void onOrthoChange(float left, float right, float top, float bottom, float near, float far);
+
+    virtual void onTiktokEffect();
 };
 
 #endif //OGL_ONPROJECTIONLISTENER_H
