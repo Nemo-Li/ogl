@@ -20,6 +20,8 @@
 #include "CameraTexture.h"
 #include "filter/IFilter.h"
 #include "filter/SoulOut.h"
+#include "filter/JitterFilter.h"
+#include "filter/GlitchFilter.h"
 
 //Using VAOs is required in the core profile. From the OpenGL 3.3 spec, page 342, in the section E.2.2 "Removed Features":
 //The default vertex array object (the name zero) is also deprecated.
@@ -187,7 +189,9 @@ int main() {
     cameraShader.use();
     cameraShader.setInt("ourTexture", 0);
 
-    Filter *filter = new SoulOut();
+//    Filter *filter = new SoulOut();
+//    Filter *filter = new JitterFilter();
+    Filter *filter = new GlitchFilter();
     filter->init();
 
     Rectangle rectangle = Rectangle(&ourShader);

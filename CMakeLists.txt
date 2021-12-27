@@ -65,7 +65,7 @@ include_directories(
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
-add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/filter/IFilter.h src/filter/SoulOut.cpp src/filter/SoulOut.h)
+add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/filter/IFilter.h src/filter/SoulOut.cpp src/filter/SoulOut.h src/filter/JitterFilter.cpp src/filter/JitterFilter.h src/filter/GlitchFilter.cpp src/filter/GlitchFilter.h)
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS} ${OpenCV_LIBS})

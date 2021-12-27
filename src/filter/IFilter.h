@@ -19,10 +19,7 @@ public:
     float mProgress = 0.0f;
     //当前地帧数
     int mFrames = 0;
-    //动画最大帧数
-    int mMaxFrames = 15;
-    //动画完成后跳过的帧数
-    int mSkipFrames = 8;
+
 };
 
 #endif //OGL_IFILTER_H

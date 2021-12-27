@@ -10,6 +10,11 @@
 
 class SoulOut : public Filter {
 public:
+    //动画最大帧数
+    int mMaxFrames = 15;
+    //动画完成后跳过的帧数
+    int mSkipFrames = 8;
+
     Shader *shader;
     int vao;
     int texture;
