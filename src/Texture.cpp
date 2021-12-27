@@ -47,3 +47,7 @@ bool Texture::load(const std::string &file_name) {
 
     return is_loaded;
 }
+
+unsigned int Texture::getTextureId() {
+    return to_id;
+}

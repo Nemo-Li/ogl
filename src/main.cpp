@@ -22,6 +22,9 @@
 #include "filter/SoulOut.h"
 #include "filter/JitterFilter.h"
 #include "filter/GlitchFilter.h"
+#include "filter/ScaleFilter.h"
+#include "filter/ShineWhiteFilter.h"
+#include "filter/VertigoFilter.h"
 
 //Using VAOs is required in the core profile. From the OpenGL 3.3 spec, page 342, in the section E.2.2 "Removed Features":
 //The default vertex array object (the name zero) is also deprecated.
@@ -33,8 +36,8 @@ void processInput(GLFWwindow *window);
 void mouse_scroll_callback(GLFWwindow *window, double x_offset, double y_offset);
 
 // settings
-int width = 3360;
-int height = 2010;
+extern int width = 3360;
+extern int height = 2010;
 bool l_button_down;
 
 float projection_fov = 45;
@@ -191,7 +194,10 @@ int main() {
 
 //    Filter *filter = new SoulOut();
 //    Filter *filter = new JitterFilter();
-    Filter *filter = new GlitchFilter();
+//    Filter *filter = new GlitchFilter();
+//    Filter *filter = new ScaleFilter();
+//    Filter *filter = new ShineWhiteFilter();
+    Filter *filter = new VertigoFilter();
     filter->init();
 
     Rectangle rectangle = Rectangle(&ourShader);

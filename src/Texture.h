@@ -18,6 +18,8 @@ public:
         }
     }
 
+    unsigned int getTextureId();
+
     bool use_linear;
 
 private:
