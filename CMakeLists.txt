@@ -65,7 +65,7 @@ include_directories(
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
-add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/filter/FboFilter.cpp src/filter/FboFilter.h)
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS} ${OpenCV_LIBS})

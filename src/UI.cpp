@@ -166,6 +166,11 @@ void UI::renderUI() {
     ImGui::RadioButton("glitch", &tiktok_effect, 3);
     ImGui::RadioButton("scale", &tiktok_effect, 4);
     ImGui::RadioButton("shineWhite", &tiktok_effect, 5);
+    ImGui::RadioButton("Reverse", &tiktok_effect, 6);
+    ImGui::RadioButton("Grayscale", &tiktok_effect, 7);
+    ImGui::RadioButton("Sharpen", &tiktok_effect, 8);
+    ImGui::RadioButton("Vague", &tiktok_effect, 9);
+    ImGui::RadioButton("Edge", &tiktok_effect, 10);
     ImGui::End();
 
     // Rendering

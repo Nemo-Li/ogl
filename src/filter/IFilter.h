@@ -15,6 +15,10 @@ public:
 
     virtual void setVAOTexture(int vao, int texture) = 0;
 
+    virtual void setEffect(int effect) {
+
+    };
+
     //当前动画进度
     float mProgress = 0.0f;
     //当前地帧数

@@ -49,7 +49,7 @@ void SoulOut::drawFilter() {
 }
 
 void SoulOut::init() {
-    this->shader = new Shader("../res/shader/fboShader.vert", "../res/shader/fboShader.frag");
+    this->shader = new Shader("../res/shader/soulOut.vert", "../res/shader/soulOut.frag");
     shader->use();
     shader->setInt("screenTexture", 0);
 }

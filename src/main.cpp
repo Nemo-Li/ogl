@@ -25,6 +25,7 @@
 #include "filter/ScaleFilter.h"
 #include "filter/ShineWhiteFilter.h"
 #include "filter/VertigoFilter.h"
+#include "filter/FboFilter.h"
 
 //Using VAOs is required in the core profile. From the OpenGL 3.3 spec, page 342, in the section E.2.2 "Removed Features":
 //The default vertex array object (the name zero) is also deprecated.
@@ -197,12 +198,14 @@ int main() {
     Filter *glitchFilter = new GlitchFilter();
     Filter *scaleFilter = new ScaleFilter();
     Filter *shineWhiteFilter = new ShineWhiteFilter();
+    Filter *fboFilter = new FboFilter();
 //    Filter *filter = new VertigoFilter();
     soulOutFilter->init();
     jitterFilter->init();
     glitchFilter->init();
     scaleFilter->init();
     shineWhiteFilter->init();
+    fboFilter->init();
 
     Rectangle rectangle = Rectangle(&ourShader);
     rectangle.initVAO();
@@ -276,6 +279,7 @@ int main() {
     glitchFilter->setVAOTexture(quadVAO, textureColorbuffer);
     scaleFilter->setVAOTexture(quadVAO, textureColorbuffer);
     shineWhiteFilter->setVAOTexture(quadVAO, textureColorbuffer);
+    fboFilter->setVAOTexture(quadVAO, textureColorbuffer);
 
     // render loop
     // -----------
@@ -357,6 +361,26 @@ int main() {
                 break;
             case 5:
                 shineWhiteFilter->drawFilter();
+                break;
+            case 6:
+                fboFilter->setEffect(1);
+                fboFilter->drawFilter();
+                break;
+            case 7:
+                fboFilter->setEffect(2);
+                fboFilter->drawFilter();
+                break;
+            case 8:
+                fboFilter->setEffect(3);
+                fboFilter->drawFilter();
+                break;
+            case 9:
+                fboFilter->setEffect(4);
+                fboFilter->drawFilter();
+                break;
+            case 10:
+                fboFilter->setEffect(5);
+                fboFilter->drawFilter();
                 break;
             default:
                 break;
