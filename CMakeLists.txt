@@ -61,9 +61,13 @@ include_directories(
         ${ASSIMP_INCLUDE_DIR}
 )
 
+include_directories("thirdparty/spdlog/include")
+
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
 add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})
+
+add_subdirectory(tools)
