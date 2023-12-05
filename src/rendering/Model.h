@@ -85,9 +85,9 @@ public:
     }
 
     // draws the model, and thus all its meshes
-    void Draw() {
+    void Draw(Shader *shader) {
         for (unsigned int i = 0; i < meshes.size(); i++) {
-            meshes[i]->Draw();
+            meshes[i]->Draw(shader);
         }
     }
 
@@ -185,6 +185,13 @@ private:
             const aiMaterial *pMaterial = scene->mMaterials[i];
             m_Textures[i] = nullptr;
 
+            printf("aiMaterial name: %s \n", pMaterial->GetName().C_Str());
+            printf("diffuse count: %d", pMaterial->GetTextureCount(aiTextureType_NORMALS));
+            printf("none count: %d", pMaterial->GetTextureCount(aiTextureType_UNKNOWN));
+            printf("specular count: %d", pMaterial->GetTextureCount(aiTextureType_SPECULAR));
+            printf("ambient count: %d", pMaterial->GetTextureCount(aiTextureType_AMBIENT));
+            printf("emissive count: %d", pMaterial->GetTextureCount(aiTextureType_EMISSIVE));
+
             if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
                 aiString Path;
 
@@ -214,11 +221,11 @@ private:
                         printf("%d - loaded texture '%s'\n", i, finalPath.c_str());
                     }
                 }
-            } else {
+            } /*else {
                 auto *pTexture = new Texture("res/models/brand_zombie_TX_CM.png");
                 m_Textures[i] = pTexture;
                 m_Textures[i]->load();
-            }
+            }*/
         }
     }
 

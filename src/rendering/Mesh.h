@@ -14,6 +14,8 @@
 #define NUM_BONES_PER_VEREX 4
 #define SNPRINTF snprintf
 
+#define N  99
+
 static const uint MAX_BONES = 100;
 
 struct Vertex {
@@ -73,6 +75,9 @@ public:
     Texture *pTexture;
 
     unsigned int VAO;
+    float random_r;
+    float random_g;
+    float random_b;
 
     /*  Functions  */
     // constructor
@@ -85,15 +90,29 @@ public:
 
         // now that we have all the required data, set the vertex buffers and its attribute pointers.
         setupMesh();
+
+        std::srand(GetCurrentTimeMillis());
+
+        random_r = rand() % (N + 1) / (float)(N + 1);
+        random_g = rand() % (N + 1) / (float)(N + 1);
+        random_b = rand() % (N + 1) / (float)(N + 1);
+
+        printf("r g b: %f %f %f \n", random_r, random_g, random_b);
     }
 
     // render the pModel
-    void Draw() {
+    void Draw(Shader* shader) {
         // draw pModel
         glBindVertexArray(VAO);
 
         if (pTexture != nullptr) {
             pTexture->bind();
+        } else {
+            shader->setUniform3fv("mesh_color", glm::vec3(
+                    random_r,
+                    random_g,
+                    random_b
+                    ));
         }
 
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
