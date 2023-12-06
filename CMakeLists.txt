@@ -62,6 +62,7 @@ include_directories(
 )
 
 include_directories("thirdparty/spdlog/include")
+include_directories("/usr/local/include")
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
