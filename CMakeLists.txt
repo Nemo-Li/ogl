@@ -9,7 +9,7 @@ file(GLOB_RECURSE SOURCE_FILES
         ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
 # Configure assets header file
-configure_file(src/helpers/RootDir.h.in src/helpers/RootDir.h)
+configure_file(src/engine/helpers/root_dir.h.in src/engine/helpers/root_dir.h)
 include_directories(${CMAKE_BINARY_DIR}/src)
 
 # We need a CMAKE_DIR with some code to find external dependencies
@@ -47,6 +47,7 @@ set(LIBS ${ASSIMP_LIBRARY} ${GLFW3_LIBRARY} STB_IMAGE GLAD)
 include_directories("/usr/local/include")
 include_directories(
         "src"
+        "src/engine"
         "thirdparty/glad/include"
         "thirdparty/stb_image"
         "thirdparty/spdlog/include"
@@ -54,10 +55,13 @@ include_directories(
         ${GLFW3_INCLUDE_DIR}
         ${ASSIMP_INCLUDE_DIR}
 )
+include_directories("thirdparty")
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+file(GLOB_RECURSE rttr_cpp "thirdparty/rttr/*.cpp")
+
+add_executable(${PROJECT_NAME} ${rttr_cpp} ${SOURCE_FILES})
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})
