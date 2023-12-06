@@ -8,17 +8,9 @@ file(GLOB_RECURSE SOURCE_FILES
         ${CMAKE_SOURCE_DIR}/src/*.c
         ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
-# Add header files
-file(GLOB_RECURSE HEADER_FILES
-        ${CMAKE_SOURCE_DIR}/src/*.h
-        ${CMAKE_SOURCE_DIR}/src/*.hpp)
-
 # Configure assets header file
 configure_file(src/helpers/RootDir.h.in src/helpers/RootDir.h)
 include_directories(${CMAKE_BINARY_DIR}/src)
-
-# Add .lib files
-#link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 # We need a CMAKE_DIR with some code to find external dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -44,29 +36,28 @@ message(STATUS "Found ASSIMP in ${ASSIMP_INCLUDE_DIR}")
 message(STATUS "Found ASSIMP: ${ASSIMP_LIBRARY}")
 
 # STB_IMAGE
-add_library(STB_IMAGE "thirdparty/stb_image.cpp")
-
+add_library(STB_IMAGE "thirdparty/stb_image/stb_image.cpp")
 # GLAD
-add_library(GLAD "thirdparty/glad.c")
+add_library(GLAD "thirdparty/glad/glad.c")
 
 # Put all libraries into a variable
 set(LIBS ${ASSIMP_LIBRARY} ${GLFW3_LIBRARY} STB_IMAGE GLAD)
 
 # Define the include DIRs
+include_directories("/usr/local/include")
 include_directories(
-        "${CMAKE_SOURCE_DIR}/src"
-        "${CMAKE_SOURCE_DIR}/include"
+        "src"
+        "thirdparty/glad/include"
+        "thirdparty/stb_image"
+        "thirdparty/spdlog/include"
         ${GLM_INCLUDE_DIR}
         ${GLFW3_INCLUDE_DIR}
         ${ASSIMP_INCLUDE_DIR}
 )
 
-include_directories("thirdparty/spdlog/include")
-include_directories("/usr/local/include")
-
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
-add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})
