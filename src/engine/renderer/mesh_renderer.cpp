@@ -14,6 +14,7 @@
 #include "mesh_filter.h"
 #include "material.h"
 #include "shader.h"
+#include "texture2d.h"
 
 RTTR_REGISTRATION {
     rttr::registration::class_<MeshRenderer>("MeshRenderer")
@@ -108,17 +109,17 @@ void MeshRenderer::Render() {
         //上传mvp矩阵
         glUniformMatrix4fv(glGetUniformLocation(program_id, "u_mvp"), 1, GL_FALSE, &mvp[0][0]);
 
-//        //从Pass节点拿到保存的Texture
-//        std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
-//        for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
-//            GLint u_texture_location = glGetUniformLocation(gl_program_id, textures[texture_index].first.c_str());
-//            //激活纹理单元0
-//            glActiveTexture(GL_TEXTURE0 + texture_index);
-//            //将加载的图片纹理句柄，绑定到纹理单元0的Texture2D上。
-//            glBindTexture(GL_TEXTURE_2D, textures[texture_index].second->gl_texture_id());
-//            //设置Shader程序从纹理单元0读取颜色数据
-//            glUniform1i(u_texture_location, texture_index);
-//        }
+        //从Pass节点拿到保存的Texture
+        std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
+        for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
+            GLint u_texture_location = glGetUniformLocation(program_id, textures[texture_index].first.c_str());
+            //激活纹理单元0
+            glActiveTexture(GL_TEXTURE0 + texture_index);
+            //将加载的图片纹理句柄，绑定到纹理单元0的Texture2D上。
+            glBindTexture(GL_TEXTURE_2D, textures[texture_index].second->texture_id());
+            //设置Shader程序从纹理单元0读取颜色数据
+            glUniform1i(u_texture_location, texture_index);
+        }
 
         glBindVertexArray(vao_);
         {
