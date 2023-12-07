@@ -65,7 +65,7 @@ int main(void) {
 
     //挂上 MeshFilter 组件
     auto mesh_filter = dynamic_cast<MeshFilter *>(go->AddComponent("MeshFilter"));
-    mesh_filter->LoadMesh("models/fishsoup_pot.mesh");
+    mesh_filter->LoadMesh("model/fishsoup_pot.mesh");
 
     //挂上MeshRenderer 组件
     auto mesh_renderer = dynamic_cast<MeshRenderer *>(go->AddComponent("MeshRenderer"));
