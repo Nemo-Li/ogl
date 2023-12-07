@@ -6,7 +6,7 @@
 #define OGL_MESH_RENDERER_H
 
 #include <glm/glm.hpp>
-#include "engine/component/component.h"
+#include "component/component.h"
 
 class Material;
 

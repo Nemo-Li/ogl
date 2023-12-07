@@ -5,12 +5,14 @@ set(CMAKE_CXX_STANDARD 14)
 
 # Add source files
 file(GLOB_RECURSE SOURCE_FILES
-        ${CMAKE_SOURCE_DIR}/src/*.c
-        ${CMAKE_SOURCE_DIR}/src/*.cpp)
+        ${CMAKE_SOURCE_DIR}/engine/*.c
+        ${CMAKE_SOURCE_DIR}/engine/*.cpp)
+
+file(GLOB_RECURSE EXAMPLE_FILE example/*.cpp)
 
 # Configure assets header file
-configure_file(src/engine/helpers/root_dir.h.in src/engine/helpers/root_dir.h)
-include_directories(${CMAKE_BINARY_DIR}/src)
+configure_file(engine/helpers/root_dir.h.in engine/helpers/root_dir.h)
+include_directories(${CMAKE_BINARY_DIR}/engine)
 
 # We need a CMAKE_DIR with some code to find external dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -46,8 +48,7 @@ set(LIBS ${ASSIMP_LIBRARY} ${GLFW3_LIBRARY} STB_IMAGE GLAD)
 # Define the include DIRs
 include_directories("/usr/local/include")
 include_directories(
-        "src"
-        "src/engine"
+        "engine"
         "thirdparty/glad/include"
         "thirdparty/stb_image"
         "thirdparty/spdlog/include"
@@ -59,9 +60,9 @@ include_directories("thirdparty")
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
-file(GLOB_RECURSE rttr_cpp "thirdparty/rttr/*.cpp")
+file(GLOB_RECURSE RTTR_CPP "thirdparty/rttr/*.cpp")
 
-add_executable(${PROJECT_NAME} ${rttr_cpp} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${RTTR_CPP} ${SOURCE_FILES} ${EXAMPLE_FILE})
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})

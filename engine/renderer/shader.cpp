@@ -4,7 +4,7 @@
 
 #include <fstream>
 #include <glad/glad.h>
-#include <engine/framework/application.h>
+#include <framework/application.h>
 #include "shader.h"
 
 std::unordered_map<std::string, Shader *> Shader::kShaderMap;
