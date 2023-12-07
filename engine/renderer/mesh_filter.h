@@ -6,7 +6,7 @@
 #define OGL_MESH_FILTER_H
 
 #include <string>
-#include <engine/component/component.h>
+#include <component/component.h>
 #include <glm/glm.hpp>
 
 class MeshFilter : public Component {

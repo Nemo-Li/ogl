@@ -9,8 +9,8 @@
 #include <glm/gtx/transform2.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glad/glad.h>
-#include "engine/component/game_object.h"
-#include "engine/component/transform.h"
+#include "component/game_object.h"
+#include "component/transform.h"
 #include "mesh_filter.h"
 #include "material.h"
 #include "shader.h"
