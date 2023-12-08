@@ -14,6 +14,7 @@
 #include "renderer/shader.h"
 #include "renderer/material.h"
 #include "renderer/mesh_renderer.h"
+#include "renderer/camera.h"
 
 #include "component/component.h"
 #include "component/game_object.h"
@@ -56,19 +57,26 @@ int main(void) {
     Application::set_data_path("../res/");
     init_opengl();
 
+    //创建主相机
+    GameObject *go_camera = new GameObject("main_camera");
+    auto go_transform = go_camera->AddComponent<Transform>();
+    go_transform->set_position(glm::vec3(0, 0, 10));
+    auto camera = go_camera->AddComponent<Camera>();
+
     //创建GameObject
-    GameObject *go = new GameObject("something");
+    GameObject *go = new GameObject("fish_soup_pot");
 
     //挂上 Transform 组件
-//    auto transform=dynamic_cast<Transform*>(go->AddComponent("Transform"));
     auto transform = go->AddComponent<Transform>();
+    transform->set_position(glm::vec3(0, -1, 0));
 
     //挂上 MeshFilter 组件
-    auto mesh_filter = dynamic_cast<MeshFilter *>(go->AddComponent("MeshFilter"));
+    auto mesh_filter = dynamic_cast<MeshFilter *>(go->AddComponent<MeshFilter>());
     mesh_filter->LoadMesh("model/fishsoup_pot.mesh");
 
     //挂上MeshRenderer 组件
-    auto mesh_renderer = dynamic_cast<MeshRenderer *>(go->AddComponent("MeshRenderer"));
+    auto mesh_renderer = dynamic_cast<MeshRenderer *>(go->AddComponent<MeshRenderer>());
+
     //设置材质
     Material *material = new Material();
     material->Load("material/fishsoup_pot.mat");
@@ -92,13 +100,23 @@ int main(void) {
         rotation.y = rotate_eulerAngle;
         transform->set_rotation(rotation);
 
-        glm::mat4 view = glm::lookAt(glm::vec3(0, 0, 10), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-        glm::mat4 projection = glm::perspective(glm::radians(60.f), ratio, 1.f, 1000.f);
+        camera->SetView(glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+        camera->SetPerspective(60, ratio, 1, 1000);
 
-        mesh_renderer->SetView(view);
-        mesh_renderer->SetProjection(projection);
-        mesh_renderer->Render();
+//        mesh_renderer->Render();
 
+        Camera::Foreach([&]() {
+            GameObject::Foreach([](GameObject *game_object) {
+                if (!game_object->active()) {
+                    return;
+                }
+                MeshRenderer *mesh_renderer = game_object->GetComponent<MeshRenderer>();
+                if (mesh_renderer == nullptr) {
+                    return;
+                }
+                mesh_renderer->Render();
+            });
+        });
 
         glfwSwapBuffers(window);
         glfwPollEvents();

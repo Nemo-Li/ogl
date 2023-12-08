@@ -69,4 +69,7 @@ add_executable(${PROJECT_NAME} ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/ne
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})
 
+add_executable(main ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/cpp/main.cpp)
+target_link_libraries(main "-framework OpenGL" ${LIBS})
+
 add_subdirectory(tools)
