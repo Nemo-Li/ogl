@@ -15,6 +15,7 @@
 #include "material.h"
 #include "shader.h"
 #include "texture2d.h"
+#include "camera.h"
 
 RTTR_REGISTRATION {
     rttr::registration::class_<MeshRenderer>("MeshRenderer")
@@ -30,8 +31,21 @@ MeshRenderer::~MeshRenderer() {
 }
 
 void MeshRenderer::Render() {
+    //从当前Camera获取View Projection
+    auto current_camera = Camera::current_camera();
+    if (current_camera == nullptr) {
+        return;
+    }
+    //判断相机的 culling_mask 是否包含当前物体 layer
+    if ((current_camera->culling_mask() & game_object()->layer()) == 0x00) {
+        return;
+    }
+
+    glm::mat4 view = current_camera->view_mat4();
+    glm::mat4 projection = current_camera->projection_mat4();
+
     //主动获取 Transform 组件，计算mvp。
-    auto component_transform = game_object()->GetComponent("Transform");
+    auto component_transform = game_object()->GetComponent<Transform>();
     auto transform = dynamic_cast<Transform *>(component_transform);
     if (!transform) {
         return;
@@ -43,10 +57,10 @@ void MeshRenderer::Render() {
     //缩放
     glm::mat4 scale = glm::scale(transform->scale());
     glm::mat4 model = trans * scale * eulerAngleYXZ;
-    glm::mat4 mvp = projection_ * view_ * model;
+    glm::mat4 mvp = projection * view * model;
 
     //主动获取 MeshFilter 组件
-    auto component_mesh_filter = game_object()->GetComponent("MeshFilter");
+    auto component_mesh_filter = game_object()->GetComponent<MeshFilter>();
     auto mesh_filter = dynamic_cast<MeshFilter *>(component_mesh_filter);
     if (!mesh_filter) {
         return;
@@ -103,9 +117,20 @@ void MeshRenderer::Render() {
 
     glUseProgram(program_id);
     {
-        glEnable(GL_DEPTH_TEST);
-        //开启背面剔除
-        glEnable(GL_CULL_FACE);
+        // PreRender
+        game_object()->ForeachComponent([](Component *component) {
+            component->OnPreRender();
+        });
+
+        if(current_camera->camera_use_for()==Camera::CameraUseFor::SCENE){
+            glEnable(GL_DEPTH_TEST);__CHECK_GL_ERROR__
+        }else{
+            glDisable(GL_DEPTH_TEST);__CHECK_GL_ERROR__
+        }
+
+        glEnable(GL_CULL_FACE);__CHECK_GL_ERROR__//开启背面剔除
+        glEnable(GL_BLEND);__CHECK_GL_ERROR__
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);__CHECK_GL_ERROR__
         //上传mvp矩阵
         glUniformMatrix4fv(glGetUniformLocation(program_id, "u_mvp"), 1, GL_FALSE, &mvp[0][0]);
 
@@ -128,6 +153,11 @@ void MeshRenderer::Render() {
                            nullptr);
         }
         glBindVertexArray(0);
+
+        // PostRender
+        game_object()->ForeachComponent([](Component *component) {
+            component->OnPostRender();
+        });
     }
 }
 

@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
 project(ogl)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
+
+include(CMakeLists.txt-lua)
 
 # Add source files
 file(GLOB_RECURSE SOURCE_FILES
@@ -62,7 +64,7 @@ message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
 file(GLOB_RECURSE RTTR_CPP "thirdparty/rttr/*.cpp")
 
-add_executable(${PROJECT_NAME} ${RTTR_CPP} ${SOURCE_FILES} ${EXAMPLE_FILE})
+add_executable(${PROJECT_NAME} ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/nemo.cpp)
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})

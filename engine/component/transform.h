@@ -30,7 +30,8 @@ private:
     glm::vec3 position_;
     glm::vec3 rotation_;
     glm::vec3 scale_;
-};
 
+RTTR_ENABLE();
+};
 
 #endif //OGL_TRANSFORM_H

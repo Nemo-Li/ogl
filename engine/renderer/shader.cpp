@@ -101,10 +101,10 @@ void Shader::CreateGPUProgram(const char *vertex_shader_text, const char *fragme
     }
 }
 
-void Shader::use() {
+void Shader::Use() {
     glUseProgram(program_id_);
 }
 
-void Shader::disuse() {
+void Shader::Disuse() {
 
 }

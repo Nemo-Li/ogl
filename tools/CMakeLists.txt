@@ -11,5 +11,5 @@ file(COPY ${FBXSDK_LIBRARY} DESTINATION "./")
 find_library(FILESYSTEM_LIBRARY boost_filesystem HINTS "/usr/local/lib")
 message(${FILESYSTEM_LIBRARY})
 
-add_executable(extra_mesh extraMesh.cpp ${extra_mesh})
+add_executable(extra_mesh extraMesh.cpp ../engine/helpers/debug.cpp ${extra_mesh})
 target_link_libraries(extra_mesh ${FBXSDK_LIBRARY} ${FILESYSTEM_LIBRARY})

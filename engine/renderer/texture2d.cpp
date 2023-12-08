@@ -21,10 +21,10 @@ Texture2D *Texture2D::LoadFromFile(std::string &image_file_path) {
     Texture2D *texture2d = new Texture2D();
     int width, height, components;
 
-    printf("image path: %s\n", image_file_path.c_str());
     stbi_set_flip_vertically_on_load(true);
     unsigned char *pixels = stbi_load((Application::data_path() + image_file_path).c_str(), &width, &height,
                                       &components, 4);
+    printf("image path: %s\n", (Application::data_path() + image_file_path).c_str());
 
     if (pixels != nullptr) {
         //1. 通知显卡创建纹理对象，返回句柄;

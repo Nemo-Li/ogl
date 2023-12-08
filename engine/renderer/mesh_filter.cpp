@@ -44,3 +44,7 @@ void MeshFilter::LoadMesh(std::string mesh_file_path) {
     mesh_->vertex_data_ = (Vertex *) vertex_data;
     mesh_->vertex_index_data_ = vertex_index_data;
 }
+
+const char *MeshFilter::GetMeshName() {
+    return mesh_->name_;
+}
