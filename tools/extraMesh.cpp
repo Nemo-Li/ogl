@@ -5,7 +5,7 @@
 #include <boost/filesystem.hpp>
 #include <fstream>
 #include "fbxsdk.h"
-#include "extra_mesh/Debug.h"
+#include "../engine/helpers/debug.h"
 #include "extra_mesh/Common/Common.h"
 #include "glm/glm.hpp"
 #include "glm/ext.hpp"
@@ -73,9 +73,9 @@ int LogSceneCheckError(FbxImporter *mImporter, FbxArray<FbxString *> &details);
 
 int main(int argc, char **argv) {
     std::printf("hello nemo!");
-    Debug::init();
+    Debug::Init();
 
-    src_file_path = "../../res/models/juese_daiji.fbx";
+    src_file_path = "../../res/model/juese_daiji.fbx";
 
     if (argc > 1) {
         src_file_path = argv[1];

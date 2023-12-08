@@ -19,18 +19,13 @@ public:
     //设置Material
     void SetMaterial(Material *material);
 
-    void SetView(glm::mat4 view) { view_ = view; };
-
-    void SetProjection(glm::mat4 projection) { projection_ = projection; };
-
     //渲染
     void Render();
 
+    Material *material() { return material_; }
+
 private:
     Material *material_;
-
-    glm::mat4 view_;
-    glm::mat4 projection_;
 
     //顶点缓冲区对象
     unsigned int vbo_ = 0;
@@ -38,6 +33,8 @@ private:
     unsigned int ebo_ = 0;
     //顶点数组对象
     unsigned int vao_ = 0;
+
+RTTR_ENABLE();
 };
 
 

@@ -17,9 +17,9 @@ public:
     //查找或创建Shader
     static Shader *Find(std::string shader_name);
 
-    void use();
+    void Use();
 
-    void disuse();
+    void Disuse();
 
     //glCreateProgram()返回的GPU程序句柄
     unsigned int program_id() { return program_id_; }
