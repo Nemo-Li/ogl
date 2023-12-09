@@ -15,7 +15,9 @@ function LoginScene:ctor()
     ---@type Camera
     self.camera_ = nil --相机
     self.go_mesh_ = nil --物体
+    self.go_mesh_pot_ = nil -- 鱼缸
     self.material_ = nil --材质
+    self.material_pot_ = nil --材质
 end
 
 function LoginScene:Awake()
@@ -29,8 +31,8 @@ function LoginScene:Awake()
     self.camera_ = self.go_camera_:AddComponent(Camera)
     self.camera_:set_depth(0)
 
-    --创建骨骼蒙皮动画
-    self.go_mesh_ = GameObject.new("mesh")
+    --创建jiu_lian
+    self.go_mesh_ = GameObject.new("jiu_lian")
     self.go_mesh_:AddComponent(Transform):set_position(glm.vec3(0, -1, 0))
     self.go_mesh_:GetComponent(Transform):set_rotation(glm.vec3(-90, 0, 0))
 
@@ -44,11 +46,25 @@ function LoginScene:Awake()
     --挂上 MeshRenderer 组件
     local mesh_renderer = self.go_mesh_:AddComponent(MeshRenderer)
     mesh_renderer:SetMaterial(self.material_)
+
+    --创建
+    self.go_mesh_pot_ = GameObject.new("fish_soup_pot")
+    self.go_mesh_pot_:AddComponent(Transform):set_position(glm.vec3(0, -1, -5))
+
+    local mesh_filter = self.go_mesh_pot_:AddComponent(MeshFilter)
+    mesh_filter:LoadMesh("model/fishsoup_pot.mesh")--加载Mesh
+
+    --手动创建Material
+    self.material_pot_ = Material.new()--设置材质
+    self.material_pot_:Load("material/fishsoup_pot.mat")
+
+    --挂上 MeshRenderer 组件
+    local mesh_renderer = self.go_mesh_pot_:AddComponent(MeshRenderer)
+    mesh_renderer:SetMaterial(self.material_pot_)
 end
 
 function LoginScene:Update()
     --print("LoginScene:Update")
-    self.camera_:set_depth(0)
     self.camera_:set_depth(0)
     self.camera_:SetView(glm.vec3(0.0, 0.0, 0.0), glm.vec3(0.0, 1.0, 0.0))
     self.camera_:SetPerspective(60, Screen.aspect_ratio(), 1, 1000)

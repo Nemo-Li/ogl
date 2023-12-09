@@ -11,7 +11,7 @@ int main() {
     //绑定引擎所有类到Lua
     LuaBinding::BindLua();
     //执行lua
-    LuaBinding::RunLuaFile("../example/nemo.lua");
+    LuaBinding::RunLuaFile("../example/main.lua");
     //调用lua main()
     LuaBinding::CallLuaFunction();
 

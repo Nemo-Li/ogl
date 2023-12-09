@@ -15,7 +15,6 @@ Material::Material() {
 }
 
 Material::~Material() {
-    delete shader_;
 }
 
 void Material::Load(const std::string &material_path) {

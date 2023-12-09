@@ -64,7 +64,7 @@ message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
 file(GLOB_RECURSE RTTR_CPP "thirdparty/rttr/*.cpp")
 
-add_executable(${PROJECT_NAME} ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/nemo.cpp)
+add_executable(${PROJECT_NAME} ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/main.cpp)
 
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})

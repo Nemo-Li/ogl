@@ -12,6 +12,7 @@
 #include <GLFW/glfw3.h>
 #include <helpers/screen.h>
 #include <renderer/camera.h>
+#include <control/input.h>
 #include "component/game_object.h"
 #include "renderer/mesh_renderer.h"
 #include "helpers/debug.h"
@@ -19,6 +20,41 @@
 std::string Application::data_path_;
 std::string Application::title_;
 GLFWwindow *Application::glfw_window_;
+
+/// 键盘回调
+/// \param window
+/// \param key
+/// \param scancode
+/// \param action
+/// \param mods
+static void key_callback(GLFWwindow *window, int key, int scanCode, int action, int mods) {
+    Input::RecordKey(key, action);
+}
+
+/// 鼠标按键回调
+/// \param window
+/// \param button
+/// \param action
+/// \param mods
+static void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+    Input::RecordKey(button, action);
+}
+
+/// 鼠标移动回调
+/// \param window
+/// \param x
+/// \param y
+static void mouse_move_callback(GLFWwindow *window, double x, double y) {
+    Input::set_mousePosition(x, y);
+}
+
+/// 鼠标滚轮回调
+/// \param window
+/// \param x
+/// \param y
+static void mouse_scroll_callback(GLFWwindow *window, double x, double y) {
+    Input::RecordScroll(y);
+}
 
 void Application::Init() {
     Debug::Init();
@@ -47,6 +83,11 @@ void Application::Init() {
 
     UpdateScreenSize();
     glfwSwapInterval(1);
+
+    glfwSetKeyCallback(glfw_window_, key_callback);
+    glfwSetMouseButtonCallback(glfw_window_, mouse_button_callback);
+    glfwSetScrollCallback(glfw_window_, mouse_scroll_callback);
+    glfwSetCursorPosCallback(glfw_window_, mouse_move_callback);
 }
 
 void Application::Run() {
@@ -78,6 +119,8 @@ void Application::Update() {
             });
         }
     });
+
+    Input::Update();
 }
 
 void Application::Render() {
