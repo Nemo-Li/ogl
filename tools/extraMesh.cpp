@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
     std::printf("hello nemo!");
     Debug::Init();
 
-    src_file_path = "../../res/model/juese_daiji.fbx";
+    src_file_path = "../../res/model/mill-scene.fbx";
 
     if (argc > 1) {
         src_file_path = argv[1];

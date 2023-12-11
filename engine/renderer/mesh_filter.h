@@ -18,7 +18,7 @@ public:
 public:
     //顶点
     struct Vertex {
-        glm::vec3 pos_;
+        glm::vec3 position_;
         glm::vec4 color_;
         glm::vec2 uv_;
     };
@@ -68,13 +68,40 @@ public:
 
     void LoadMesh(std::string mesh_file_path);//加载Mesh文件
 
+    /// 创建 Mesh
+    /// \param vertex_data 顶点数据
+    /// \param vertex_index_data 索引数据
+    void CreateMesh(std::vector<Vertex> &vertex_data, std::vector<unsigned short> &vertex_index_data);
+
+    /// 创建Mesh
+    /// \param vertex_data 所有的顶点数据,以float数组形式从lua传过来
+    /// \param vertex_index_data 所有的索引数据,以unsigned short数组形式从lua传过来
+    void CreateMesh(std::vector<float> &vertex_data, std::vector<unsigned short> &vertex_index_data);
+
     Mesh *mesh() { return mesh_; };//Mesh对象
 
     /// 获取Mesh名
     const char *GetMeshName();
 
+    /// 获取顶点关联骨骼索引数组，长度为顶点个数
+    std::vector<unsigned char> &vertex_relate_bone_index_vec() { return vertex_relate_bone_index_vec_; };
+
+    void set_vertex_relate_bone_index_vec(std::vector<unsigned char> &vertex_relate_bone_index_vec) {
+        vertex_relate_bone_index_vec_ = vertex_relate_bone_index_vec;
+    }
+
+    /// 获取蒙皮Mesh对象指针
+    Mesh *skinned_mesh() { return skinned_mesh_; };
+
+    void set_skinned_mesh(Mesh *skinned_mesh) { skinned_mesh_ = skinned_mesh; };
+
 private:
-    Mesh *mesh_;//Mesh对象
+    //Mesh对象
+    Mesh *mesh_;
+    //蒙皮Mesh对象
+    Mesh *skinned_mesh_ = nullptr;
+    //顶点关联骨骼索引，长度为顶点个数
+    std::vector<unsigned char> vertex_relate_bone_index_vec_;
 
 RTTR_ENABLE();
 };
