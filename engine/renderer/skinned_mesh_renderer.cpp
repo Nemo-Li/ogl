@@ -34,12 +34,6 @@ void SkinnedMeshRenderer::Update() {
         DEBUG_LOG_ERROR("SkinnedMeshRenderer::Update() failed, can't get Mesh");
         return;
     }
-    //获取顶点关联骨骼索引数组，长度为顶点个数
-    auto vertex_relate_bone_index_vec = mesh_filter->vertex_relate_bone_index_vec();
-    if (vertex_relate_bone_index_vec.empty()) {
-        DEBUG_LOG_ERROR("SkinnedMeshRenderer::Update() failed, can't get vertex relate bone index");
-        return;
-    }
 
     //主动获取 Animation 组件
     Animation *animation = game_object()->GetComponent<Animation>();
