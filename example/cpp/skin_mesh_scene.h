@@ -42,7 +42,18 @@ public:
                                      4, 6, 7};
 
         unsigned int vertex_relate_bone_index[] = {0, 0, 0, 0,
-                                                    1, 1, 1, 1};
+                                                   0, 0, 1, 1};
+
+        char vertex_relate_bone_infos[] = {
+                0, -1, -1, -1, 100, -1, -1, -1,
+                0, -1, -1, -1, 100, -1, -1, -1,
+                0, -1, -1, -1, 100, -1, -1, -1,
+                0, -1, -1, -1, 100, -1, -1, -1,
+                0, 1, -1, -1, 70, 30, -1, -1,
+                0, -1, -1, -1, 100, -1, -1, -1,
+                1, -1, -1, -1, 100, -1, -1, -1,
+                1, -1, -1, -1, 100, -1, -1, -1,
+        };
 
         std::vector<float> vertex_data_vec;
         vertex_data_vec.insert(vertex_data_vec.end(), &vertex_data[0], &vertex_data[0] + 72);
@@ -54,6 +65,10 @@ public:
         std::vector<unsigned char> vertex_relate_bone_index_vec;
         vertex_relate_bone_index_vec.insert(vertex_relate_bone_index_vec.end(),
                                             &vertex_relate_bone_index[0], &vertex_relate_bone_index[0] + 8);
+
+        std::vector<char> vertex_relate_bone_infos_vec;
+        vertex_relate_bone_infos_vec.insert(vertex_relate_bone_infos_vec.end(),
+                                            &vertex_relate_bone_infos[0], &vertex_relate_bone_infos[0] + 64);
 
 
         //创建主相机游戏对象
@@ -74,6 +89,7 @@ public:
         MeshFilter *meshFilter = go_skeleton->AddComponent<MeshFilter>();
         meshFilter->CreateMesh(vertex_data_vec, vertex_index_data_vec);
         meshFilter->set_vertex_relate_bone_index_vec(vertex_relate_bone_index_vec);
+        meshFilter->set_vertex_relate_bone_infos(vertex_relate_bone_infos_vec);
 
         Material *material = new Material();
         material->Load("material/cube.mat");
