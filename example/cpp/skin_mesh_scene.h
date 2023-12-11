@@ -75,7 +75,7 @@ public:
         auto *go_camera = new GameObject("main_camera");
         //挂上Transform 组件
         camera_transform = go_camera->AddComponent<Transform>();
-        camera_transform->set_position(glm::vec3(0, 0, 10));
+        camera_transform->set_position(glm::vec3(0, 0, 5));
         //挂上Camera 组件
         camera = go_camera->AddComponent<Camera>();
 
@@ -88,8 +88,7 @@ public:
 
         MeshFilter *meshFilter = go_skeleton->AddComponent<MeshFilter>();
         meshFilter->CreateMesh(vertex_data_vec, vertex_index_data_vec);
-        meshFilter->set_vertex_relate_bone_index_vec(vertex_relate_bone_index_vec);
-        meshFilter->set_vertex_relate_bone_infos(vertex_relate_bone_infos_vec);
+        meshFilter->LoadWeight("model/export.weight");
 
         Material *material = new Material();
         material->Load("material/cube.mat");

@@ -122,6 +122,10 @@ public:
         }
     }
 
+    /// 加载权重文件
+    /// \param weight_file_path 权重文件路径
+    void LoadWeight(const std::string &weight_file_path);
+
 private:
     //Mesh对象
     Mesh *mesh_;

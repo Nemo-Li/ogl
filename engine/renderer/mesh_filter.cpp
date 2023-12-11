@@ -84,3 +84,24 @@ void MeshFilter::CreateMesh(std::vector<float> &vertex_data, std::vector<unsigne
     mesh_->vertex_index_data_ = static_cast<unsigned short *>(malloc(vertex_index_data_size));
     memcpy(mesh_->vertex_index_data_, &vertex_index_data[0], vertex_index_data_size);
 }
+
+void MeshFilter::LoadWeight(const std::string &weight_file_path) {
+    ifstream input_weight_file(Application::data_path() + weight_file_path, ios::in | ios::binary);
+    if (!input_weight_file.is_open()) {
+        DEBUG_LOG_ERROR("weight file open failed");
+        return;
+    }
+    char file_head[7];
+    input_weight_file.read(file_head, 6);
+    file_head[6] = '\0';
+    if (strcmp(file_head, "weight") != 0) {
+        DEBUG_LOG_ERROR("weight file head error");
+        return;
+    }
+    input_weight_file.seekg(0, ios::end);
+    int length = input_weight_file.tellg();
+    input_weight_file.seekg(6, ios::beg);
+    vertex_relate_bone_infos_ = (VertexRelateBoneInfo *) malloc(length - 6);
+    input_weight_file.read((char *) vertex_relate_bone_infos_, length - 6);
+    input_weight_file.close();
+}
