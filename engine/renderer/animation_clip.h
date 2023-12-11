@@ -48,10 +48,14 @@ private:
     std::vector<std::vector<unsigned short>> bone_children_vector_;
     /// 骨骼T-pose
     std::vector<glm::mat4> bone_t_pose_vector_;
+    /// 名字
+    std::string name_;
     /// 持续时间
     float duration_ = 0.0f;
     /// 总帧数
     unsigned short frame_count_ = 0;
+    /// 帧率
+    unsigned short frame_per_second_;
     /// 每一帧每一个骨骼的位移矩阵
     std::vector<std::vector<glm::mat4>> bone_matrix_frames_vector_;
     /// 骨骼动画开始播放时间

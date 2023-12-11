@@ -36,7 +36,19 @@ void AnimationClip::LoadFromFile(const char *file_path) {
                         SKELETON_ANIMATION_HEAD);
         return;
     }
-
+    //读取名字长度
+    unsigned short name_length;
+    input_file_stream.read(reinterpret_cast<char *>(&name_length), sizeof(name_length));
+    //读取名字
+    char *name_buffer = new char[name_length + 1];
+    input_file_stream.read(name_buffer, name_length);
+    name_buffer[name_length] = '\0';
+    name_ = name_buffer;
+    delete[] name_buffer;
+    //读取帧数
+    input_file_stream.read(reinterpret_cast<char *>(&frame_count_), sizeof(frame_count_));
+    //读取帧率
+    input_file_stream.read(reinterpret_cast<char *>(&frame_per_second_), sizeof(frame_per_second_));
     //读取骨骼数量
     unsigned short bone_count = 0;
     input_file_stream.read(reinterpret_cast<char *>(&bone_count), sizeof(unsigned short));
@@ -45,42 +57,17 @@ void AnimationClip::LoadFromFile(const char *file_path) {
         //读取骨骼名字长度
         unsigned short bone_name_size = 0;
         input_file_stream.read(reinterpret_cast<char *>(&bone_name_size), sizeof(unsigned short));
-
         char *bone_name = new char[bone_name_size + 1];
         input_file_stream.read(bone_name, bone_name_size);
         bone_name[bone_name_size] = '\0';
         bone_names_.push_back(bone_name);
         delete[] bone_name;
     }
-    //读取骨骼子节点
-    for (unsigned short bone_index = 0; bone_index < bone_count; bone_index++) {
-        //读取骨骼子节点数量
-        unsigned short child_count = 0;
-        input_file_stream.read(reinterpret_cast<char *>(&child_count), sizeof(unsigned short));
-        //读取骨骼子节点名字，在名字数组的序号。
-        std::vector<unsigned short> child_indexes;
-        for (unsigned short j = 0; j < child_count; j++) {
-            unsigned short child_index = 0;
-            input_file_stream.read(reinterpret_cast<char *>(&child_index), sizeof(unsigned short));
-            child_indexes.push_back(child_index);
-        }
-        bone_children_vector_.push_back(child_indexes);
-    }
-    //读取骨骼T-pose
-    for (unsigned short bone_index = 0; bone_index < bone_count; bone_index++) {
-        //读取骨骼T-pose
-        glm::mat4 bone_t_pose;
-        input_file_stream.read(reinterpret_cast<char *>(&bone_t_pose), sizeof(float) * 16);
-        bone_t_pose_vector_.push_back(bone_t_pose);
-    }
-    //读取帧数
-    input_file_stream.read(reinterpret_cast<char *>(&frame_count_), sizeof(unsigned short));
-
     //读取骨骼动画
     for (int frame_index = 0; frame_index < frame_count_; frame_index++) {
         //读取一帧的骨骼矩阵
         std::vector<glm::mat4> bone_matrices;
-        for (unsigned short bone_index = 0; bone_index < 2; bone_index++) {
+        for (unsigned short bone_index = 0; bone_index < bone_count; bone_index++) {
             glm::mat4 bone_matrix;
             input_file_stream.read(reinterpret_cast<char *>(&bone_matrix), sizeof(float) * 16);
             bone_matrices.push_back(bone_matrix);
@@ -88,8 +75,6 @@ void AnimationClip::LoadFromFile(const char *file_path) {
         bone_matrix_frames_vector_.push_back(bone_matrices);
     }
     input_file_stream.close();
-
-    Bake();
 }
 
 void AnimationClip::Bake() {
