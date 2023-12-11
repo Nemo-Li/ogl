@@ -50,12 +50,12 @@ void MeshRenderer::Render() {
     if (!transform) {
         return;
     }
+
     glm::mat4 trans = glm::translate(transform->position());
     auto rotation = transform->rotation();
     glm::mat4 eulerAngleYXZ = glm::eulerAngleYXZ(glm::radians(rotation.y), glm::radians(rotation.x),
                                                  glm::radians(rotation.z));
-    //缩放
-    glm::mat4 scale = glm::scale(transform->scale());
+    glm::mat4 scale = glm::scale(transform->scale()); //缩放;
     glm::mat4 model = trans * scale * eulerAngleYXZ;
     glm::mat4 mvp = projection * view * model;
 
@@ -65,6 +65,8 @@ void MeshRenderer::Render() {
     if (!mesh_filter) {
         return;
     }
+    //当骨骼蒙皮动画生效时，渲染骨骼蒙皮Mesh
+    MeshFilter::Mesh *mesh = mesh_filter->skinned_mesh() == nullptr ? mesh_filter->mesh() : mesh_filter->skinned_mesh();
 
     //获取`Shader`的`gl_program_id`，指定为目标Shader程序。
     GLuint program_id = material_->shader()->program_id();
@@ -79,40 +81,56 @@ void MeshRenderer::Render() {
         //将缓冲区对象指定为顶点缓冲区对象
         glBindBuffer(GL_ARRAY_BUFFER, vbo_);
         //上传顶点数据到缓冲区对象
-        glBufferData(GL_ARRAY_BUFFER, mesh_filter->mesh()->vertex_num_ * sizeof(MeshFilter::Vertex),
-                     mesh_filter->mesh()->vertex_data_, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, mesh->vertex_num_ * sizeof(MeshFilter::Vertex), mesh->vertex_data_,
+                     GL_DYNAMIC_DRAW);
 
         //在GPU上创建缓冲区对象
         glGenBuffers(1, &ebo_);
         //将缓冲区对象指定为顶点索引缓冲区对象
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
         //上传顶点索引数据到缓冲区对象
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh_filter->mesh()->vertex_index_num_ * sizeof(unsigned short),
-                     mesh_filter->mesh()->vertex_index_data_, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->vertex_index_num_ * sizeof(unsigned short),
+                     mesh->vertex_index_data_, GL_STATIC_DRAW);
 
         glGenVertexArrays(1, &vao_);
 
         //设置VAO
         glBindVertexArray(vao_);
+        __CHECK_GL_ERROR__
         {
             //指定当前使用的VBO
             glBindBuffer(GL_ARRAY_BUFFER, vbo_);
+            __CHECK_GL_ERROR__
             //将Shader变量(a_pos)和顶点坐标VBO句柄进行关联，最后的0表示数据偏移量。
             glVertexAttribPointer(vpos_location, 3, GL_FLOAT, false, sizeof(MeshFilter::Vertex), 0);
+            __CHECK_GL_ERROR__
             //启用顶点Shader属性(a_color)，指定与顶点颜色数据进行关联
             glVertexAttribPointer(vcol_location, 4, GL_FLOAT, false, sizeof(MeshFilter::Vertex),
                                   (void *) (sizeof(float) * 3));
+            __CHECK_GL_ERROR__
             //将Shader变量(a_uv)和顶点UV坐标VBO句柄进行关联，最后的0表示数据偏移量。
             glVertexAttribPointer(a_uv_location, 2, GL_FLOAT, false, sizeof(MeshFilter::Vertex),
                                   (void *) (sizeof(float) * (3 + 4)));
+            __CHECK_GL_ERROR__
 
             glEnableVertexAttribArray(vpos_location);
+            __CHECK_GL_ERROR__
             glEnableVertexAttribArray(vcol_location);
+            __CHECK_GL_ERROR__
             glEnableVertexAttribArray(a_uv_location);
+            __CHECK_GL_ERROR__
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
+            __CHECK_GL_ERROR__
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        __CHECK_GL_ERROR__
+    } else {
+        glBindBuffer(GL_ARRAY_BUFFER, vbo_);
+        __CHECK_GL_ERROR__
+        //更新Buffer数据
+        glBufferSubData(GL_ARRAY_BUFFER, 0, mesh->vertex_num_ * sizeof(MeshFilter::Vertex), mesh->vertex_data_);
+        __CHECK_GL_ERROR__
     }
 
     glUseProgram(program_id);
@@ -122,17 +140,23 @@ void MeshRenderer::Render() {
             component->OnPreRender();
         });
 
-        if(current_camera->camera_use_for()==Camera::CameraUseFor::SCENE){
-            glEnable(GL_DEPTH_TEST);__CHECK_GL_ERROR__
-        }else{
-            glDisable(GL_DEPTH_TEST);__CHECK_GL_ERROR__
+        if (current_camera->camera_use_for() == Camera::CameraUseFor::SCENE) {
+            glEnable(GL_DEPTH_TEST);
+            __CHECK_GL_ERROR__
+        } else {
+            glDisable(GL_DEPTH_TEST);
+            __CHECK_GL_ERROR__
         }
+        glEnable(GL_CULL_FACE);
+        __CHECK_GL_ERROR__//开启背面剔除
+        glEnable(GL_BLEND);
+        __CHECK_GL_ERROR__
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        __CHECK_GL_ERROR__
 
-        glEnable(GL_CULL_FACE);__CHECK_GL_ERROR__//开启背面剔除
-        glEnable(GL_BLEND);__CHECK_GL_ERROR__
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);__CHECK_GL_ERROR__
         //上传mvp矩阵
         glUniformMatrix4fv(glGetUniformLocation(program_id, "u_mvp"), 1, GL_FALSE, &mvp[0][0]);
+        __CHECK_GL_ERROR__
 
         //从Pass节点拿到保存的Texture
         std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
@@ -148,11 +172,10 @@ void MeshRenderer::Render() {
 
         glBindVertexArray(vao_);
         {
-            //使用顶点索引进行绘制，最后的0表示数据偏移量。
-            glDrawElements(GL_TRIANGLES, mesh_filter->mesh()->vertex_index_num_, GL_UNSIGNED_SHORT,
-                           nullptr);
+            glDrawElements(GL_TRIANGLES, mesh->vertex_index_num_, GL_UNSIGNED_SHORT, 0);//使用顶点索引进行绘制，最后的0表示数据偏移量。
         }
         glBindVertexArray(0);
+        __CHECK_GL_ERROR__
 
         // PostRender
         game_object()->ForeachComponent([](Component *component) {

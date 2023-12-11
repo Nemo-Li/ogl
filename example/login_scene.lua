@@ -69,5 +69,5 @@ function LoginScene:Update()
     self.camera_:SetView(glm.vec3(0.0, 0.0, 0.0), glm.vec3(0.0, 1.0, 0.0))
     self.camera_:SetPerspective(60, Screen.aspect_ratio(), 1, 1000)
     --鼠标滚轮控制相机远近
-    --self.go_camera_:GetComponent(Transform):set_position(self.go_camera_:GetComponent(Transform):position())
+    self.go_camera_:GetComponent(Transform):set_position(glm.vec3(0, 0, 7))
 end

@@ -16,6 +16,7 @@
 #include "component/game_object.h"
 #include "renderer/mesh_renderer.h"
 #include "helpers/debug.h"
+#include "helpers/time.h"
 
 std::string Application::data_path_;
 std::string Application::title_;
@@ -59,6 +60,7 @@ static void mouse_scroll_callback(GLFWwindow *window, double x, double y) {
 void Application::Init() {
     Debug::Init();
     DEBUG_LOG_INFO("game start");
+    Time::Init();
     if (!glfwInit()) {
         DEBUG_LOG_ERROR("glfw init failed!");
         exit(EXIT_FAILURE);
