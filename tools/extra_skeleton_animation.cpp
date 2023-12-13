@@ -2,8 +2,6 @@
 // Created by Nemo li on 2023/12/11.
 //
 
-#define GLFW_INCLUDE_NONE
-
 #include <filesystem>
 #include "fbxsdk.h"
 #include "Common/Common.h"

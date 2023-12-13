@@ -85,13 +85,6 @@ void SkinnedMeshRenderer::Update() {
             //顶点关联的骨骼权重
             float bone_weight = vertex_relate_bone_infos[i].bone_weight_[j] / 100.f;
 
-//            //获取当前顶点关联的骨骼T-Pos矩阵
-//            glm::mat4 &bone_t_pose_matrix = animation_clip->GetBoneTPose(bone_index);
-//            //获取T-Pos矩阵的逆矩阵
-//            glm::mat4 bone_t_pose_matrix_inverse = glm::inverse(bone_t_pose_matrix);
-//            //将顶点坐标转换到骨骼空间
-//            glm::vec4 vertex_position = bone_t_pose_matrix_inverse * glm::vec4(vertex.position_, 1.0f);
-
             //当前帧顶点关联的骨骼矩阵
             auto &bone_matrix = bone_matrices[bone_index];
             //计算当前帧顶点位置(模型坐标系，bone_matrix里带了相对于模型坐标系的位置，作用到骨骼坐标系的位置上，就转换到了模型坐标系)

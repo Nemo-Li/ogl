@@ -4,15 +4,12 @@
 
 #include "application.h"
 #include <memory>
-#include <rttr/registration>
 #include <glad/glad.h>
-
-#define GLFW_INCLUDE_NONE
-
 #include <GLFW/glfw3.h>
-#include <helpers/screen.h>
 #include <renderer/camera.h>
 #include <control/input.h>
+#include <render_async/render_task_consumer.h>
+#include <render_async/render_task_producer.h>
 #include "component/game_object.h"
 #include "renderer/mesh_renderer.h"
 #include "helpers/debug.h"
@@ -80,16 +77,15 @@ void Application::Init() {
         exit(EXIT_FAILURE);
     }
 
-    glfwMakeContextCurrent(glfw_window_);
-    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-
-    UpdateScreenSize();
-    glfwSwapInterval(1);
-
     glfwSetKeyCallback(glfw_window_, key_callback);
     glfwSetMouseButtonCallback(glfw_window_, mouse_button_callback);
     glfwSetScrollCallback(glfw_window_, mouse_scroll_callback);
     glfwSetCursorPosCallback(glfw_window_, mouse_move_callback);
+
+    //初始化渲染任务消费者(单独渲染线程)
+    RenderTaskConsumer::Init(glfw_window_);
+
+    UpdateScreenSize();
 }
 
 void Application::Run() {
@@ -101,9 +97,13 @@ void Application::Run() {
         Update();
         Render();
 
-        glfwSwapBuffers(glfw_window_);
+        //发出特殊任务：渲染结束
+        RenderTaskProducer::ProduceRenderTaskEndFrame();
+
         glfwPollEvents();
     }
+
+    RenderTaskConsumer::Exit();
 
     glfwDestroyWindow(glfw_window_);
 
@@ -112,6 +112,7 @@ void Application::Run() {
 }
 
 void Application::Update() {
+    Time::Update();
     UpdateScreenSize();
 
     GameObject::Foreach([](GameObject *game_object) {
@@ -142,8 +143,5 @@ void Application::Render() {
 }
 
 void Application::UpdateScreenSize() {
-    int width, height;
-    glfwGetFramebufferSize(glfw_window_, &width, &height);
-    glViewport(0, 0, width, height);
-    Screen::set_width_height(width, height);
+    RenderTaskProducer::ProduceRenderTaskUpdateScreenSize();
 }

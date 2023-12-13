@@ -242,7 +242,7 @@ void LuaBinding::BindLua() {
         cpp_ns_table.new_usertype<Shader>("Shader", sol::call_constructor, sol::constructors<Shader()>(),
                                           "Use", &Shader::Use,
                                           "Disuse", &Shader::Disuse,
-                                          "program_id", &Shader::program_id,
+                                          "shader_program_handle", &Shader::shader_program_handle,
                                           "Find", &Shader::Find
         );
 

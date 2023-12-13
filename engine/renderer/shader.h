@@ -21,21 +21,20 @@ public:
 
     void Disuse();
 
-    //glCreateProgram()返回的GPU程序句柄
-    unsigned int program_id() { return program_id_; }
+    unsigned int shader_program_handle() { return shader_program_handle_; }//Shader程序句柄;
 
 private:
     //shader名
     std::string shader_name_;
-    //glCreateProgram()返回的GPU程序句柄(handle);
-    unsigned int program_id_;
+    unsigned int shader_program_handle_;//Shader程序句柄;
+
     //已经创建的Shader
     static std::unordered_map<std::string, Shader *> kShaderMap;
 
     void Load(const std::string &shader_name);
 
     //编译Shader,创建GPU程序
-    void CreateGPUProgram(const char *vertex_shader_text, const char *fragment_shader_text);
+    void CreateShaderProgram(const char *vertex_shader_text, const char *fragment_shader_text);
 };
 
 
