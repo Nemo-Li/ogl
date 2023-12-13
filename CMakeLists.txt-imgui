@@ -1,0 +1,13 @@
+#头文件目录
+include_directories("thirdparty/imgui")
+include_directories("thirdparty/imgui/backends")
+
+#源文件
+set(IMGUI_SRC thirdparty/imgui/imgui.cpp
+        thirdparty/imgui/imgui_demo.cpp
+        thirdparty/imgui/imgui_draw.cpp
+        thirdparty/imgui/imgui_tables.cpp
+        thirdparty/imgui/imgui_widgets.cpp
+        )
+
+list(APPEND IMGUI_SRC "thirdparty/imgui/backends/imgui_impl_glfw.cpp" "thirdparty/imgui/backends/imgui_impl_opengl3.cpp")

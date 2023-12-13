@@ -4,6 +4,7 @@ project(ogl)
 set(CMAKE_CXX_STANDARD 17)
 
 include(CMakeLists.txt-lua)
+include(CMakeLists.txt-imgui)
 
 # Add source files
 file(GLOB_RECURSE SOURCE_FILES
@@ -69,7 +70,7 @@ add_executable(${PROJECT_NAME} ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/ma
 # Define the link libraries
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})
 
-add_executable(main ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/combine/main.cpp)
+add_executable(main ${IMGUI_SRC} ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/combine/main.cpp)
 target_link_libraries(main "-framework OpenGL" ${LIBS})
 
 add_subdirectory(tools)

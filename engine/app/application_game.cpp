@@ -8,7 +8,7 @@
 #include "application_game.h"
 #include "control/input.h"
 #include "helpers/debug.h"
-#include "render_task_consumer_game.h"
+#include "render_async/render_task_consumer_game.h"
 
 static void error_callback(int error, const char *description) {
     DEBUG_LOG_ERROR("glfw error:{} description:{}", error, description);
