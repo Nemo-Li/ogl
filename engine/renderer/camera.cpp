@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glad/glad.h>
 #include <rttr/registration>
+#include <render_async/render_task_producer.h>
 #include "component/game_object.h"
 #include "component/transform.h"
 
@@ -53,8 +54,8 @@ void Camera::SetOrthographic(float left, float right, float bottom, float top, f
 }
 
 void Camera::Clear() {
-    glClear(clear_flag_);
-    glClearColor(clear_color_.r, clear_color_.g, clear_color_.b, clear_color_.a);
+    RenderTaskProducer::ProduceRenderTaskSetClearFlagAndClearColorBuffer(clear_flag_, clear_color_.r, clear_color_.g,
+                                                                         clear_color_.b, clear_color_.a);
 }
 
 void Camera::set_depth(unsigned char depth) {

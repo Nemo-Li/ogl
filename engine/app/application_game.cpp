@@ -1,23 +1,18 @@
 //
-// Created by Nemo li on 2023/12/6.
+// Created by Nemo li on 2023/12/13.
 //
 
-#include "application.h"
-#include <memory>
-#include <glad/glad.h>
+#include "glad/glad.h"
 #include <GLFW/glfw3.h>
-#include <renderer/camera.h>
-#include <control/input.h>
 #include <render_async/render_task_consumer.h>
-#include <render_async/render_task_producer.h>
-#include "component/game_object.h"
-#include "renderer/mesh_renderer.h"
+#include "application_game.h"
+#include "control/input.h"
 #include "helpers/debug.h"
-#include "helpers/time.h"
+#include "render_task_consumer_game.h"
 
-std::string Application::data_path_;
-std::string Application::title_;
-GLFWwindow *Application::glfw_window_;
+static void error_callback(int error, const char *description) {
+    DEBUG_LOG_ERROR("glfw error:{} description:{}", error, description);
+}
 
 /// 键盘回调
 /// \param window
@@ -25,7 +20,7 @@ GLFWwindow *Application::glfw_window_;
 /// \param scancode
 /// \param action
 /// \param mods
-static void key_callback(GLFWwindow *window, int key, int scanCode, int action, int mods) {
+static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     Input::RecordKey(key, action);
 }
 
@@ -54,10 +49,8 @@ static void mouse_scroll_callback(GLFWwindow *window, double x, double y) {
     Input::RecordScroll(y);
 }
 
-void Application::Init() {
-    Debug::Init();
-    DEBUG_LOG_INFO("game start");
-    Time::Init();
+void ApplicationGame::InitGraphicsLibraryFramework() {
+    glfwSetErrorCallback(error_callback);
     if (!glfwInit()) {
         DEBUG_LOG_ERROR("glfw init failed!");
         exit(EXIT_FAILURE);
@@ -83,65 +76,24 @@ void Application::Init() {
     glfwSetCursorPosCallback(glfw_window_, mouse_move_callback);
 
     //初始化渲染任务消费者(单独渲染线程)
-    RenderTaskConsumer::Init(glfw_window_);
-
-    UpdateScreenSize();
+    RenderTaskConsumer::Init(new RenderTaskConsumerGame(glfw_window_));
 }
 
-void Application::Run() {
+void ApplicationGame::Run() {
+    ApplicationBase::Run();
+
     while (true) {
         if (glfwWindowShouldClose(glfw_window_)) {
             break;
         }
-
-        Update();
-        Render();
-
-        //发出特殊任务：渲染结束
-        RenderTaskProducer::ProduceRenderTaskEndFrame();
-
+        OneFrame();
         glfwPollEvents();
     }
+    Exit();
+}
 
-    RenderTaskConsumer::Exit();
-
+void ApplicationGame::Exit() {
+    ApplicationBase::Exit();
     glfwDestroyWindow(glfw_window_);
-
     glfwTerminate();
-    exit(EXIT_SUCCESS);
-}
-
-void Application::Update() {
-    Time::Update();
-    UpdateScreenSize();
-
-    GameObject::Foreach([](GameObject *game_object) {
-        if (game_object->active()) {
-            game_object->ForeachComponent([](Component *component) {
-                component->Update();
-            });
-        }
-    });
-
-    Input::Update();
-}
-
-void Application::Render() {
-    //遍历所有相机，每个相机的View Projection，都用来做一次渲染。
-    Camera::Foreach([&]() {
-        GameObject::Foreach([](GameObject *game_object) {
-            if (!game_object->active()) {
-                return;
-            }
-            MeshRenderer *mesh_renderer = game_object->GetComponent<MeshRenderer>();
-            if (mesh_renderer == nullptr) {
-                return;
-            }
-            mesh_renderer->Render();
-        });
-    });
-}
-
-void Application::UpdateScreenSize() {
-    RenderTaskProducer::ProduceRenderTaskUpdateScreenSize();
 }

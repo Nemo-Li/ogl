@@ -4,7 +4,7 @@
 
 #include <fstream>
 #include <glad/glad.h>
-#include <framework/application.h>
+#include <app/application.h>
 #include <render_async/gpu_resource_mapper.h>
 #include <render_async/render_task_producer.h>
 #include "shader.h"

@@ -18,7 +18,7 @@
 #include "renderer/mesh_renderer.h"
 #include "renderer/shader.h"
 #include "renderer/texture2d.h"
-#include "framework/application.h"
+#include "app/application.h"
 
 sol::state LuaBinding::sol_state_;
 
@@ -245,35 +245,25 @@ void LuaBinding::BindLua() {
                                           "shader_program_handle", &Shader::shader_program_handle,
                                           "Find", &Shader::Find
         );
-
-//        cpp_ns_table.new_usertype<Texture2D>("Texture2D",
-//                                             "texture_id", &Texture2D::texture_id,
-//                                             "LoadFromFile", &Texture2D::LoadFromFile
-//        );
     }
 
     // framework
     {
         cpp_ns_table.new_usertype<Application>("Application",
-                                               "set_title", &Application::set_title,
-                                               "set_data_path", &Application::set_data_path,
                                                "Init", &Application::Init,
-                                               "Run", &Application::Run,
-                                               "UpdateScreenSize", &Application::UpdateScreenSize,
-                                               "Update", &Application::Update,
-                                               "Render", &Application::Render
+                                               "Run", &Application::Run
         );
     }
 
     //helpers
     {
         cpp_ns_table.new_usertype<Screen>("Screen",
-                                          "width",&Screen::width,
-                                          "height",&Screen::height,
-                                          "aspect_ratio",&Screen::aspect_ratio,
-                                          "set_width",&Screen::set_width,
-                                          "set_height",&Screen::set_height,
-                                          "set_width_height",&Screen::set_width_height
+                                          "width", &Screen::width,
+                                          "height", &Screen::height,
+                                          "aspect_ratio", &Screen::aspect_ratio,
+                                          "set_width", &Screen::set_width,
+                                          "set_height", &Screen::set_height,
+                                          "set_width_height", &Screen::set_width_height
         );
     }
 }
@@ -291,7 +281,6 @@ sol::protected_function_result LuaBinding::CallLuaFunction() {
     sol::protected_function_result result = main_function();
     if (!result.valid()) {
         sol::error err = result;
-//        DEBUG_LOG_ERROR("\n---- RUN LUA_FUNCTION ERROR ----\n{}\n------------------------",err.what());
     }
     return result;
 }

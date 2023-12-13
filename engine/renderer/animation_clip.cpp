@@ -6,7 +6,7 @@
 #include <fstream>
 #include <glm/gtx/string_cast.hpp>
 #include <helpers/time.h>
-#include "framework/application.h"
+#include "app/application.h"
 #include "helpers/debug.h"
 
 using std::ifstream;
