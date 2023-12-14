@@ -4,6 +4,8 @@
 
 #include <render_async/render_task_consumer.h>
 #include <render_async/render_task_consumer_editor.h>
+#include <component/game_object.h>
+#include <component/transform.h>
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "helpers/debug.h"
@@ -39,7 +41,7 @@ void ApplicationEditor::InitGraphicsLibraryFramework() {
     }
 
     //创建编辑器窗口，并将游戏Context共享。
-    editor_glfw_window_ = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, game_glfw_window_);
+    editor_glfw_window_ = glfwCreateWindow(1728, 1080, "Dear ImGui GLFW+OpenGL3 example", nullptr, game_glfw_window_);
     if (!editor_glfw_window_) {
         DEBUG_LOG_ERROR("glfwCreateWindow error!");
         glfwTerminate();
@@ -85,42 +87,129 @@ void ApplicationEditor::Run() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        //1.游戏渲染画面 窗口
+        // 1. 状态
         {
-            ImGui::Begin("Game");
+            ImGui::Begin("Status");
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                        ImGui::GetIO().Framerate);
+            ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+            ImGui::SetWindowSize(ImVec2(350, 100), ImGuiCond_Always);
+            ImGui::End();
+        }
 
-            RenderTaskConsumerEditor *render_task_consumer_editor = dynamic_cast<RenderTaskConsumerEditor *>(RenderTaskConsumer::Instance());
+        // 2. 游戏渲染画面
+        {
+            ImGui::Begin("ViewPort");
+            ImGui::SetWindowSize(ImVec2(1028, 1080), ImGuiCond_Always);
+            ImGui::SetWindowPos(ImVec2(350, 0), ImGuiCond_Always);
+            if (ImGui::BeginTabBar("ViewPortTabBar", ImGuiTabBarFlags_None)) {
+                // 2.1 Game视图
+                if (ImGui::BeginTabItem("Game")) {
+                    RenderTaskConsumerEditor *render_task_consumer_editor = dynamic_cast<RenderTaskConsumerEditor *>(RenderTaskConsumer::Instance());
 
-            //从游戏渲染线程拿到FBO Attach Texture id
-            GLuint texture_id = render_task_consumer_editor->color_texture_id();
-            ImTextureID image_id = (void *) (intptr_t) texture_id;
+                    //从游戏渲染线程拿到FBO Attach Texture id
+                    GLuint texture_id = render_task_consumer_editor->color_texture_id();
+                    ImTextureID image_id = (void *) (intptr_t) texture_id;
 
-            // ImGui绘制Image，使用FBO Attach Texture id
-            // 第一个参数：生成的纹理的id
-            // 第2个参数：Image的大小
-            // 第3，4个参数：UV的起点坐标和终点坐标，UV是被规范化到（0，1）之间的坐标
-            // 第5个参数：图片的色调
-            // 第6个参数：图片边框的颜色
-            ImGui::Image(image_id, ImVec2(480, 320), ImVec2(0.0, 1.0), ImVec2(1.0, 0.0), ImVec4(1, 1, 1, 1),
-                         ImVec4(0, 1, 0, 1));
+                    // 第一个参数：生成的纹理的id
+                    // 第2个参数：Image的大小
+                    // 第3，4个参数：UV的起点坐标和终点坐标，UV是被规范化到（0，1）之间的坐标
+                    // 第5个参数：图片的色调
+                    // 第6个参数：图片边框的颜色
+                    ImGui::Image(image_id, ImVec2(1028, 1080), ImVec2(0.0, 1.0), ImVec2(1.0, 0.0),
+                                 ImVec4(255, 255, 255, 1), ImVec4(0, 255, 0, 1));
+
+                    ImGui::EndTabItem();
+                }
+                // 2.2 深度视图
+                if (ImGui::BeginTabItem("Depth")) {
+                    RenderTaskConsumerEditor *render_task_consumer_editor = dynamic_cast<RenderTaskConsumerEditor *>(RenderTaskConsumer::Instance());
+
+                    GLuint texture_id = render_task_consumer_editor->depth_texture_id();
+                    ImTextureID image_id = (void *) (intptr_t) texture_id;
+
+                    ImGui::Image(image_id, ImVec2(1028, 1080), ImVec2(0.0, 1.0), ImVec2(1.0, 0.0),
+                                 ImVec4(255, 255, 255, 1), ImVec4(0, 255, 0, 1));
+
+                    ImGui::EndTabItem();
+                }
+                ImGui::EndTabBar();
+            }
+            ImGui::End();
+        }
+
+
+        // 3. Hierarchy
+        {
+            ImGui::Begin("Hierarchy");
+            ImGui::SetWindowPos(ImVec2(0, 100), ImGuiCond_Always);
+            ImGui::SetWindowSize(ImVec2(350, 980), ImGuiCond_Always);
+            ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+                                            ImGuiTreeNodeFlags_SpanAvailWidth;
+            Tree::Node *root_node = GameObject::game_object_tree().root_node();
+            DrawHierarchy(root_node, "scene", base_flags);
+            ImGui::End();
+        }
+
+        //4. Property
+        {
+            ImGui::Begin("Property");
+            ImGui::SetWindowPos(ImVec2(1378, 0), ImGuiCond_Always);
+            ImGui::SetWindowSize(ImVec2(350, 1080), ImGuiCond_Always);
+            //4.1 GameObject属性
+            GameObject *game_object = nullptr;
+            if (selected_node_ != nullptr) {
+                game_object = dynamic_cast<GameObject *>(selected_node_);
+            }
+            if (game_object != nullptr) {
+                //是否Active
+                bool active_self = game_object->active();
+                if (ImGui::Checkbox("active", &active_self)) {
+                    game_object->set_active(active_self);
+                }
+                //Layer
+                int layer = game_object->layer();
+                if (ImGui::InputInt("Layer", &layer)) {
+                    game_object->set_layer(layer);
+                }
+
+            } else {
+                ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "no valid GameObject");
+            }
+
+            //4.2 Transform属性
+            Transform *transform = nullptr;
+            glm::vec3 position, rotation, scale;
+
+            if (game_object != nullptr) {
+                transform = game_object->GetComponent<Transform>();
+            }
+
+            if (transform != nullptr) {
+                position = transform->position();
+                rotation = transform->rotation();
+                scale = transform->scale();
+
+                if (ImGui::TreeNode("Transform")) {
+                    // 显示属性，如果数值改变，将数据写回Transform
+                    if (ImGui::InputFloat3("position", (float *) &position)) {
+                        transform->set_position(position);
+                    }
+                    if (ImGui::InputFloat3("rotation", (float *) &rotation)) {
+                        transform->set_rotation(rotation);
+                    }
+                    if (ImGui::InputFloat3("scale", (float *) &scale)) {
+                        transform->set_scale(scale);
+                    }
+                    ImGui::TreePop();
+                }
+            } else {
+                ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "not found Transform");
+            }
 
             ImGui::End();
         }
 
-        //2.游戏渲染深度图 窗口
-        {
-            ImGui::Begin("Depth");
-
-            RenderTaskConsumerEditor *render_task_consumer_editor = dynamic_cast<RenderTaskConsumerEditor *>(RenderTaskConsumer::Instance());
-
-            GLuint texture_id = render_task_consumer_editor->depth_texture_id();
-            ImTextureID image_id = (void *) (intptr_t) texture_id;
-
-            ImGui::Image(image_id, ImVec2(480, 320), ImVec2(0.0, 1.0), ImVec2(1.0, 0.0), ImVec4(1, 1, 1, 1),
-                         ImVec4(0, 1, 0, 1));
-
-            ImGui::End();
-        }
 
         //绘制
         ImGui::Render();
@@ -151,4 +240,33 @@ void ApplicationEditor::Exit() {
     glfwDestroyWindow(editor_glfw_window_);
     glfwDestroyWindow(game_glfw_window_);
     glfwTerminate();
+}
+
+void ApplicationEditor::DrawHierarchy(Tree::Node *node, const char *label, int base_flags) {
+    int flags = base_flags;
+
+    if (selected_node_ == node) {//如果当前Node是被选中的，那么设置flag，显示样式为选中。
+        flags |= ImGuiTreeNodeFlags_Selected;
+    }
+
+    std::list<Tree::Node *> &children = node->children();
+    if (children.size() > 0) {
+        if (ImGui::TreeNodeEx(label, flags)) {//如果被点击，就展开子节点。
+            if (ImGui::IsItemClicked()) {
+                selected_node_ = node;
+            }
+            for (auto *child:children) {
+                GameObject *game_object = dynamic_cast<GameObject *>(child);
+//                DEBUG_LOG_INFO("game object:{} depth:{}",game_object->name(),game_object->depth());
+                DrawHierarchy(child, game_object->name().c_str(), base_flags);
+            }
+            ImGui::TreePop();//可以点击展开的TreeNode，需要加上TreePop()。
+        }
+    } else {//没有子节点，不显示展开按钮
+        flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        ImGui::TreeNodeEx(label, flags);
+        if (ImGui::IsItemClicked()) {
+            selected_node_ = node;
+        }
+    }
 }

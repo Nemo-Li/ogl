@@ -97,6 +97,8 @@ public:
     /// \param func
     static void Foreach(std::function<void(GameObject *game_object)> func);
 
+    static Tree game_object_tree() { return game_object_tree_; }
+
 private:
     std::string name_;
 

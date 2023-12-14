@@ -504,6 +504,5 @@ void RenderTaskConsumerBase::ProcessTask() {
                 break;
             }
         }
-        std::cout << "task in queue:" << RenderTaskQueue::Size() << std::endl;
     }
 }
