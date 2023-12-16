@@ -43,6 +43,7 @@ void RenderTaskConsumerBase::UpdateScreenSize(RenderTaskBase *task_base) {
     int width, height;
     GetFramebufferSize(width, height);
     glViewport(0, 0, width, height);
+//    DEBUG_LOG_INFO("UpdateScreenSize: {}x{}", width, height);
     Screen::set_width_height(width, height);
 }
 

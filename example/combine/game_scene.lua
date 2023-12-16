@@ -10,6 +10,7 @@ require("renderer/mesh_filter")
 require("renderer/mesh_renderer")
 require("renderer/material")
 require("helpers/screen")
+require("renderer/particle_system")
 
 GameScene = class("GameScene", Component)
 
@@ -24,6 +25,7 @@ function GameScene:ctor()
     self.go_mesh_pot_ = nil -- 鱼缸
     self.material_ = nil --材质
     self.material_pot_ = nil --材质
+    self.particle_system = nil
 end
 
 function GameScene:Awake()
@@ -35,28 +37,27 @@ function GameScene:Awake()
     --挂上 Camera 组件
     self.camera_ = self.go_camera_:AddComponent(Camera)
     self.camera_:set_depth(0)
+    self.camera_:SetView(glm.vec3(0.0, 0.0, 0.0), glm.vec3(0.0, 1.0, 0.0))
+    self.camera_:SetPerspective(60, Screen.aspect_ratio(), 1, 1000)
 
-    --创建jiu_lian
-    self.go_mesh_ = GameObject.new("jiu_lian")
-    self.go_mesh_:AddComponent(Transform):set_position(glm.vec3(0, -1, 0))
-    self.go_mesh_:GetComponent(Transform):set_rotation(glm.vec3(-90, 0, 0))
-
-    local mesh_filter = self.go_mesh_:AddComponent(MeshFilter)
-    mesh_filter:LoadMesh("model/fbx_extra_jiulian.mesh")--加载Mesh
+    --创建particle
+    self.go_mesh_ = GameObject.new("particle")
+    self.go_mesh_:AddComponent(Transform):set_position(glm.vec3(0, 0, 0))
 
     --手动创建Material
     self.material_ = Material.new()--设置材质
-    self.material_:Load("material/fbx_extra_jiulian.mat")
+    self.material_:Load("material/particle.mat")
 
     --挂上 MeshRenderer 组件
-    local mesh_renderer = self.go_mesh_:AddComponent(MeshRenderer)
-    mesh_renderer:SetMaterial(self.material_)
+    local particleSystem = self.go_mesh_:AddComponent(ParticleSystem)
+    particleSystem:SetMaterial(self.material_)
+
 end
 
 function GameScene:Update()
-    self.camera_:set_depth(0)
-    self.camera_:SetView(glm.vec3(0.0, 0.0, 0.0), glm.vec3(0.0, 1.0, 0.0))
-    self.camera_:SetPerspective(60, Screen.aspect_ratio(), 1, 1000)
-    --鼠标滚轮控制相机远近
-    self.go_camera_:GetComponent(Transform):set_position(glm.vec3(0, 0, 7))
+    --self.camera_:set_depth(0)
+    --self.camera_:SetView(glm.vec3(0.0, 0.0, 0.0), glm.vec3(0.0, 1.0, 0.0))
+    --self.camera_:SetPerspective(60, Screen.aspect_ratio(), 1, 1000)
+    ----鼠标滚轮控制相机远近
+    --self.go_camera_:GetComponent(Transform):set_position(glm.vec3(0, 0, 7))
 end

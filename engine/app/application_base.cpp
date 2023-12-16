@@ -13,6 +13,7 @@
 #include "helpers/time.h"
 #include "helpers/debug.h"
 #include "component/component.h"
+#include "renderer/particle_system.h"
 
 void ApplicationBase::Init() {
     Debug::Init();
@@ -32,7 +33,7 @@ void ApplicationBase::Init() {
 void ApplicationBase::InitLuaBinding() {
     //设置lua搜索目录
     LuaBinding::Init(
-            ";../example/combine/?.lua;../engine_lua/?.lua;../engine_lua/helpers/?.lua;../engine_lua/app/?.lua;../engine_lua/component/?.lua");
+            ";../example/combine/?.lua;../engine_lua/?.lua;../engine_lua/helpers/?.lua;../engine_lua/app/?.lua;../engine_lua/component/?.lua;../engine_lua/renderer/?.lua");
     //绑定引擎所有类到Lua
     LuaBinding::BindLua();
     //执行lua
@@ -74,10 +75,14 @@ void ApplicationBase::Render() {
                 return;
             }
             MeshRenderer *mesh_renderer = game_object->GetComponent<MeshRenderer>();
-            if (mesh_renderer == nullptr) {
-                return;
+            if (mesh_renderer != nullptr) {
+                mesh_renderer->Render();
             }
-            mesh_renderer->Render();
+
+            ParticleSystem *particleSystem = game_object->GetComponent<ParticleSystem>();
+            if (particleSystem != nullptr) {
+                particleSystem->Render();
+            }
         });
     });
 }

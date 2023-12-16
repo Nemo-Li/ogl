@@ -19,6 +19,7 @@
 #include "renderer/shader.h"
 #include "renderer/texture2d.h"
 #include "app/application.h"
+#include "renderer/particle_system.h"
 
 sol::state LuaBinding::sol_state_;
 
@@ -244,6 +245,14 @@ void LuaBinding::BindLua() {
                                           "Disuse", &Shader::Disuse,
                                           "shader_program_handle", &Shader::shader_program_handle,
                                           "Find", &Shader::Find
+        );
+
+        cpp_ns_table.new_usertype<ParticleSystem>("ParticleSystem", sol::call_constructor,
+                                                  sol::constructors<ParticleSystem()>(), sol::base_classes,
+                                                  sol::bases<Component>(),
+                                                  "SetMaterial", &ParticleSystem::SetMaterial,
+                                                  "material", &ParticleSystem::material,
+                                                  "Render", &ParticleSystem::Render
         );
     }
 

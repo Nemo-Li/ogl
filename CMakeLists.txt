@@ -74,3 +74,4 @@ add_executable(main ${IMGUI_SRC} ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/
 target_link_libraries(main "-framework OpenGL" ${LIBS})
 
 add_subdirectory(tools)
+add_subdirectory(example/experiment)

@@ -33,7 +33,7 @@ void ApplicationEditor::InitGraphicsLibraryFramework() {
 #endif
 
     //创建游戏窗口
-    game_glfw_window_ = glfwCreateWindow(960, 640, title_.c_str(), nullptr, nullptr);
+    game_glfw_window_ = glfwCreateWindow(514, 540, title_.c_str(), nullptr, nullptr);
     if (!game_glfw_window_) {
         DEBUG_LOG_ERROR("glfwCreateWindow error!");
         glfwTerminate();
