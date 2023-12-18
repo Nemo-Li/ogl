@@ -17,7 +17,7 @@ glm::mat4 getProjectionMatrix() {
 }
 
 // Initial position : on +Z
-glm::vec3 position = glm::vec3(0, -2, 5);
+glm::vec3 position = glm::vec3(0, -1.5, 5);
 
 float initialFoV = 45.0f;
 

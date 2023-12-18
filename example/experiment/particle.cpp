@@ -26,7 +26,7 @@ struct Particle {
     }
 };
 
-const int MaxParticles = 1000;
+const int MaxParticles = 10000;
 Particle ParticlesContainer[MaxParticles];
 int LastUsedParticle = 0;
 
@@ -57,15 +57,15 @@ void SortParticles() {
 
 
 int main() {
-    printf("hello particle");
+    printf("hello particle\n");
 
     if (!glfwInit()) {
         DEBUG_LOG_ERROR("glfw init failed!");
         exit(EXIT_FAILURE);
     }
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -175,9 +175,9 @@ int main() {
         // Generate 10 new particule each millisecond,
         // but limit this to 16 ms (60 fps), or if you have 1 long frame (1sec),
         // newparticles will be huge and the next frame even longer.
-        int newparticles = (int) (delta * 10000.0);
-        if (newparticles > (int) (0.016f * 10000.0))
-            newparticles = (int) (0.016f * 10000.0);
+        int newparticles = (int) (delta * 1000.0);
+        if (newparticles > (int) (0.016f * 1000.0))
+            newparticles = (int) (0.016f * 1000.0);
 
         for (int i = 0; i < newparticles; i++) {
             int particleIndex = FindUnusedParticle();
@@ -197,7 +197,6 @@ int main() {
 
             ParticlesContainer[particleIndex].speed = maindir + randomdir * spread;
 
-
             // Very bad way to generate a random color
             ParticlesContainer[particleIndex].r = rand() % 256;
             ParticlesContainer[particleIndex].g = rand() % 256;
@@ -210,6 +209,7 @@ int main() {
 
         // Simulate all particles
         int ParticlesCount = 0;
+
         for (int i = 0; i < MaxParticles; i++) {
 
             Particle &p = ParticlesContainer[i]; // shortcut
@@ -249,17 +249,12 @@ int main() {
         }
 
         SortParticles();
-
-
-        //printf("%d ",ParticlesCount);
-
+        printf("ParticlesCount: %d\n", ParticlesCount);
 
         // Update the buffers that OpenGL uses for rendering.
         // There are much more sophisticated means to stream data from the CPU to the GPU, 
         // but this is outside the scope of this tutorial.
         // http://www.opengl.org/wiki/Buffer_Object_Streaming
-
-
         glBindBuffer(GL_ARRAY_BUFFER, particles_position_buffer);
         glBufferData(GL_ARRAY_BUFFER, MaxParticles * 4 * sizeof(GLfloat), NULL,
                      GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. See above link for details.
