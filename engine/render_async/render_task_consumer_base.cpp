@@ -234,9 +234,11 @@ void RenderTaskConsumerBase::CreateVAO(RenderTaskBase *task_base) {
             __CHECK_GL_ERROR__
         }
         //将Shader变量(a_uv)和顶点UV坐标VBO句柄进行关联，最后的0表示数据偏移量。
-        glVertexAttribPointer(attribute_uv_location, 2, GL_FLOAT, false, task->vertex_data_stride_,
-                              (void *) (sizeof(float) * (3 + 4)));
-        __CHECK_GL_ERROR__
+        if (attribute_uv_location >= 0) {
+            glVertexAttribPointer(attribute_uv_location, 2, GL_FLOAT, false, task->vertex_data_stride_,
+                                  (void *) (sizeof(float) * (3 + 4)));
+            __CHECK_GL_ERROR__
+        }
         //将Shader变量(a_normal)和顶点法线VBO句柄进行关联，最后的0表示数据偏移量。
         if (attribute_normal_location >= 0) {
             glVertexAttribPointer(attribute_normal_location, 3, GL_FLOAT, false, task->vertex_data_stride_,
@@ -250,8 +252,10 @@ void RenderTaskConsumerBase::CreateVAO(RenderTaskBase *task_base) {
             glEnableVertexAttribArray(attribute_color_location);
             __CHECK_GL_ERROR__
         }
-        glEnableVertexAttribArray(attribute_uv_location);
-        __CHECK_GL_ERROR__
+        if (attribute_uv_location >= 0) {
+            glEnableVertexAttribArray(attribute_uv_location);
+            __CHECK_GL_ERROR__
+        }
         if (attribute_normal_location >= 0) {
             glEnableVertexAttribArray(attribute_normal_location);
             __CHECK_GL_ERROR__
@@ -353,6 +357,26 @@ void RenderTaskConsumerBase::BindVAOAndDrawElements(RenderTaskBase *task_base) {
     glBindVertexArray(0);
     __CHECK_GL_ERROR__
 }
+
+void RenderTaskConsumerBase::BindVAOAndDrawElementStrip(RenderTaskBase *task_base) {
+    auto *task = dynamic_cast<RenderTaskBindVAOAndDrawElementsStrip *>(task_base);
+    GLuint vao = GPUResourceMapper::GetVAO(task->vao_handle_);
+    glBindVertexArray(vao);
+    __CHECK_GL_ERROR__
+    {
+        int numStrips = task->numStrips;
+        int numTrisPerStrip = task->numTrisPerStrip;
+        for (unsigned strip = 0; strip < numStrips; strip++) {
+            glDrawElements(GL_TRIANGLE_STRIP,   // primitive type
+                           numTrisPerStrip + 2,   // number of indices to render
+                           GL_UNSIGNED_INT,     // index data type
+                           (void *) (sizeof(unsigned) * (numTrisPerStrip + 2) * strip)); // offset to starting index
+        }
+        __CHECK_GL_ERROR__//使用顶点索引进行绘制，最后的0表示数据偏移量。
+    }
+    glBindVertexArray(0);
+    __CHECK_GL_ERROR__
+};
 
 /// 清除
 /// \param task_base
@@ -474,6 +498,10 @@ void RenderTaskConsumerBase::ProcessTask() {
                 }
                 case RenderCommand::BIND_VAO_AND_DRAW_ELEMENTS: {
                     BindVAOAndDrawElements(render_task);
+                    break;
+                }
+                case RenderCommand::BIND_VAO_AND_DRAW_ELEMENTS_STRIP: {
+                    BindVAOAndDrawElementStrip(render_task);
                     break;
                 }
                 case RenderCommand::SET_STENCIL_FUNC: {

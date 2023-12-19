@@ -112,6 +112,8 @@ public:
     /// \param inex_count
     static void ProduceRenderTaskBindVAOAndDrawElements(unsigned int vao_handle, unsigned int vertex_index_num);
 
+    static void ProduceRenderTaskBindVAOAndDrawElementsStrip(unsigned int vao_handle, int numTrisPerStrip, int numStrips);
+
     /// 设置clear_flag并且清除颜色缓冲
     /// \param clear_flag
     /// \param clear_color_r

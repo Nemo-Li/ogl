@@ -96,6 +96,8 @@ private:
     /// \param task_base
     void BindVAOAndDrawElements(RenderTaskBase *task_base);
 
+    void BindVAOAndDrawElementStrip(RenderTaskBase *task_base);
+
     /// 设置clear_flag并且清除颜色缓冲
     /// \param task_base
     void SetClearFlagAndClearColorBuffer(RenderTaskBase *task_base);

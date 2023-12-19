@@ -11,6 +11,7 @@ require("renderer/mesh_renderer")
 require("renderer/material")
 require("helpers/screen")
 require("renderer/particle_system")
+require("renderer/terrain")
 
 GameScene = class("GameScene", Component)
 
@@ -33,25 +34,37 @@ function GameScene:Awake()
     --创建相机1 GameObject
     self.go_camera_ = GameObject.new("main_camera")
     --挂上 Transform 组件
-    self.go_camera_:AddComponent(Transform):set_position(glm.vec3(0, 0, 5))
+    self.go_camera_:AddComponent(Transform):set_position(glm.vec3(67.0, 627.5, 169.9))
     --挂上 Camera 组件
     self.camera_ = self.go_camera_:AddComponent(Camera)
     self.camera_:set_depth(0)
     self.camera_:SetView(glm.vec3(0.0, 0.0, 0.0), glm.vec3(0.0, 1.0, 0.0))
-    self.camera_:SetPerspective(60, Screen.aspect_ratio(), 1, 1000)
+    self.camera_:SetPerspective(60, Screen.aspect_ratio(), 0.1, 100000.0)
+
+    ----创建particle
+    --self.go_mesh_ = GameObject.new("particle")
+    --self.go_mesh_:AddComponent(Transform):set_position(glm.vec3(0, 0, 0))
+    --
+    ----手动创建Material
+    --self.material_ = Material.new()--设置材质
+    --self.material_:Load("material/particle.mat")
+    --
+    ----挂上 MeshRenderer 组件
+    --local particleSystem = self.go_mesh_:AddComponent(ParticleSystem)
+    --particleSystem:SetMaterial(self.material_)
 
     --创建particle
-    self.go_mesh_ = GameObject.new("particle")
+    self.go_mesh_ = GameObject.new("terrain")
     self.go_mesh_:AddComponent(Transform):set_position(glm.vec3(0, 0, 0))
 
     --手动创建Material
     self.material_ = Material.new()--设置材质
-    self.material_:Load("material/particle.mat")
+    self.material_:Load("material/terrain.mat")
 
     --挂上 MeshRenderer 组件
-    local particleSystem = self.go_mesh_:AddComponent(ParticleSystem)
-    particleSystem:SetMaterial(self.material_)
-
+    local terrain = self.go_mesh_:AddComponent(Terrain)
+    terrain:SetMaterial(self.material_)
+    terrain:LoadTerrainTexture("image/iceland_heightmap.png")
 end
 
 function GameScene:Update()

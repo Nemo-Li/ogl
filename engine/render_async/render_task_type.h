@@ -306,6 +306,21 @@ public:
     unsigned int vertex_index_num_;//索引数量
 };
 
+/// 绑定VAO并绘制
+class RenderTaskBindVAOAndDrawElementsStrip : public RenderTaskBase {
+public:
+    RenderTaskBindVAOAndDrawElementsStrip() {
+        render_command_ = RenderCommand::BIND_VAO_AND_DRAW_ELEMENTS_STRIP;
+    }
+
+    ~RenderTaskBindVAOAndDrawElementsStrip() {}
+
+public:
+    unsigned int vao_handle_;
+    int numTrisPerStrip;
+    int numStrips;
+};
+
 /// 清除
 class RenderTaskClear : public RenderTaskBase {
 public:

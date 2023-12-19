@@ -11,6 +11,7 @@
 #include <glm/gtx/scalar_multiplication.hpp>
 #include <renderer/camera.h>
 #include <helpers/screen.h>
+#include <renderer/terrain.h>
 #include "component/game_object.h"
 #include "component/transform.h"
 #include "renderer/material.h"
@@ -253,6 +254,15 @@ void LuaBinding::BindLua() {
                                                   "SetMaterial", &ParticleSystem::SetMaterial,
                                                   "material", &ParticleSystem::material,
                                                   "Render", &ParticleSystem::Render
+        );
+
+        cpp_ns_table.new_usertype<Terrain>("Terrain", sol::call_constructor,
+                                           sol::constructors<Terrain()>(), sol::base_classes,
+                                           sol::bases<Component>(),
+                                           "SetMaterial", &Terrain::SetMaterial,
+                                           "material", &Terrain::material,
+                                           "Render", &Terrain::Render,
+                                           "LoadTerrainTexture", &Terrain::LoadTerrainTexture
         );
     }
 

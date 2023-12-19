@@ -164,6 +164,15 @@ RenderTaskProducer::ProduceRenderTaskBindVAOAndDrawElements(unsigned int vao_han
     RenderTaskQueue::Push(task);
 }
 
+void
+RenderTaskProducer::ProduceRenderTaskBindVAOAndDrawElementsStrip(unsigned int vao_handle, int numTrisPerStrip, int numStrips) {
+    auto *task = new RenderTaskBindVAOAndDrawElementsStrip();
+    task->vao_handle_ = vao_handle;
+    task->numTrisPerStrip = numTrisPerStrip;
+    task->numStrips = numStrips;
+    RenderTaskQueue::Push(task);
+}
+
 void RenderTaskProducer::ProduceRenderTaskSetClearFlagAndClearColorBuffer(unsigned int clear_flag, float clear_color_r,
                                                                           float clear_color_g, float clear_color_b,
                                                                           float clear_color_a) {

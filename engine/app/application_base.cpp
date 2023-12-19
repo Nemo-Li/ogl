@@ -9,6 +9,7 @@
 #include <renderer/mesh_renderer.h>
 #include <render_async/render_task_producer.h>
 #include <render_async/render_task_consumer.h>
+#include <renderer/terrain.h>
 #include "application_base.h"
 #include "helpers/time.h"
 #include "helpers/debug.h"
@@ -74,14 +75,20 @@ void ApplicationBase::Render() {
             if (!game_object->active()) {
                 return;
             }
-            MeshRenderer *mesh_renderer = game_object->GetComponent<MeshRenderer>();
+
+            auto *mesh_renderer = game_object->GetComponent<MeshRenderer>();
             if (mesh_renderer != nullptr) {
                 mesh_renderer->Render();
             }
 
-            ParticleSystem *particleSystem = game_object->GetComponent<ParticleSystem>();
+            auto *particleSystem = game_object->GetComponent<ParticleSystem>();
             if (particleSystem != nullptr) {
                 particleSystem->Render();
+            }
+
+            auto *terrain = game_object->GetComponent<Terrain>();
+            if (terrain != nullptr) {
+                terrain->Render();
             }
         });
     });

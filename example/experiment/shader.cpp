@@ -2,6 +2,7 @@
 // Created by Nemo li on 2023/12/16.
 //
 
+#include <glm/ext.hpp>
 #include "shader.h"
 
 using std::stringstream;
@@ -101,4 +102,10 @@ void EXP::Shader::Shader::setInt(const std::string &name, int value) const {
 
 void EXP::Shader::Shader::setFloat(const std::string &name, float value) const {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+}
+
+// ------------------------------------------------------------------------
+void EXP::Shader::setMat4(const std::string &name, const glm::mat4 &mat) const
+{
+    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
