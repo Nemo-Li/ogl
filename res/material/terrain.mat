@@ -1,0 +1,3 @@
+<material shader="shader/terrain">
+    <texture name="u_diffuse_texture" image="image/ground.png"/>
+</material>

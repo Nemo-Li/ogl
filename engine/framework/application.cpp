@@ -14,6 +14,7 @@
 #include <renderer/camera.h>
 #include <control/input.h>
 #include <renderer/sky_box.h>
+#include <renderer/terrain.h>
 #include "component/game_object.h"
 #include "renderer/mesh_renderer.h"
 #include "helpers/debug.h"
@@ -140,6 +141,10 @@ void Application::Render() {
             auto *skyBox = game_object->GetComponent<SkyBox>();
             if (skyBox != nullptr) {
                 skyBox->Render();
+            }
+            auto *terrain = game_object->GetComponent<Terrain>();
+            if (terrain != nullptr) {
+                terrain->Render();
             }
         });
     });

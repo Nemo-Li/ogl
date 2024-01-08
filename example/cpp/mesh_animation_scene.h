@@ -19,6 +19,7 @@
 #include <renderer/skinned_mesh_renderer.h>
 #include <renderer/sky_box.h>
 #include "renderer/animation_clip.h"
+#include "renderer/terrain.h"
 
 class MeshAnimationScene : public Component {
 public:
@@ -26,6 +27,8 @@ public:
     Transform *transform;
     Transform *camera_transform;
     GameObject *go_skeleton;
+    GameObject *go_skybox;
+    GameObject *go_terrain;
 
     //上一帧的鼠标位置
     glm::vec2 last_frame_mouse_position = Input::mousePosition();
@@ -60,9 +63,20 @@ public:
 
         go_skeleton->GetComponent<Animation>()->Play("play");
 
-        SkyBox *skyBox = go_skeleton->AddComponent<SkyBox>();
-        skyBox->LoadCubeMap("skybox/sky_rt.png", "skybox/sky_lf.png", "skybox/sky_up.png",
-                            "skybox/sky_dn.png", "skybox/sky_ft.png", "skybox/sky_bk.png");
+        go_skybox = new GameObject("skybox");
+        SkyBox *skyBox = go_skybox->AddComponent<SkyBox>();
+        skyBox->LoadCubeMap("skybox/sky_ft.png", "skybox/sky_bk.png",
+                            "skybox/sky_dn.png", "skybox/sky_up.png",
+                            "skybox/sky_rt.png", "skybox/sky_lf.png");
+
+        go_terrain = new GameObject("terrain");
+        auto *terrain = go_terrain->AddComponent<Terrain>();
+        auto *terrain_m = new Material();
+        terrain_m->Load("material/terrain.mat");
+        terrain->SetMaterial(terrain_m);
+        terrain->LoadTerrainTexture("image/terrain1024.png");
+        auto *terrainTrans = go_terrain->AddComponent<Transform>();
+        terrainTrans->set_rotation(glm::vec3(0, 0, 180));
     }
 
     void Update() override {
