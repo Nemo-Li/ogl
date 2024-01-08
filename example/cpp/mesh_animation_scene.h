@@ -17,6 +17,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <renderer/animation.h>
 #include <renderer/skinned_mesh_renderer.h>
+#include <renderer/sky_box.h>
 #include "renderer/animation_clip.h"
 
 class MeshAnimationScene : public Component {
@@ -58,6 +59,10 @@ public:
         skinnedMeshRenderer->SetMaterial(material);
 
         go_skeleton->GetComponent<Animation>()->Play("play");
+
+        SkyBox *skyBox = go_skeleton->AddComponent<SkyBox>();
+        skyBox->LoadCubeMap("skybox/sky_rt.png", "skybox/sky_lf.png", "skybox/sky_up.png",
+                            "skybox/sky_dn.png", "skybox/sky_ft.png", "skybox/sky_bk.png");
     }
 
     void Update() override {

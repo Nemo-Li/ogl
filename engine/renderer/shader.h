@@ -7,6 +7,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <glm/mat2x2.hpp>
 
 class Shader {
 public:
@@ -23,6 +24,16 @@ public:
 
     //glCreateProgram()返回的GPU程序句柄
     unsigned int program_id() { return program_id_; }
+
+    void setBool(const std::string &name, bool value) const;
+
+    void setInt(const std::string &name, int value) const;
+
+    void setMat2(const std::string &name, const glm::mat2 &mat) const;
+
+    void setMat3(const std::string &name, const glm::mat3 &mat) const;
+
+    void setMat4(const std::string &name, const glm::mat4 &mat) const;
 
 private:
     //shader名

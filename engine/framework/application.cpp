@@ -13,6 +13,7 @@
 #include <helpers/screen.h>
 #include <renderer/camera.h>
 #include <control/input.h>
+#include <renderer/sky_box.h>
 #include "component/game_object.h"
 #include "renderer/mesh_renderer.h"
 #include "helpers/debug.h"
@@ -66,8 +67,8 @@ void Application::Init() {
         exit(EXIT_FAILURE);
     }
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -132,11 +133,14 @@ void Application::Render() {
             if (!game_object->active()) {
                 return;
             }
-            MeshRenderer *mesh_renderer = game_object->GetComponent<MeshRenderer>();
-            if (mesh_renderer == nullptr) {
-                return;
+            auto *mesh_renderer = game_object->GetComponent<MeshRenderer>();
+            if (mesh_renderer != nullptr) {
+                mesh_renderer->Render();
             }
-            mesh_renderer->Render();
+            auto *skyBox = game_object->GetComponent<SkyBox>();
+            if (skyBox != nullptr) {
+                skyBox->Render();
+            }
         });
     });
 }
