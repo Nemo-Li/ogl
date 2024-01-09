@@ -32,10 +32,13 @@ public:
     GameObject *go_skybox;
     GameObject *go_terrain;
     Terrain *terrain;
-    glm::vec3 cam_forward = glm::vec3(0.0, 0.0, -1.0);
 
-    //上一帧的鼠标位置
-    glm::vec2 last_frame_mouse_position = Input::mousePosition();
+    glm::vec4 cam_forward = glm::vec4(0.0, 0.0, -1.0, 1.0);
+    glm::vec4 cam_left = glm::vec4(-1.0, 0.0, 0.0, 1.0);
+    glm::mat4 unit_mat4 = glm::mat4(1.0f);
+
+    //-z 方向的夹角 前进方向的夹角
+    float degrees_step = 1.0f;
 
     void Awake() override {
         //创建主相机游戏对象
@@ -45,6 +48,8 @@ public:
         camera_transform->set_position(glm::vec3(0, 0, 5));
         //挂上Camera 组件
         camera = go_camera->AddComponent<Camera>();
+        camera->set_depth(0);
+        camera->SetPerspective(60, Screen::aspect_ratio(), 0.01, 1000);
 
         go_skeleton = new GameObject("skeleton");
         transform = go_skeleton->AddComponent<Transform>();
@@ -80,58 +85,43 @@ public:
         terrain->SetMaterial(terrain_m);
         terrain->LoadTerrainTexture("image/terrain1024.png");
         auto *terrainTrans = go_terrain->AddComponent<Transform>();
-//        terrainTrans->set_rotation(glm::vec3(0, 0, 180));
     }
 
     void Update() override {
-        camera->set_depth(0);
-        camera->SetView(cam_forward, glm::vec3(0.0, 1.0, 0.0));
-        camera->SetPerspective(60, Screen::aspect_ratio(), 0.01, 1000);
-
-        //鼠标滚轮控制相机远近
-        camera_transform->set_position(camera_transform->position() * (10 - Input::mouse_scroll()) / 10.f);
-
-        //旋转相机
-        if (Input::GetKeyDown(KEY_CODE_LEFT_ALT) && Input::GetMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            float degrees = Input::mousePosition().x - last_frame_mouse_position.x;
-            glm::mat4 old_mat4 = glm::mat4(1.0f);
-            //以相机所在坐标系位置，计算用于旋转的矩阵，这里是零点，所以直接用方阵。
-//            glm::mat4 rotate_mat4 = glm::rotate(old_mat4, glm::radians(degrees), glm::vec3(0.0f, 1.0f, 0.0f));
-            glm::mat4 t1 = glm::translate(old_mat4, -camera_transform->position());
-            glm::mat4 r = glm::rotate(old_mat4, glm::radians(degrees), glm::vec3(0, 1, 0));
-            glm::mat4 t2 = glm::translate(old_mat4, camera_transform->position());
-            glm::vec4 cam_forward_vec4 = glm::vec4(cam_forward, 1.0f);
-            //旋转矩阵 * 原来的坐标 = 相机以零点做旋转。
-            glm::vec4 new_pos = t2 * r * t1 * cam_forward_vec4;
-            cam_forward = glm::vec3(new_pos);
-        }
-        last_frame_mouse_position = Input::mousePosition();
-
         glm::vec3 old_pos = camera_transform->position();
         glm::vec3 new_pos = glm::vec3(old_pos.x, old_pos.y, old_pos.z);
 
+        //旋转相机
+        if (Input::GetKeyDown(KEY_CODE_RIGHT) || Input::GetKeyDown(KEY_CODE_LEFT)) {
+            glm::mat4 r = glm::rotate(unit_mat4, glm::radians(-degrees_step), glm::vec3(0, 1, 0));
+            if (Input::GetKeyDown(KEY_CODE_LEFT)) {
+                r = glm::rotate(unit_mat4, glm::radians(degrees_step), glm::vec3(0, 1, 0));
+            }
+            cam_forward = r * cam_forward;
+            cam_left = r * cam_left;
+        }
+
         if (Input::GetKeyDown(KEY_CODE_W)) {
-            new_pos.z -= 1.0f;
+            new_pos += glm::vec3(cam_forward);
         }
 
         if (Input::GetKeyDown(KEY_CODE_S)) {
-            new_pos.z += 1.0f;
+            new_pos -= glm::vec3(cam_forward);
         }
 
         if (Input::GetKeyDown(KEY_CODE_A)) {
-            new_pos.x -= 1.0f;
-            printf("camera position x z y %f %f %f\n", old_pos.x, old_pos.z, old_pos.y);
+            new_pos += glm::vec3(cam_left);
         }
 
         if (Input::GetKeyDown(KEY_CODE_D)) {
-            new_pos.x += 1.0f;
+            new_pos -= glm::vec3(cam_left);
         }
 
         float elevation = terrain->GetElevation(new_pos.x, new_pos.z);
         new_pos.y = elevation + 5.0f;
         camera_transform->set_position(new_pos);
+        camera->SetView(glm::vec3(cam_forward), glm::vec3(0.0, 1.0, 0.0));
     }
-
 };
 
 #endif //OGL_SKIN_MESH_SCENE_H
