@@ -14,6 +14,7 @@
 #include <vector>
 #include <component/transform.h>
 #include <framework/application.h>
+#include <glm/gtx/string_cast.hpp>
 #include "texture2d.h"
 
 RTTR_REGISTRATION {
@@ -36,10 +37,12 @@ void Terrain::Render() {
 
     glm::mat4 trans = glm::translate(transform->position());
     auto rotation = transform->rotation();
+//    printf("terrain rotation %s \n", glm::to_string(rotation).c_str());
     glm::mat4 eulerAngleYXZ = glm::eulerAngleYXZ(glm::radians(rotation.y), glm::radians(rotation.x),
                                                  glm::radians(rotation.z));
     glm::mat4 scale = glm::scale(transform->scale()); //缩放;
     glm::mat4 model = trans * scale * eulerAngleYXZ;
+//    printf("model: %s\n", glm::to_string(model).c_str());
 
     Shader *heightMapShader = material_->shader();
 
@@ -129,10 +132,14 @@ void Terrain::LoadTerrainTexture(const std::string &terrainTex) {
             unsigned char *pixelOffset = data + (j + width * i) * bytePerPixel;
             unsigned char y = pixelOffset[0];
 
-            // vertex
-            vertices.push_back(-height / 2.0f + height * i / (float) height);   // vx
-            vertices.push_back((int) y * yScale - yShift);   // vy
-            vertices.push_back(-width / 2.0f + width * j / (float) width);   // vz
+            // vx
+            vertices.push_back(-width / 2.0f + width * j / (float) width);
+            float elevation = (int) y * yScale - yShift;
+            // vy
+            vertices.push_back(elevation);
+            elevation_vec.push_back(elevation);
+            // vz
+            vertices.push_back(-height / 2.0f + height * i / (float) height);
 
             // uv
             vertices.push_back(float(i) / height * 16); //u
@@ -161,3 +168,15 @@ void Terrain::LoadTerrainTexture(const std::string &terrainTex) {
 }
 
 Terrain::Terrain() : material_(nullptr) {}
+
+float Terrain::GetElevation(int x, int z) {
+    if (x < -width / 2 || x > width / 2) {
+        return 0;
+    }
+    if (z < -height / 2 || z > height / 2) {
+        return 0;
+    }
+    int index = (z + height / 2) * width + (x + width / 2);
+    return elevation_vec[index];
+}
+

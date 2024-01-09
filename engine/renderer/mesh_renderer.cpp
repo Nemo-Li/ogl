@@ -147,7 +147,7 @@ void MeshRenderer::Render() {
             glDisable(GL_DEPTH_TEST);
             __CHECK_GL_ERROR__
         }
-        glEnable(GL_CULL_FACE);
+//        glEnable(GL_CULL_FACE);
         __CHECK_GL_ERROR__//开启背面剔除
         glEnable(GL_BLEND);
         __CHECK_GL_ERROR__

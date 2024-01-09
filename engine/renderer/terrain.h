@@ -23,6 +23,8 @@ public:
 
     Material *material() { return material_; }
 
+    float GetElevation(int x, int z);
+
 private:
     Material *material_;
 
@@ -30,6 +32,7 @@ private:
     int numTrisPerStrip;
 
     std::vector<float> vertices;
+    std::vector<float> elevation_vec;
     std::vector<unsigned> indices;
     int width, height, nrChannels;
 
