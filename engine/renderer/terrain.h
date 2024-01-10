@@ -31,12 +31,8 @@ private:
     Material *material_;
     unsigned int texture;
 
-    int numStrips;
-    int numTrisPerStrip;
-
     std::vector<float> vertices;
     std::vector<float> elevation_vec;
-    std::vector<unsigned> indices;
     int width, height, nrChannels;
 
     //顶点数组句柄

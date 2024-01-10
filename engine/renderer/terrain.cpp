@@ -46,7 +46,7 @@ void Terrain::Render() {
 
     Shader *tessHeightMapShader = material_->shader();
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 //    printf("terrain %d\n", tessHeightMapShader->program_id());
     if (vao_ == 0) {
         // first, configure the cube's VAO (and terrainVBO)
@@ -81,7 +81,7 @@ void Terrain::Render() {
         __CHECK_GL_ERROR__
 
         //从Pass节点拿到保存的Texture
-//    std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
+    std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
 
 //    for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
 //        GLint u_texture_location = glGetUniformLocation(tessHeightMapShader->program_id(),
@@ -94,9 +94,12 @@ void Terrain::Render() {
 //        glUniform1i(u_texture_location, texture_index);
 //    }
 
+        tessHeightMapShader->setInt("u_diffuse_texture", 1);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D,
-                      texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, textures[0].second->texture_id());
+
         __CHECK_GL_ERROR__
         // render the terrain
         glBindVertexArray(vao_);
@@ -105,7 +108,7 @@ void Terrain::Render() {
         __CHECK_GL_ERROR__
         glBindVertexArray(0);
         __CHECK_GL_ERROR__
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 }
 
@@ -125,7 +128,7 @@ void Terrain::LoadTerrainTexture(const std::string &terrainTex) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    Shader *heightMapShader = material_->shader();
+    Shader *heightMapShader = material()->shader();
     heightMapShader->Use();
 
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
@@ -138,6 +141,18 @@ void Terrain::LoadTerrainTexture(const std::string &terrainTex) {
     } else {
         std::cout << "Failed to load texture" << std::endl;
     }
+
+    float yScale = 64.0f / 256.0f, yShift = 16.0f;
+    unsigned bytePerPixel = nrChannels;
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            unsigned char *pixelOffset = data + (j + width * i) * bytePerPixel;
+            unsigned char y = pixelOffset[0];
+            float elevation = (int) y * yScale - yShift;
+            elevation_vec.push_back(elevation);
+        }
+    }
+
     stbi_image_free(data);
 
     for (unsigned i = 0; i <= rez - 1; i++) {

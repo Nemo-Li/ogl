@@ -26,7 +26,7 @@
 class MeshAnimationScene : public Component {
 public:
     Camera *camera;
-    Transform *transform;
+    Transform *player_transform;
     Transform *camera_transform;
     GameObject *go_skeleton;
     GameObject *go_skybox;
@@ -52,9 +52,8 @@ public:
         camera->SetPerspective(60, Screen::aspect_ratio(), 0.01, 1000);
 
         go_skeleton = new GameObject("skeleton");
-        transform = go_skeleton->AddComponent<Transform>();
-        transform->set_position(glm::vec3(0, -1, 0));
-        transform->set_rotation(glm::vec3(-90, 0, 0));
+        player_transform = go_skeleton->AddComponent<Transform>();
+        player_transform->set_rotation(glm::vec3(-90, 0, 0));
 
         Animation *animation = go_skeleton->AddComponent<Animation>();
         animation->LoadAnimationClipFromFile("animation/fbx_extra_bip001_bip001_take_001_baselayer.skeleton_anim",
@@ -85,6 +84,8 @@ public:
         terrain->SetMaterial(terrain_m);
         terrain->LoadTerrainTexture("image/terrain1024.png");
         auto *terrainTrans = go_terrain->AddComponent<Transform>();
+
+        player_transform->set_position(glm::vec3(0, terrain->GetElevation(0, -2), -2));
     }
 
     void Update() override {
@@ -117,7 +118,7 @@ public:
             new_pos -= glm::vec3(cam_left);
         }
 
-        float elevation = 20;//terrain->GetElevation(new_pos.x, new_pos.z);
+        float elevation = terrain->GetElevation(new_pos.x, new_pos.z);
         new_pos.y = elevation + 5.0f;
         camera_transform->set_position(new_pos);
         camera->SetView(glm::vec3(cam_forward), glm::vec3(0.0, 1.0, 0.0));
