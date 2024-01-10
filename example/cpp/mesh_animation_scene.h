@@ -117,7 +117,7 @@ public:
             new_pos -= glm::vec3(cam_left);
         }
 
-        float elevation = terrain->GetElevation(new_pos.x, new_pos.z);
+        float elevation = 20;//terrain->GetElevation(new_pos.x, new_pos.z);
         new_pos.y = elevation + 5.0f;
         camera_transform->set_position(new_pos);
         camera->SetView(glm::vec3(cam_forward), glm::vec3(0.0, 1.0, 0.0));

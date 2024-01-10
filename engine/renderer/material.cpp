@@ -33,8 +33,19 @@ void Material::Load(const std::string &material_path) {
     if (material_shader_attribute == nullptr) {
         return;
     }
+    rapidxml::xml_attribute<> *geom = material_node->first_attribute("geom");
+    rapidxml::xml_attribute<> *tesc = material_node->first_attribute("tesc");
+    rapidxml::xml_attribute<> *tese = material_node->first_attribute("tese");
 
-    shader_ = Shader::Find(material_shader_attribute->value());
+    if (tesc != nullptr) {
+        printf("tesc: %s\n", tesc->value());
+    }
+
+    if (tese != nullptr) {
+        printf("tese: %s\n", tese->value());
+    }
+
+    shader_ = Shader::Find(material_shader_attribute->value(), geom != nullptr, tesc != nullptr, tese != nullptr);
 
     //解析Texture
     rapidxml::xml_node<> *material_texture_node = material_node->first_node("texture");

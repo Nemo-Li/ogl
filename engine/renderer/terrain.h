@@ -26,7 +26,10 @@ public:
     float GetElevation(int x, int z);
 
 private:
+    const unsigned int NUM_PATCH_PTS = 4;
+    unsigned rez = 20;
     Material *material_;
+    unsigned int texture;
 
     int numStrips;
     int numTrisPerStrip;

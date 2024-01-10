@@ -16,7 +16,7 @@ public:
     ~Shader();
 
     //查找或创建Shader
-    static Shader *Find(std::string shader_name);
+    static Shader *Find(std::string shader_name, bool geom = false, bool tesc = false, bool tese = false);
 
     void Use();
 
@@ -43,10 +43,12 @@ private:
     //已经创建的Shader
     static std::unordered_map<std::string, Shader *> kShaderMap;
 
-    void Load(const std::string &shader_name);
+    void Load(const std::string &shader_name, bool geom = false, bool tesc = false, bool tese = false);
 
     //编译Shader,创建GPU程序
-    void CreateGPUProgram(const char *vertex_shader_text, const char *fragment_shader_text);
+    void
+    CreateGPUProgram(const char *vertex_shader_text, const char *fragment_shader_text, const char *geometry_shader_text,
+                     const char *tesc_shader_text, const char *tese_shader_text);
 };
 
 

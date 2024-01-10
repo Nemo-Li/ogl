@@ -44,130 +44,139 @@ void Terrain::Render() {
     glm::mat4 model = trans * scale * eulerAngleYXZ;
 //    printf("model: %s\n", glm::to_string(model).c_str());
 
-    Shader *heightMapShader = material_->shader();
+    Shader *tessHeightMapShader = material_->shader();
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//    printf("terrain %d\n", tessHeightMapShader->program_id());
     if (vao_ == 0) {
-        GLuint vbo, ebo;
+        // first, configure the cube's VAO (and terrainVBO)
+        unsigned int terrainVBO;
         glGenVertexArrays(1, &vao_);
-        //设置VAO
         glBindVertexArray(vao_);
-        //在GPU上创建缓冲区对象
-        glGenBuffers(1, &vbo);
-        //将缓冲区对象指定为顶点缓冲区对象
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        //上传顶点数据到缓冲区对象
-        glBufferData(GL_ARRAY_BUFFER,
-                     vertices.size() * sizeof(float),       // size of vertices buffer
-                     &vertices[0],                          // pointer to first element
-                     GL_STATIC_DRAW);
+
+        glGenBuffers(1, &terrainVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, terrainVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
         // position attribute
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
         glEnableVertexAttribArray(0);
-
-        // position attribute
+        // texCoord attribute
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (sizeof(float) * 3));
         glEnableVertexAttribArray(1);
 
-
-        glGenBuffers(1, &ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                     indices.size() * sizeof(unsigned int), // size of indices buffer
-                     &indices[0],                           // pointer to first element
-                     GL_STATIC_DRAW);
-
+        glPatchParameteri(GL_PATCH_VERTICES, NUM_PATCH_PTS);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
+        glBindVertexArray(0);
+    } else {
+        __CHECK_GL_ERROR__
 
-    heightMapShader->Use();
-    glEnable(GL_DEPTH_TEST);
+        tessHeightMapShader->Use();
+        glEnable(GL_DEPTH_TEST);
 
-    // world transformation
-    heightMapShader->setMat4("model", model);
-    heightMapShader->setMat4("projection", projection);
-    heightMapShader->setMat4("view", view);
+        // world transformation
+        tessHeightMapShader->setMat4("model", model);
+        tessHeightMapShader->setMat4("projection", projection);
+        tessHeightMapShader->setMat4("view", view);
+        __CHECK_GL_ERROR__
 
-    //从Pass节点拿到保存的Texture
-    std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
+        //从Pass节点拿到保存的Texture
+//    std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
 
-    for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
-        GLint u_texture_location = glGetUniformLocation(heightMapShader->program_id(),
-                                                        textures[texture_index].first.c_str());
-        //激活纹理单元0
-        glActiveTexture(GL_TEXTURE0 + texture_index);
-        //将加载的图片纹理句柄，绑定到纹理单元0的Texture2D上。
-        glBindTexture(GL_TEXTURE_2D, textures[texture_index].second->texture_id());
-        //设置Shader程序从纹理单元0读取颜色数据
-        glUniform1i(u_texture_location, texture_index);
-    }
+//    for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
+//        GLint u_texture_location = glGetUniformLocation(tessHeightMapShader->program_id(),
+//                                                        textures[texture_index].first.c_str());
+//        //激活纹理单元0
+//        glActiveTexture(GL_TEXTURE0 + texture_index);
+//        //将加载的图片纹理句柄，绑定到纹理单元0的Texture2D上。
+//        glBindTexture(GL_TEXTURE_2D, textures[texture_index].second->texture_id());
+//        //设置Shader程序从纹理单元0读取颜色数据
+//        glUniform1i(u_texture_location, texture_index);
+//    }
 
-    // render the cube
-    glBindVertexArray(vao_);
-    for (unsigned strip = 0; strip < numStrips; strip++) {
-        glDrawElements(GL_TRIANGLE_STRIP,   // primitive type
-                       numTrisPerStrip + 2,   // number of indices to render
-                       GL_UNSIGNED_INT,     // index data type
-                       (void *) (sizeof(unsigned) * (numTrisPerStrip + 2) * strip)); // offset to starting index
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D,
+                      texture);
+        __CHECK_GL_ERROR__
+        // render the terrain
+        glBindVertexArray(vao_);
+        __CHECK_GL_ERROR__
+        glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
+        __CHECK_GL_ERROR__
+        glBindVertexArray(0);
+        __CHECK_GL_ERROR__
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 }
 
 void Terrain::LoadTerrainTexture(const std::string &terrainTex) {
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char *data = stbi_load((Application::data_path() + terrainTex).c_str(), &width,
-                                    &height, &nrChannels, 0);
+    // load and create a texture
+    // -------------------------
+    glGenTextures(1, &texture);
+    __CHECK_GL_ERROR__
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D,
+                  texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                    GL_REPEAT);    // set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    Shader *heightMapShader = material_->shader();
+    heightMapShader->Use();
+
+    // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
+    unsigned char *data = stbi_load((Application::data_path() + terrainTex).c_str(), &width, &height, &nrChannels, 0);
     if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        heightMapShader->setInt("heightMap", 0);
         std::cout << "Loaded heightmap of size " << height << " x " << width << std::endl;
     } else {
         std::cout << "Failed to load texture" << std::endl;
     }
-
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-    float yScale = 64.0f / 256.0f, yShift = 16.0f;
-    unsigned bytePerPixel = nrChannels;
-
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            unsigned char *pixelOffset = data + (j + width * i) * bytePerPixel;
-            unsigned char y = pixelOffset[0];
-
-            // vx
-            vertices.push_back(-width / 2.0f + width * j / (float) width);
-            float elevation = (int) y * yScale - yShift;
-            // vy
-            vertices.push_back(elevation);
-            elevation_vec.push_back(elevation);
-            // vz
-            vertices.push_back(-height / 2.0f + height * i / (float) height);
-
-            // uv
-            vertices.push_back(float(i) / height * 16); //u
-            vertices.push_back(float(j) / width * 16); //v
-        }
-    }
-    std::cout << "Loaded " << vertices.size() / 5 << " vertices" << std::endl;
     stbi_image_free(data);
 
-    int rez = 1;
-    for (unsigned i = 0; i < height - 1; i += rez) {
-        for (unsigned j = 0; j < width; j += rez) {
-            for (unsigned k = 0; k < 2; k++) {
-                indices.push_back(j + width * (i + k * rez));
-            }
+    for (unsigned i = 0; i <= rez - 1; i++) {
+        for (unsigned j = 0; j <= rez - 1; j++) {
+            vertices.push_back(-float(width) / 2.0f + float(width) * i / (float) rez); // v.x
+            vertices.push_back(0.0f); // v.y
+            vertices.push_back(-height / 2.0f + height * j / (float) rez); // v.z
+            vertices.push_back(i / (float) rez); // u
+            vertices.push_back(j / (float) rez); // v
+
+            vertices.push_back(-width / 2.0f + width * (i + 1) / (float) rez); // v.x
+            vertices.push_back(0.0f); // v.y
+            vertices.push_back(-height / 2.0f + height * j / (float) rez); // v.z
+            vertices.push_back((i + 1) / (float) rez); // u
+            vertices.push_back(j / (float) rez); // v
+
+            vertices.push_back(-width / 2.0f + width * i / (float) rez); // v.x
+            vertices.push_back(0.0f); // v.y
+            vertices.push_back(-height / 2.0f + height * (j + 1) / (float) rez); // v.z
+            vertices.push_back(i / (float) rez); // u
+            vertices.push_back((j + 1) / (float) rez); // v
+
+            vertices.push_back(-width / 2.0f + width * (i + 1) / (float) rez); // v.x
+            vertices.push_back(0.0f); // v.y
+            vertices.push_back(-height / 2.0f + height * (j + 1) / (float) rez); // v.z
+            vertices.push_back((i + 1) / (float) rez); // u
+            vertices.push_back((j + 1) / (float) rez); // v
         }
     }
-    std::cout << "Loaded " << indices.size() << " indices" << std::endl;
-
-    numStrips = (height - 1) / rez;
-    numTrisPerStrip = (width / rez) * 2 - 2;
-
-    std::cout << "Created lattice of " << numStrips << " strips with " << numTrisPerStrip << " triangles each"
-              << std::endl;
-    std::cout << "Created " << numStrips * numTrisPerStrip << " triangles total" << std::endl;
+    std::cout << "Loaded " << rez * rez << " patches of 4 control points each" << std::endl;
+    std::cout << "Processing " << rez * rez * 4 << " vertices in vertex shader" << std::endl;
 }
 
-Terrain::Terrain() : material_(nullptr) {}
+Terrain::Terrain() : material_(nullptr) {
+    GLint maxTessLevel;
+    glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &maxTessLevel);
+    std::cout << "Max available tess level: " << maxTessLevel << std::endl;
+    glEnable(GL_DEPTH_TEST);
+}
 
 float Terrain::GetElevation(int x, int z) {
     if (x < -width / 2 || x > width / 2) {
