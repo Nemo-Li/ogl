@@ -80,25 +80,16 @@ void Terrain::Render() {
         tessHeightMapShader->setMat4("view", view);
         __CHECK_GL_ERROR__
 
-        //从Pass节点拿到保存的Texture
-    std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
-
-//    for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
-//        GLint u_texture_location = glGetUniformLocation(tessHeightMapShader->program_id(),
-//                                                        textures[texture_index].first.c_str());
-//        //激活纹理单元0
-//        glActiveTexture(GL_TEXTURE0 + texture_index);
-//        //将加载的图片纹理句柄，绑定到纹理单元0的Texture2D上。
-//        glBindTexture(GL_TEXTURE_2D, textures[texture_index].second->texture_id());
-//        //设置Shader程序从纹理单元0读取颜色数据
-//        glUniform1i(u_texture_location, texture_index);
-//    }
-
-        tessHeightMapShader->setInt("u_diffuse_texture", 1);
+        //高度图纹理，暂时单独处理（与其它不同，后续考虑是否合并到材质中）
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textures[0].second->texture_id());
+
+        //从Pass节点拿到保存的Texture
+        std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
+        for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
+            tessHeightMapShader->setInt(textures[texture_index].first, texture_index + 1);
+            textures[texture_index].second->bind(texture_index + 1);
+        }
 
         __CHECK_GL_ERROR__
         // render the terrain
