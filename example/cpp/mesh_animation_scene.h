@@ -53,6 +53,7 @@ public:
 
         go_skeleton = new GameObject("skeleton");
         player_transform = go_skeleton->AddComponent<Transform>();
+        player_transform->set_scale(glm::vec3(2, 2, 2));
         player_transform->set_rotation(glm::vec3(-90, 0, 0));
 
         Animation *animation = go_skeleton->AddComponent<Animation>();
