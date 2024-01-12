@@ -2,7 +2,6 @@
 // Created by Nemo li on 2023/12/10.
 //
 
-#include <glm/gtx/string_cast.hpp>
 #include "skinned_mesh_renderer.h"
 #include "component/game_object.h"
 #include "mesh_filter.h"
@@ -57,17 +56,17 @@ void SkinnedMeshRenderer::Update() {
     //获取当前帧最新的骨骼矩阵
     std::vector<glm::mat4> &bone_matrices = animation_clip->GetCurrentFrameBoneMatrix();
     //获取 SkinnedMesh
-    MeshFilter::Mesh *skinned_mesh = mesh_filter->skinned_mesh();
+    Mesh *skinned_mesh = mesh_filter->skinned_mesh();
     if (skinned_mesh == nullptr) {
         //拷贝Mesh整体
-        skinned_mesh = static_cast<MeshFilter::Mesh *>(malloc(mesh->size()));
+        skinned_mesh = static_cast<Mesh *>(malloc(mesh->size()));
         memcpy(skinned_mesh, mesh, mesh->size());
         mesh_filter->set_skinned_mesh(skinned_mesh);
 
         //拷贝顶点数据 vertex_data_
-        skinned_mesh->vertex_data_ = static_cast<MeshFilter::Vertex *>(malloc(
-                mesh->vertex_num_ * sizeof(MeshFilter::Vertex)));
-        memcpy(skinned_mesh->vertex_data_, mesh->vertex_data_, mesh->vertex_num_ * sizeof(MeshFilter::Vertex));
+        skinned_mesh->vertex_data_ = static_cast<Vertex *>(malloc(
+                mesh->vertex_num_ * sizeof(Vertex)));
+        memcpy(skinned_mesh->vertex_data_, mesh->vertex_data_, mesh->vertex_num_ * sizeof(Vertex));
     }
     //计算当前帧顶点位置
     for (int i = 0; i < skinned_mesh->vertex_num_; i++) {

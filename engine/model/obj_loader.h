@@ -20,7 +20,9 @@ private:
     void readObjFile();
 
 public:
-    int vCount, faceCount;
+    int vCount = 0, faceCount = 0;
+    //材质数量 不同材质mesh 不同渲染
+    int mtCount = 0;
     float **vArr;
     float **vtArr;
     float **vnArr;

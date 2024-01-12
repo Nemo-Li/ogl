@@ -20,8 +20,14 @@ MeshFilter::MeshFilter() : mesh_(nullptr) {
 }
 
 MeshFilter::~MeshFilter() {
-    delete (mesh_);
-    mesh_ = nullptr;
+    if (skinned_mesh_) {
+        delete skinned_mesh_;
+        skinned_mesh_ = nullptr;
+    }
+    if (mesh_) {
+        delete (mesh_);
+        mesh_ = nullptr;
+    }
 }
 
 void MeshFilter::LoadMesh(std::string mesh_file_path) {

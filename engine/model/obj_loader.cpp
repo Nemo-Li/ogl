@@ -13,8 +13,8 @@ using std::ifstream;
 using std::istringstream;
 
 ObjLoader::ObjLoader(const char *objPath, const char *mtlPath, int vtNum) {
-    objFilePath = (char *) (Application::data_path() + objPath).c_str();
-    mtlFilePath = (char *) (Application::data_path() + mtlPath).c_str();
+    objFilePath = objPath;
+    mtlFilePath = mtlPath;
     vtNumber = vtNum;
     vCount = 0;
     vnCount = 0;
@@ -39,10 +39,17 @@ void ObjLoader::readObjInfo() {
             else
                 vCount++;
         }
-        if (l_line[0] == 'f')
+        if (l_line[0] == 'f') {
             faceCount++;
+        }
+        //use mtl
+        if (l_line[0] == 'u' && l_line[1] == 's') {
+            mtCount++;
+        }
     }
     infile.close();
+    printf("vCount %d \n", vCount);
+    printf("faceCount %d \n", faceCount);
 }
 
 void ObjLoader::readObjFile() {

@@ -31,6 +31,7 @@ public:
     GameObject *go_skeleton;
     GameObject *go_skybox;
     GameObject *go_terrain;
+    GameObject *go_sponza;
     Terrain *terrain;
 
     glm::vec4 cam_forward = glm::vec4(0.0, 0.0, -1.0, 1.0);
@@ -87,6 +88,21 @@ public:
         auto *terrainTrans = go_terrain->AddComponent<Transform>();
 
         player_transform->set_position(glm::vec3(0, terrain->GetElevation(0, -2), -2));
+
+        go_sponza = new GameObject("sponza");
+        Transform *sponza_transform = go_sponza->AddComponent<Transform>();
+        sponza_transform->set_scale(glm::vec3(0.09, 0.09, 0.09));
+        sponza_transform->set_position(glm::vec3(10, 15, 0));
+        MeshFilter *sponza_mesh_filter = go_sponza->AddComponent<MeshFilter>();
+        sponza_mesh_filter->SetModel(new Model("model/tank/tank", 3));
+//        sponza_mesh_filter->SetModel(new Model("model/sponza/sponza", 2));
+//        sponza_mesh_filter->SetModel(new Model("model/tree/tree", 2));
+
+        Material *sponza_mat = new Material();
+        sponza_mat->Load("material/mesh.mat");
+
+        MeshRenderer *meshRender = go_sponza->AddComponent<MeshRenderer>();
+        meshRender->SetMaterial(sponza_mat);
     }
 
     void Update() override {

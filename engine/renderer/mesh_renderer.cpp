@@ -66,7 +66,14 @@ void MeshRenderer::Render() {
         return;
     }
     //当骨骼蒙皮动画生效时，渲染骨骼蒙皮Mesh
-    MeshFilter::Mesh *mesh = mesh_filter->skinned_mesh() == nullptr ? mesh_filter->mesh() : mesh_filter->skinned_mesh();
+    int filterType = mesh_filter->GetMeshFilterType();
+    Mesh *mesh = mesh_filter->mesh();
+    if (filterType == SKIN_MESH) {
+        mesh = mesh_filter->skinned_mesh();
+    }
+    if (filterType == MODEL) {
+        mesh = mesh_filter->GetModel()->GetMesh();
+    }
 
     //获取`Shader`的`gl_program_id`，指定为目标Shader程序。
     GLuint program_id = material_->shader()->program_id();
@@ -81,7 +88,7 @@ void MeshRenderer::Render() {
         //将缓冲区对象指定为顶点缓冲区对象
         glBindBuffer(GL_ARRAY_BUFFER, vbo_);
         //上传顶点数据到缓冲区对象
-        glBufferData(GL_ARRAY_BUFFER, mesh->vertex_num_ * sizeof(MeshFilter::Vertex), mesh->vertex_data_,
+        glBufferData(GL_ARRAY_BUFFER, mesh->vertex_num_ * sizeof(Vertex), mesh->vertex_data_,
                      GL_DYNAMIC_DRAW);
 
         //在GPU上创建缓冲区对象
@@ -102,14 +109,14 @@ void MeshRenderer::Render() {
             glBindBuffer(GL_ARRAY_BUFFER, vbo_);
             __CHECK_GL_ERROR__
             //将Shader变量(a_pos)和顶点坐标VBO句柄进行关联，最后的0表示数据偏移量。
-            glVertexAttribPointer(vpos_location, 3, GL_FLOAT, false, sizeof(MeshFilter::Vertex), 0);
+            glVertexAttribPointer(vpos_location, 3, GL_FLOAT, false, sizeof(Vertex), 0);
             __CHECK_GL_ERROR__
             //启用顶点Shader属性(a_color)，指定与顶点颜色数据进行关联
-            glVertexAttribPointer(vcol_location, 4, GL_FLOAT, false, sizeof(MeshFilter::Vertex),
+            glVertexAttribPointer(vcol_location, 4, GL_FLOAT, false, sizeof(Vertex),
                                   (void *) (sizeof(float) * 3));
             __CHECK_GL_ERROR__
             //将Shader变量(a_uv)和顶点UV坐标VBO句柄进行关联，最后的0表示数据偏移量。
-            glVertexAttribPointer(a_uv_location, 2, GL_FLOAT, false, sizeof(MeshFilter::Vertex),
+            glVertexAttribPointer(a_uv_location, 2, GL_FLOAT, false, sizeof(Vertex),
                                   (void *) (sizeof(float) * (3 + 4)));
             __CHECK_GL_ERROR__
 
@@ -129,7 +136,7 @@ void MeshRenderer::Render() {
         glBindBuffer(GL_ARRAY_BUFFER, vbo_);
         __CHECK_GL_ERROR__
         //更新Buffer数据
-        glBufferSubData(GL_ARRAY_BUFFER, 0, mesh->vertex_num_ * sizeof(MeshFilter::Vertex), mesh->vertex_data_);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, mesh->vertex_num_ * sizeof(Vertex), mesh->vertex_data_);
         __CHECK_GL_ERROR__
     }
 

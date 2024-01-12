@@ -7,13 +7,31 @@
 
 #include <iostream>
 #include <vector>
-#include "mesh_filter.h"
+#include "model/obj_loader.h"
+#include "mesh.h"
+#include "texture3d.h"
 
-class model {
+class Model {
 public:
+    Model(const char *model_path, int vt);
+
+    Model(const char *obj, const char *mtl, int vt);
+
+    virtual ~Model() = default;
+
+    void loadModelSimple(const char *obj, const char *mtl, int vt);
+
+    Mesh *GetMesh() { return mesh; }
+
+public:
+    Texture3D *texture3D = nullptr;
 
 private:
-    std::vector<MeshFilter::Mesh> meshes;
+    Mesh *mesh = nullptr;
+
+    ObjLoader *loader = nullptr;
+
+    void initFacesWidthIndices();
 };
 
 

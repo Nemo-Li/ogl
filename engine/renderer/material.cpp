@@ -11,10 +11,20 @@
 #include "texture2d.h"
 
 Material::Material() {
-
+    shader_ = nullptr;
+    textureId = glm::vec4(-1, -1, -1, -1);
+    lightEffect = new LightEffect();
+    lightEffect->ambient = glm::vec3(0.4, 0.4, 0.4);
+    lightEffect->diffuse = glm::vec3(0.6, 0.6, 0.6);
+    lightEffect->specular = glm::vec3(0, 0, 0);
+    id_ = -1;
 }
 
 Material::~Material() {
+    if (shader_) {
+        delete shader_;
+        shader_ = nullptr;
+    }
 }
 
 void Material::Load(const std::string &material_path) {
@@ -66,12 +76,4 @@ void Material::Load(const std::string &material_path) {
 
         material_texture_node = material_texture_node->next_sibling("texture");
     }
-}
-
-void Material::SetUniformMatrix4fv(const std::string &shader_property_name, float *pointer) {
-
-}
-
-void Material::SetUniform1i(const std::string &shader_property_name, int value) {
-
 }

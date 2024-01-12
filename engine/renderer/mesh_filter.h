@@ -8,6 +8,12 @@
 #include <string>
 #include <component/component.h>
 #include <glm/glm.hpp>
+#include "renderer/model.h"
+#include "mesh.h"
+
+#define MESH 0
+#define SKIN_MESH 1
+#define MODEL 2
 
 class MeshFilter : public Component {
 public:
@@ -16,56 +22,6 @@ public:
     ~MeshFilter();
 
 public:
-    //顶点
-    struct Vertex {
-        glm::vec3 position_;
-        glm::vec4 color_;
-        glm::vec2 uv_;
-    };
-
-    //Mesh文件头
-    struct MeshFileHead {
-        char type_[4];
-        char name_[32];//名字
-        unsigned short vertex_num_;//顶点个数
-        unsigned short vertex_index_num_;//索引个数
-    };
-
-    //Mesh数据
-    struct Mesh {
-        char *name_;//名字
-        unsigned short vertex_num_;//顶点个数
-        unsigned short vertex_index_num_;//索引个数
-        Vertex *vertex_data_;//顶点数据
-        unsigned short *vertex_index_data_;//顶点索引数据
-
-        Mesh() {
-            name_ = nullptr;
-            vertex_num_ = 0;
-            vertex_index_num_ = 0;
-            vertex_data_ = nullptr;
-            vertex_index_data_ = nullptr;
-        }
-
-        ~Mesh() {
-            if (vertex_data_ != nullptr) {
-                delete[] vertex_data_;
-                vertex_data_ = nullptr;
-            }
-            if (vertex_index_data_ != nullptr) {
-                delete[] vertex_index_data_;
-                vertex_index_data_ = nullptr;
-            }
-        }
-
-        /// 获取字节数
-        unsigned short size() {
-            auto total_bytes_ = sizeof(vertex_num_) + vertex_num_ * sizeof(Vertex) + sizeof(vertex_index_num_) +
-                                vertex_index_num_ * sizeof(unsigned short);
-            return total_bytes_;
-        }
-    };
-
     /// 顶点关联骨骼及权重,每个顶点最多可以关联4个骨骼。
     struct VertexRelateBoneInfo {
         //骨骼索引，一般骨骼少于128个，用char就行。
@@ -74,7 +30,8 @@ public:
         char bone_weight_[4];
     };
 
-    void LoadMesh(std::string mesh_file_path);//加载Mesh文件
+    //加载Mesh文件
+    void LoadMesh(std::string mesh_file_path);
 
     /// 创建 Mesh
     /// \param vertex_data 顶点数据
@@ -86,7 +43,8 @@ public:
     /// \param vertex_index_data 所有的索引数据,以unsigned short数组形式从lua传过来
     void CreateMesh(std::vector<float> &vertex_data, std::vector<unsigned short> &vertex_index_data);
 
-    Mesh *mesh() { return mesh_; };//Mesh对象
+    //Mesh对象
+    Mesh *mesh() { return mesh_; };
 
     /// 获取Mesh名
     const char *GetMeshName();
@@ -101,7 +59,10 @@ public:
     /// 获取蒙皮Mesh对象指针
     Mesh *skinned_mesh() { return skinned_mesh_; };
 
-    void set_skinned_mesh(Mesh *skinned_mesh) { skinned_mesh_ = skinned_mesh; };
+    void set_skinned_mesh(Mesh *skinned_mesh) {
+        mesh_filter_type_ = SKIN_MESH;
+        skinned_mesh_ = skinned_mesh;
+    };
 
     /// 获取顶点关联骨骼信息(4个骨骼索引、骨骼权重)，长度为顶点个数
     VertexRelateBoneInfo *vertex_relate_bone_infos() { return vertex_relate_bone_infos_; };
@@ -126,11 +87,29 @@ public:
     /// \param weight_file_path 权重文件路径
     void LoadWeight(const std::string &weight_file_path);
 
+    //加载Mesh文件
+    void SetModel(Model *model) {
+        mesh_filter_type_ = MODEL;
+        model_ = model;
+    }
+
+    Model *GetModel() {
+        return model_;
+    }
+
+    int GetMeshFilterType() { return mesh_filter_type_; }
+
+    void SetMeshFilterType(int type) { mesh_filter_type_ = type; }
+
 private:
+    //mesh类型
+    int mesh_filter_type_ = MESH;
     //Mesh对象
-    Mesh *mesh_;
+    Mesh *mesh_ = nullptr;
     //蒙皮Mesh对象
     Mesh *skinned_mesh_ = nullptr;
+    //obj 文件加载
+    Model *model_ = nullptr;
     //顶点关联骨骼索引，长度为顶点个数
     std::vector<unsigned char> vertex_relate_bone_index_vec_;
     //顶点关联骨骼信息(4个骨骼索引、权重)，长度为顶点数

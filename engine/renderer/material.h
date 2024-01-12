@@ -7,13 +7,21 @@
 
 #include <string>
 #include <vector>
+#include <glm/glm.hpp>
 
 class Shader;
 
 class Texture2D;
 
+struct LightEffect {
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+};
+
 class Material {
 public:
+
     Material();
 
     virtual ~Material();
@@ -25,13 +33,16 @@ public:
 
     std::vector<std::pair<std::string, Texture2D *>> &textures() { return textures_; }
 
-    void SetUniformMatrix4fv(const std::string &shader_property_name, float *pointer);
+    void SetUniformMatrix4fv(const std::string &shader_property_name, float *pointer) {}
 
-    void SetUniform1i(const std::string &shader_property_name, int value);
+    void SetUniform1i(const std::string &shader_property_name, int value) {}
 
-private:
+public:
+    int id_;
+    std::string name_;
+    glm::vec4 textureId;
     Shader *shader_;
-
+    LightEffect *lightEffect;
     std::vector<std::pair<std::string, Texture2D *>> textures_;
 };
 
