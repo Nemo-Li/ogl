@@ -5,7 +5,6 @@
 #include "mesh_renderer.h"
 #include <rttr/registration>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform2.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glad/glad.h>
@@ -23,11 +22,14 @@ RTTR_REGISTRATION {
 }
 
 MeshRenderer::MeshRenderer() {
-
+    material_ = nullptr;
 }
 
 MeshRenderer::~MeshRenderer() {
-
+    if (material_) {
+        delete material_;
+        material_ = nullptr;
+    }
 }
 
 void MeshRenderer::Render() {
@@ -68,28 +70,37 @@ void MeshRenderer::Render() {
     //当骨骼蒙皮动画生效时，渲染骨骼蒙皮Mesh
     int filterType = mesh_filter->GetMeshFilterType();
     Mesh *mesh = mesh_filter->mesh();
+
+    Shader *shader = nullptr;
+    if (material_) {
+        shader = material_->shader();
+    }
+
     if (filterType == SKIN_MESH) {
         mesh = mesh_filter->skinned_mesh();
     }
+
     if (filterType == MODEL) {
-        mesh = mesh_filter->GetModel()->GetMesh();
+        Model *m = mesh_filter->GetModel();
+        mesh = m->GetMesh();
+        shader = m->shader;
     }
 
-    //获取`Shader`的`gl_program_id`，指定为目标Shader程序。
-    GLuint program_id = material_->shader()->program_id();
-
     if (vao_ == 0) {
-        GLint vpos_location = glGetAttribLocation(program_id, "a_pos");
-        GLint vcol_location = glGetAttribLocation(program_id, "a_color");
-        GLint a_uv_location = glGetAttribLocation(program_id, "a_uv");
-
         //在GPU上创建缓冲区对象
-        glGenBuffers(1, &vbo_);
+        glGenBuffers(1, &vbo_);__CHECK_GL_ERROR__
         //将缓冲区对象指定为顶点缓冲区对象
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo_);__CHECK_GL_ERROR__
         //上传顶点数据到缓冲区对象
         glBufferData(GL_ARRAY_BUFFER, mesh->vertex_num_ * sizeof(Vertex), mesh->vertex_data_,
-                     GL_DYNAMIC_DRAW);
+                     GL_DYNAMIC_DRAW);__CHECK_GL_ERROR__
+
+        if (mesh->textureIdBuffer) {
+            glGenBuffers(1, &texture_vbo_);
+            glBindBuffer(GL_ARRAY_BUFFER, texture_vbo_);
+            glBufferData(GL_ARRAY_BUFFER, mesh->vertex_num_ * 1 * sizeof(short), mesh->textureIdBuffer,
+                         GL_STATIC_DRAW);__CHECK_GL_ERROR__
+        }
 
         //在GPU上创建缓冲区对象
         glGenBuffers(1, &ebo_);
@@ -100,97 +111,84 @@ void MeshRenderer::Render() {
                      mesh->vertex_index_data_, GL_STATIC_DRAW);
 
         glGenVertexArrays(1, &vao_);
-
         //设置VAO
-        glBindVertexArray(vao_);
-        __CHECK_GL_ERROR__
+        glBindVertexArray(vao_); __CHECK_GL_ERROR__
         {
             //指定当前使用的VBO
-            glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-            __CHECK_GL_ERROR__
+            glBindBuffer(GL_ARRAY_BUFFER, vbo_); __CHECK_GL_ERROR__
             //将Shader变量(a_pos)和顶点坐标VBO句柄进行关联，最后的0表示数据偏移量。
-            glVertexAttribPointer(vpos_location, 3, GL_FLOAT, false, sizeof(Vertex), 0);
-            __CHECK_GL_ERROR__
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Vertex), 0); __CHECK_GL_ERROR__
+            glEnableVertexAttribArray(0);
             //启用顶点Shader属性(a_color)，指定与顶点颜色数据进行关联
-            glVertexAttribPointer(vcol_location, 4, GL_FLOAT, false, sizeof(Vertex),
-                                  (void *) (sizeof(float) * 3));
-            __CHECK_GL_ERROR__
+            glVertexAttribPointer(1, 4, GL_FLOAT, false, sizeof(Vertex),
+                                  (void *) (sizeof(float) * 3)); __CHECK_GL_ERROR__
+            glEnableVertexAttribArray(1);
             //将Shader变量(a_uv)和顶点UV坐标VBO句柄进行关联，最后的0表示数据偏移量。
-            glVertexAttribPointer(a_uv_location, 2, GL_FLOAT, false, sizeof(Vertex),
-                                  (void *) (sizeof(float) * (3 + 4)));
-            __CHECK_GL_ERROR__
+            glVertexAttribPointer(2, 2, GL_FLOAT, false, sizeof(Vertex),
+                                  (void *) (sizeof(float) * (3 + 4))); __CHECK_GL_ERROR__
+            glEnableVertexAttribArray(2);
 
-            glEnableVertexAttribArray(vpos_location);
-            __CHECK_GL_ERROR__
-            glEnableVertexAttribArray(vcol_location);
-            __CHECK_GL_ERROR__
-            glEnableVertexAttribArray(a_uv_location);
-            __CHECK_GL_ERROR__
+            if (mesh->textureIdBuffer) {
+                glBindBuffer(GL_ARRAY_BUFFER, texture_vbo_);__CHECK_GL_ERROR__
+                glVertexAttribPointer(3, 1, GL_SHORT, GL_FALSE, 0, (void *) 0);__CHECK_GL_ERROR__
+                glEnableVertexAttribArray(3);
+            }
 
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
-            __CHECK_GL_ERROR__
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);__CHECK_GL_ERROR__
         }
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        __CHECK_GL_ERROR__
+        glBindVertexArray(0); __CHECK_GL_ERROR__
     } else {
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-        __CHECK_GL_ERROR__
+        glBindBuffer(GL_ARRAY_BUFFER, vbo_); __CHECK_GL_ERROR__
         //更新Buffer数据
-        glBufferSubData(GL_ARRAY_BUFFER, 0, mesh->vertex_num_ * sizeof(Vertex), mesh->vertex_data_);
-        __CHECK_GL_ERROR__
+        glBufferSubData(GL_ARRAY_BUFFER, 0, mesh->vertex_num_ * sizeof(Vertex), mesh->vertex_data_); __CHECK_GL_ERROR__
     }
 
-    glUseProgram(program_id);
-    {
-        // PreRender
-        game_object()->ForeachComponent([](Component *component) {
-            component->OnPreRender();
-        });
+    shader->Use();
 
+    {
         if (current_camera->camera_use_for() == Camera::CameraUseFor::SCENE) {
-            glEnable(GL_DEPTH_TEST);
-            __CHECK_GL_ERROR__
+            glEnable(GL_DEPTH_TEST); __CHECK_GL_ERROR__
         } else {
-            glDisable(GL_DEPTH_TEST);
-            __CHECK_GL_ERROR__
+            glDisable(GL_DEPTH_TEST); __CHECK_GL_ERROR__
         }
-//        glEnable(GL_CULL_FACE);
-        __CHECK_GL_ERROR__//开启背面剔除
-        glEnable(GL_BLEND);
-        __CHECK_GL_ERROR__
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        __CHECK_GL_ERROR__
+        //开启背面剔除
+        //glEnable(GL_CULL_FACE);
+        glEnable(GL_BLEND); __CHECK_GL_ERROR__
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); __CHECK_GL_ERROR__
 
         //上传mvp矩阵
-        glUniformMatrix4fv(glGetUniformLocation(program_id, "u_mvp"), 1, GL_FALSE, &mvp[0][0]);
-        __CHECK_GL_ERROR__
+        shader->setMat4("model", model);
+        shader->setMat4("view", view);
+        shader->setMat4("projection", projection);
 
-        //从Pass节点拿到保存的Texture
-        std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
-        for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
-            GLint u_texture_location = glGetUniformLocation(program_id, textures[texture_index].first.c_str());
-            //激活纹理单元0
-            glActiveTexture(GL_TEXTURE0 + texture_index);
-            //将加载的图片纹理句柄，绑定到纹理单元0的Texture2D上。
-            glBindTexture(GL_TEXTURE_2D, textures[texture_index].second->texture_id());
-            //设置Shader程序从纹理单元0读取颜色数据
-            glUniform1i(u_texture_location, texture_index);
+        if (material_) {
+            //从Pass节点拿到保存的Texture
+            std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
+            for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
+                shader->setInt(textures[texture_index].first, texture_index);
+                textures[texture_index].second->bind(texture_index);
+            }
+        }
+
+        if (filterType == MODEL) {
+            mesh_filter->GetModel()->texture3D->use(0);__CHECK_GL_ERROR__
         }
 
         glBindVertexArray(vao_);
         {
-            glDrawElements(GL_TRIANGLES, mesh->vertex_index_num_, GL_UNSIGNED_SHORT, 0);//使用顶点索引进行绘制，最后的0表示数据偏移量。
+            //使用顶点索引进行绘制，最后的0表示数据偏移量。
+            glDrawElements(GL_TRIANGLES, mesh->vertex_index_num_, GL_UNSIGNED_SHORT, 0);
         }
-        glBindVertexArray(0);
-        __CHECK_GL_ERROR__
-
-        // PostRender
-        game_object()->ForeachComponent([](Component *component) {
-            component->OnPostRender();
-        });
+        glBindVertexArray(0); __CHECK_GL_ERROR__
+        glBindTexture(GL_TEXTURE_2D, 0); __CHECK_GL_ERROR__
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0); __CHECK_GL_ERROR__
     }
 }
 
 void MeshRenderer::SetMaterial(Material *material) {
     material_ = material;
+}
+
+void MeshRenderer::OnDestroy() {
+
 }

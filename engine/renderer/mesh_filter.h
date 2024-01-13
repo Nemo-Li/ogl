@@ -101,6 +101,8 @@ public:
 
     void SetMeshFilterType(int type) { mesh_filter_type_ = type; }
 
+    void OnDestroy() override;
+
 private:
     //mesh类型
     int mesh_filter_type_ = MESH;

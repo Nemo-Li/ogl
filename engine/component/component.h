@@ -46,6 +46,8 @@ public:
 
     virtual void OnDisable();
 
+    virtual void OnDestroy();
+
 private:
     GameObject *game_object_;
     sol::table lua_component_instance_;

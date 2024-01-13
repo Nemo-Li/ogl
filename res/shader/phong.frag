@@ -27,7 +27,7 @@ void main() {
 
     float shadowFactor = 1.0;
 
-    FragColor.rgb = textureColor.rgb * (ambientColor + shadowFactor * diffuseColor);
+    FragColor.rgb = textureColor.rgb; //* (ambientColor + shadowFactor * diffuseColor);
     FragColor.a = 1.0;
 
     float depth = projPosition.z / projPosition.w;

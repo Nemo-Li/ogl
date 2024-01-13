@@ -111,3 +111,14 @@ void MeshFilter::LoadWeight(const std::string &weight_file_path) {
     input_weight_file.read((char *) vertex_relate_bone_infos_, length - 6);
     input_weight_file.close();
 }
+
+void MeshFilter::OnDestroy() {
+    if (mesh_) {
+        delete (mesh_);
+        mesh_ = nullptr;
+    }
+    if (model_) {
+        delete model_;
+        model_ = nullptr;
+    }
+}

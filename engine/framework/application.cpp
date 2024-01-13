@@ -107,6 +107,7 @@ void Application::Run() {
         glfwPollEvents();
     }
 
+    Destroy();
     glfwDestroyWindow(glfw_window_);
 
     glfwTerminate();
@@ -155,4 +156,14 @@ void Application::UpdateScreenSize() {
     glfwGetFramebufferSize(glfw_window_, &width, &height);
     glViewport(0, 0, width, height);
     Screen::set_width_height(width, height);
+}
+
+void Application::Destroy() {
+    GameObject::Foreach([](GameObject *game_object) {
+        if (game_object->active()) {
+            game_object->ForeachComponent([](Component *component) {
+                component->Update();
+            });
+        }
+    });
 }

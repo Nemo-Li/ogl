@@ -152,6 +152,7 @@ void ObjLoader::readObjFile() {
 }
 
 ObjLoader::~ObjLoader() {
+    printf("ObjLoader release\n");
     for (int i = 0; i < vCount; i++)
         delete[] vArr[i];
     for (int i = 0; i < vnCount; i++)

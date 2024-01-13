@@ -17,7 +17,7 @@ public:
 
     Model(const char *obj, const char *mtl, int vt);
 
-    virtual ~Model() = default;
+    virtual ~Model();
 
     void loadModelSimple(const char *obj, const char *mtl, int vt);
 
@@ -25,6 +25,7 @@ public:
 
 public:
     Texture3D *texture3D = nullptr;
+    Shader *shader = nullptr;
 
 private:
     Mesh *mesh = nullptr;

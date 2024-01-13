@@ -24,11 +24,15 @@ public:
 
     Material *material() { return material_; }
 
+    void OnDestroy() override;
+
 private:
     Material *material_;
 
     //顶点缓冲区对象
     unsigned int vbo_ = 0;
+    //纹理id缓冲对象
+    unsigned int texture_vbo_ = 0;
     //索引缓冲区对象
     unsigned int ebo_ = 0;
     //顶点数组对象

@@ -68,3 +68,7 @@ void Component::OnDisable() {
 //    DEBUG_LOG_INFO("Cpp.Component OnDisable");
     SyncLuaComponent("OnDisable");
 }
+
+void Component::OnDestroy() {
+
+}

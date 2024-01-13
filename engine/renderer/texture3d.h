@@ -14,8 +14,6 @@ private:
     const char *path = nullptr;
     std::map<std::string, int> imageIdMap;
 
-    void releaseTexture3D();
-
 public:
     Texture3D();
 
@@ -28,6 +26,8 @@ public:
     int findImage(const char *name);
 
     void initTexture3D(std::string &dir);
+
+    void releaseTexture3D();
 
     unsigned int textureArrayId;
     std::vector<std::string> imageNames;

@@ -94,15 +94,13 @@ public:
         sponza_transform->set_scale(glm::vec3(0.09, 0.09, 0.09));
         sponza_transform->set_position(glm::vec3(10, 15, 0));
         MeshFilter *sponza_mesh_filter = go_sponza->AddComponent<MeshFilter>();
-        sponza_mesh_filter->SetModel(new Model("model/tank/tank", 3));
-//        sponza_mesh_filter->SetModel(new Model("model/sponza/sponza", 2));
-//        sponza_mesh_filter->SetModel(new Model("model/tree/tree", 2));
-
-        Material *sponza_mat = new Material();
-        sponza_mat->Load("material/mesh.mat");
+        Model *model = new Model("model/tank/tank", 3);
+//        Model *model = new Model("model/tree/tree", 2);
+//        Model *model = new Model("model/sponza/sponza", 2);
+        model->shader = Shader::Find("shader/phong");
+        sponza_mesh_filter->SetModel(model);
 
         MeshRenderer *meshRender = go_sponza->AddComponent<MeshRenderer>();
-        meshRender->SetMaterial(sponza_mat);
     }
 
     void Update() override {

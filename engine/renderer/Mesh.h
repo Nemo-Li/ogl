@@ -24,11 +24,12 @@ struct MeshFileHead {
 
 //Mesh数据
 struct Mesh {
-    char *name_;//名字
+    const char *name_;//名字
     unsigned short vertex_num_;//顶点个数
     unsigned short vertex_index_num_;//索引个数
     Vertex *vertex_data_;//顶点数据
     unsigned short *vertex_index_data_;//顶点索引数据
+    short* textureIdBuffer;//纹理对应数据
     //对应的材质
     Material **material_;
 
@@ -38,6 +39,7 @@ struct Mesh {
         vertex_index_num_ = 0;
         vertex_data_ = nullptr;
         vertex_index_data_ = nullptr;
+        textureIdBuffer = nullptr;
     }
 
     ~Mesh() {
@@ -48,6 +50,18 @@ struct Mesh {
         if (vertex_index_data_ != nullptr) {
             delete[] vertex_index_data_;
             vertex_index_data_ = nullptr;
+        }
+        if (textureIdBuffer) {
+            delete[] textureIdBuffer;
+            textureIdBuffer = nullptr;
+        }
+        if (material_) {
+            for (int i = 0; i < vertex_num_; ++i) {
+                delete material_[i];
+                material_[i] = nullptr;
+            }
+            delete[] material_;
+            material_ = nullptr;
         }
     }
 

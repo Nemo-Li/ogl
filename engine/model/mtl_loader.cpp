@@ -20,6 +20,7 @@ MtlLoader::MtlLoader(const char *mtlPath) {
 }
 
 MtlLoader::~MtlLoader() {
+    printf("MtlLoader release\n");
     obj_mtl_map_.clear();
     if (texture3D) {
         delete texture3D;
@@ -92,4 +93,9 @@ void MtlLoader::readMtlFile() {
         }
     }
     infile.close();
+    std::string l_file = std::string(mtlFilePath);
+    int index = l_file.find_last_of('/');
+    std::string path = l_file.substr(0, index);
+    printf("obj path: %s\n", path.c_str());
+    texture3D->initTexture3D(path.append("/textures"));
 }

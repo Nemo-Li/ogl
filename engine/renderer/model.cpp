@@ -4,6 +4,7 @@
 
 #include "model.h"
 #include "framework/application.h"
+#include "shader.h"
 
 Model::Model(const char *obj, const char *mtl, int vt) {
     loadModelSimple(obj, mtl, vt);
@@ -13,14 +14,12 @@ void Model::loadModelSimple(const char *obj, const char *mtl, int vt) {
     loader = new ObjLoader(obj, mtl, vt);
     texture3D = loader->mtlLoader->texture3D;
     initFacesWidthIndices();
-    delete loader;
-    loader = nullptr;
 }
 
 void Model::initFacesWidthIndices() {
     printf("mt count %d \n", loader->mtCount);
     mesh = new Mesh();
-    mesh->name_ = "sponza";
+    mesh->name_ = std::string("sponza").c_str();
     int vertexCount = loader->vCount;
     mesh->vertex_num_ = vertexCount;
     int indexCount = loader->faceCount * 3;
@@ -37,6 +36,7 @@ void Model::initFacesWidthIndices() {
 
     mesh->vertex_index_data_ = new unsigned short[indexCount];
     mesh->material_ = new Material *[vertexCount];
+    mesh->textureIdBuffer = new short[vertexCount];
     for (int i = 0; i < loader->faceCount; i++) {
         int index1 = loader->fvArr[i][0] - 1;
         int index2 = loader->fvArr[i][1] - 1;
@@ -60,6 +60,12 @@ void Model::initFacesWidthIndices() {
         mesh->material_[index1] = mat;
         mesh->material_[index2] = mat;
         mesh->material_[index3] = mat;
+
+        mesh->textureIdBuffer[index1] = (short) mat->textureId.x;
+//        printf("index1 %d\n", index1);
+//        mesh->textureIdBuffer[index1 * 4 + 1] = mat->textureId.y;
+//        mesh->textureIdBuffer[index1 * 4 + 2] = mat->textureId.z;
+//        mesh->textureIdBuffer[index1 * 4 + 3] = mat->textureId.w;
     }
 }
 
@@ -68,5 +74,16 @@ Model::Model(const char *model_path, int vt) {
     std::string mtl_file = Application::data_path() + model_path + ".mtl";
     printf("obj: %s mtl: %s\n", obj_file.c_str(), mtl_file.c_str());
     loadModelSimple(obj_file.c_str(), mtl_file.c_str(), vt);
+}
+
+Model::~Model() {
+    if (loader) {
+        delete loader;
+        loader = nullptr;
+    }
+    if (mesh) {
+        delete mesh;
+        mesh = nullptr;
+    }
 }
 
