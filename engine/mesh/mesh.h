@@ -6,6 +6,7 @@
 #define OGL_MESH_H
 
 #include "glm/glm.hpp"
+#include <stdio.h>
 
 //顶点
 struct Vertex {
@@ -41,6 +42,7 @@ struct Mesh {
     }
 
     ~Mesh() {
+        printf("Mesh release\n");
         if (vertex_data_ != nullptr) {
             delete[] vertex_data_;
             vertex_data_ = nullptr;

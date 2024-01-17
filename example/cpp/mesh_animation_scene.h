@@ -34,7 +34,11 @@ public:
     GameObject *go_terrain;
     GameObject *go_tank;
     GameObject *go_house;
+    GameObject *go_cottage;
     Terrain *terrain;
+
+    Model *house_model;
+    Model *cottage_model;
 
     glm::vec4 cam_forward = glm::vec4(0.0, 0.0, -0.5, 1.0);
     glm::vec4 cam_left = glm::vec4(-1.0, 0.0, 0.0, 1.0);
@@ -77,9 +81,11 @@ public:
 
         go_skybox = new GameObject("skybox");
         SkyBox *skyBox = go_skybox->AddComponent<SkyBox>();
+
 //        skyBox->LoadCubeMap("skybox/sky_ft.png", "skybox/sky_bk.png",
 //                            "skybox/sky_dn.png", "skybox/sky_up.png",
 //                            "skybox/sky_rt.png", "skybox/sky_lf.png");
+
         skyBox->LoadCubeMap("skybox/xpos.png", "skybox/xneg.png",
                             "skybox/yneg.png", "skybox/ypos.png",
                             "skybox/zpos.png", "skybox/zneg.png");
@@ -109,17 +115,17 @@ public:
         house_transform->set_scale(glm::vec3(5.0, 5.0, 5.0));
         house_transform->set_position(glm::vec3(0, terrain->GetElevation(0, -10), -10));
         auto house_mesh_filter = go_house->AddComponent<MeshFilter>();
-        auto *house_model = new Model("model/house/house", 2);
+        house_model = new Model("model/house/house", 2);
         house_model->shader = Shader::Find("shader/phong");
         house_mesh_filter->SetModel(house_model);
         go_house->AddComponent<MeshRenderer>();
 
-        auto go_cottage = new GameObject("cottage");
+        go_cottage = new GameObject("cottage");
         auto *go_cottage_transform = go_cottage->AddComponent<Transform>();
         go_cottage_transform->set_scale(glm::vec3(1.0, 1.0, 1.0));
         go_cottage_transform->set_position(glm::vec3(0, terrain->GetElevation(0, 50), 50));
         auto cottage_mesh_filter = go_cottage->AddComponent<MeshFilter>();
-        auto *cottage_model = new Model("model/cottage_obj/cottage_obj", 2);
+        cottage_model = new Model("model/cottage_obj/cottage_obj", 2);
         cottage_model->shader = Shader::Find("shader/phong");
         cottage_mesh_filter->SetModel(cottage_model);
         go_cottage->AddComponent<MeshRenderer>();

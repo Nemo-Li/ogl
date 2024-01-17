@@ -21,6 +21,7 @@ Material::Material() {
 }
 
 Material::~Material() {
+    printf("Material release\n");
     if (shader_) {
         delete shader_;
         shader_ = nullptr;

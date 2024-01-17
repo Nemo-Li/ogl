@@ -20,6 +20,7 @@ MeshFilter::MeshFilter() : mesh_(nullptr) {
 }
 
 MeshFilter::~MeshFilter() {
+    printf("MeshFilter release\n");
     if (skinned_mesh_) {
         delete skinned_mesh_;
         skinned_mesh_ = nullptr;
@@ -113,6 +114,7 @@ void MeshFilter::LoadWeight(const std::string &weight_file_path) {
 }
 
 void MeshFilter::OnDestroy() {
+    printf("mesh filter ondestroy\n");
     if (mesh_) {
         delete (mesh_);
         mesh_ = nullptr;

@@ -26,6 +26,7 @@ MeshRenderer::MeshRenderer() {
 }
 
 MeshRenderer::~MeshRenderer() {
+    printf("mesh render release\n");
     if (material_) {
         delete material_;
         material_ = nullptr;
