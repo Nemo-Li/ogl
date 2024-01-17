@@ -32,7 +32,7 @@ Texture2D *Texture2D::LoadFromFile(std::string &image_file_path) {
         //2. 将纹理绑定到特定纹理目标;
         glBindTexture(GL_TEXTURE_2D, texture2d->texture_id_);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
         glTexSubImage2D(GL_TEXTURE_2D, 0 /* mip map level */, 0 /* x offset */, 0 /* y offset */, width, height,
                         GL_RGBA,
                         GL_UNSIGNED_BYTE, pixels);

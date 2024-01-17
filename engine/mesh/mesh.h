@@ -29,9 +29,7 @@ struct Mesh {
     unsigned short vertex_index_num_;//索引个数
     Vertex *vertex_data_;//顶点数据
     unsigned short *vertex_index_data_;//顶点索引数据
-    short* textureIdBuffer;//纹理对应数据
-    //对应的材质
-    Material **material_;
+    short *textureIdBuffer;//纹理对应数据
 
     Mesh() {
         name_ = nullptr;
@@ -54,14 +52,6 @@ struct Mesh {
         if (textureIdBuffer) {
             delete[] textureIdBuffer;
             textureIdBuffer = nullptr;
-        }
-        if (material_) {
-            for (int i = 0; i < vertex_num_; ++i) {
-                delete material_[i];
-                material_[i] = nullptr;
-            }
-            delete[] material_;
-            material_ = nullptr;
         }
     }
 

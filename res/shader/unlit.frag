@@ -7,5 +7,9 @@ in vec2 v_uv;
 layout(location = 0) out vec4 o_fragColor;
 void main()
 {
-    o_fragColor = texture(u_diffuse_texture,v_uv) * v_color;
+    vec4 tex_color = texture(u_diffuse_texture,v_uv) * v_color;
+    if (tex_color.a < 0.3) {
+        discard;
+    }
+    o_fragColor = tex_color;
 }

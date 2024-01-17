@@ -9,7 +9,7 @@
 #include <component/component.h>
 #include <glm/glm.hpp>
 #include "renderer/model.h"
-#include "mesh.h"
+#include "mesh/mesh.h"
 
 #define MESH 0
 #define SKIN_MESH 1
@@ -42,6 +42,8 @@ public:
     /// \param vertex_data 所有的顶点数据,以float数组形式从lua传过来
     /// \param vertex_index_data 所有的索引数据,以unsigned short数组形式从lua传过来
     void CreateMesh(std::vector<float> &vertex_data, std::vector<unsigned short> &vertex_index_data);
+
+    void SetMesh(Mesh *mesh) { mesh_ = mesh; }
 
     //Mesh对象
     Mesh *mesh() { return mesh_; };

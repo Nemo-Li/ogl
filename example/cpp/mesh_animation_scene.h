@@ -20,6 +20,7 @@
 #include <renderer/skinned_mesh_renderer.h>
 #include <renderer/sky_box.h>
 #include <glm/gtx/euler_angles.hpp>
+#include <mesh/quad.h>
 #include "renderer/animation_clip.h"
 #include "renderer/terrain.h"
 
@@ -31,10 +32,11 @@ public:
     GameObject *go_skeleton;
     GameObject *go_skybox;
     GameObject *go_terrain;
-    GameObject *go_sponza;
+    GameObject *go_tank;
+    GameObject *go_house;
     Terrain *terrain;
 
-    glm::vec4 cam_forward = glm::vec4(0.0, 0.0, -1.0, 1.0);
+    glm::vec4 cam_forward = glm::vec4(0.0, 0.0, -0.5, 1.0);
     glm::vec4 cam_left = glm::vec4(-1.0, 0.0, 0.0, 1.0);
     glm::mat4 unit_mat4 = glm::mat4(1.0f);
 
@@ -75,9 +77,12 @@ public:
 
         go_skybox = new GameObject("skybox");
         SkyBox *skyBox = go_skybox->AddComponent<SkyBox>();
-        skyBox->LoadCubeMap("skybox/sky_ft.png", "skybox/sky_bk.png",
-                            "skybox/sky_dn.png", "skybox/sky_up.png",
-                            "skybox/sky_rt.png", "skybox/sky_lf.png");
+//        skyBox->LoadCubeMap("skybox/sky_ft.png", "skybox/sky_bk.png",
+//                            "skybox/sky_dn.png", "skybox/sky_up.png",
+//                            "skybox/sky_rt.png", "skybox/sky_lf.png");
+        skyBox->LoadCubeMap("skybox/xpos.png", "skybox/xneg.png",
+                            "skybox/yneg.png", "skybox/ypos.png",
+                            "skybox/zpos.png", "skybox/zneg.png");
 
         go_terrain = new GameObject("terrain");
         terrain = go_terrain->AddComponent<Terrain>();
@@ -87,20 +92,57 @@ public:
         terrain->LoadTerrainTexture("image/terrain1024.png");
         auto *terrainTrans = go_terrain->AddComponent<Transform>();
 
-        player_transform->set_position(glm::vec3(0, terrain->GetElevation(0, -2), -2));
+        player_transform->set_position(glm::vec3(8, terrain->GetElevation(8, -2), -2));
 
-        go_sponza = new GameObject("sponza");
-        Transform *sponza_transform = go_sponza->AddComponent<Transform>();
-        sponza_transform->set_scale(glm::vec3(0.09, 0.09, 0.09));
-        sponza_transform->set_position(glm::vec3(10, 15, 0));
-        MeshFilter *sponza_mesh_filter = go_sponza->AddComponent<MeshFilter>();
-        Model *model = new Model("model/tank/tank", 3);
-//        Model *model = new Model("model/tree/tree", 2);
-//        Model *model = new Model("model/sponza/sponza", 2);
+        go_tank = new GameObject("tank");
+        auto *tank_transform = go_tank->AddComponent<Transform>();
+        tank_transform->set_scale(glm::vec3(0.5, 0.5, 0.5));
+        tank_transform->set_position(glm::vec3(30, terrain->GetElevation(30, -20), -20));
+        auto *tank_mesh_filter = go_tank->AddComponent<MeshFilter>();
+        auto *model = new Model("model/tank/tank", 3);
         model->shader = Shader::Find("shader/phong");
-        sponza_mesh_filter->SetModel(model);
+        tank_mesh_filter->SetModel(model);
+        go_tank->AddComponent<MeshRenderer>();
 
-        MeshRenderer *meshRender = go_sponza->AddComponent<MeshRenderer>();
+        go_house = new GameObject("house");
+        auto *house_transform = go_house->AddComponent<Transform>();
+        house_transform->set_scale(glm::vec3(5.0, 5.0, 5.0));
+        house_transform->set_position(glm::vec3(0, terrain->GetElevation(0, -10), -10));
+        auto house_mesh_filter = go_house->AddComponent<MeshFilter>();
+        auto *house_model = new Model("model/house/house", 2);
+        house_model->shader = Shader::Find("shader/phong");
+        house_mesh_filter->SetModel(house_model);
+        go_house->AddComponent<MeshRenderer>();
+
+        auto go_cottage = new GameObject("cottage");
+        auto *go_cottage_transform = go_cottage->AddComponent<Transform>();
+        go_cottage_transform->set_scale(glm::vec3(1.0, 1.0, 1.0));
+        go_cottage_transform->set_position(glm::vec3(0, terrain->GetElevation(0, 50), 50));
+        auto cottage_mesh_filter = go_cottage->AddComponent<MeshFilter>();
+        auto *cottage_model = new Model("model/cottage_obj/cottage_obj", 2);
+        cottage_model->shader = Shader::Find("shader/phong");
+        cottage_mesh_filter->SetModel(cottage_model);
+        go_cottage->AddComponent<MeshRenderer>();
+
+        auto go_tree = new GameObject("tree");
+        auto *tree_transform = go_tree->AddComponent<Transform>();
+        tree_transform->set_scale(glm::vec3(1.0, 1.0, 1.0));
+        tree_transform->set_position(glm::vec3(0, terrain->GetElevation(0, 10), 10));
+        auto tree_mesh_filter = go_tree->AddComponent<MeshFilter>();
+        auto *tree_model = new Model("model/firc/firc", 2);
+        tree_model->shader = Shader::Find("shader/phong");
+        tree_mesh_filter->SetModel(tree_model);
+        go_tree->AddComponent<MeshRenderer>();
+
+        auto go_quad = new GameObject("quad");
+        auto *quadTrans = go_quad->AddComponent<Transform>();
+        quadTrans->set_rotation(glm::vec3(90, 0, 0));
+        quadTrans->set_position(glm::vec3(10, terrain->GetElevation(10, 0) + 5, 0));
+        Quad *quad = new Quad(10, 10, 10);
+        go_quad->AddComponent<MeshFilter>()->SetMesh(quad->mesh());
+        auto *quad_m = new Material();
+        quad_m->Load("material/tree.mat");
+        go_quad->AddComponent<MeshRenderer>()->SetMaterial(quad_m);
     }
 
     void Update() override {
@@ -131,6 +173,10 @@ public:
 
         if (Input::GetKeyDown(KEY_CODE_D)) {
             new_pos -= glm::vec3(cam_left);
+        }
+
+        if (Input::GetKeyDown(KEY_CODE_SPACE)) {
+
         }
 
         float elevation = terrain->GetElevation(new_pos.x, new_pos.z);

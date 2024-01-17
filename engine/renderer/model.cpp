@@ -35,7 +35,6 @@ void Model::initFacesWidthIndices() {
     }
 
     mesh->vertex_index_data_ = new unsigned short[indexCount];
-    mesh->material_ = new Material *[vertexCount];
     mesh->textureIdBuffer = new short[vertexCount];
     for (int i = 0; i < loader->faceCount; i++) {
         int index1 = loader->fvArr[i][0] - 1;
@@ -57,15 +56,9 @@ void Model::initFacesWidthIndices() {
         mesh->vertex_data_[index3].uv_ = c3;
 
         Material *mat = loader->mtlLoader->obj_mtl_map_[loader->mtArr[i]];
-        mesh->material_[index1] = mat;
-        mesh->material_[index2] = mat;
-        mesh->material_[index3] = mat;
-
         mesh->textureIdBuffer[index1] = (short) mat->textureId.x;
-//        printf("index1 %d\n", index1);
-//        mesh->textureIdBuffer[index1 * 4 + 1] = mat->textureId.y;
-//        mesh->textureIdBuffer[index1 * 4 + 2] = mat->textureId.z;
-//        mesh->textureIdBuffer[index1 * 4 + 3] = mat->textureId.w;
+        mesh->textureIdBuffer[index2] = (short) mat->textureId.x;
+        mesh->textureIdBuffer[index3] = (short) mat->textureId.x;
     }
 }
 

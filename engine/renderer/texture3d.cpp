@@ -31,7 +31,9 @@ void Texture3D::use(int slot) {
 
 void Texture3D::addImage(const char *name) {
     //从0开始
-    imageIdMap[name] = imageNames.size();
+    unsigned long index = imageNames.size();
+    printf("name: %s index: %lu\n", name, index);
+    imageIdMap[name] = index;
     imageNames.emplace_back(name);
 }
 

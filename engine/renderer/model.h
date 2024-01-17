@@ -8,7 +8,7 @@
 #include <iostream>
 #include <vector>
 #include "model/obj_loader.h"
-#include "mesh.h"
+#include "mesh/mesh.h"
 #include "texture3d.h"
 
 class Model {

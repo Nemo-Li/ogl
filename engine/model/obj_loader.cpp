@@ -6,7 +6,6 @@
 #include <string>
 #include <sstream>
 #include "obj_loader.h"
-#include "framework/application.h"
 
 using std::string;
 using std::ifstream;

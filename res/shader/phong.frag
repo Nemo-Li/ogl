@@ -4,7 +4,7 @@ uniform sampler2DArray textureArray;
 
 in vec2 vTexcoord;
 flat in vec3 vColor;
-flat in float vTexid;
+flat in int vTexid;
 in vec4 projPosition;
 in vec4 viewPosition;
 
@@ -17,7 +17,7 @@ void main() {
     vec3 texcoord = vec3(vTexcoord, vTexid);
     if (texcoord.p >= 0.0) {
         textureColor = texture(textureArray, texcoord);
-        if (textureColor.a < 0.1)
+        if (textureColor.a < 0.3)
         discard;
     }
 
@@ -27,9 +27,6 @@ void main() {
 
     float shadowFactor = 1.0;
 
-    FragColor.rgb = textureColor.rgb; //* (ambientColor + shadowFactor * diffuseColor);
+    FragColor.rgb = textureColor.rgb;//* (ambientColor + shadowFactor * diffuseColor);
     FragColor.a = 1.0;
-
-    float depth = projPosition.z / projPosition.w;
-    FragDepth = vec4(depth, depth, depth, depth);
 }
