@@ -20,9 +20,10 @@
 #include <renderer/skinned_mesh_renderer.h>
 #include <renderer/sky_box.h>
 #include <glm/gtx/euler_angles.hpp>
-#include <mesh/quad.h>
+#include <mesh/plane.h>
 #include "renderer/animation_clip.h"
 #include "renderer/terrain.h"
+#include <math.h>
 
 class MeshAnimationScene : public Component {
 public:
@@ -46,6 +47,7 @@ public:
 
     //-z 方向的夹角 前进方向的夹角
     float degrees_step = 1.0f;
+    float y_offset = 5.0f;
 
     void Awake() override {
         //创建主相机游戏对象
@@ -144,8 +146,8 @@ public:
         auto *quadTrans = go_quad->AddComponent<Transform>();
         quadTrans->set_rotation(glm::vec3(90, 0, 0));
         quadTrans->set_position(glm::vec3(10, terrain->GetElevation(10, 0) + 5, 0));
-        Quad *quad = new Quad(10, 10, 10);
-        go_quad->AddComponent<MeshFilter>()->SetMesh(quad->mesh());
+        Plane *plane = new Plane(10, 10, 10);
+        go_quad->AddComponent<MeshFilter>()->SetMesh(plane->mesh());
         auto *quad_m = new Material();
         quad_m->Load("material/tree.mat");
         go_quad->AddComponent<MeshRenderer>()->SetMaterial(quad_m);
@@ -182,11 +184,16 @@ public:
         }
 
         if (Input::GetKeyDown(KEY_CODE_SPACE)) {
-
+            y_offset++;
+        } else {
+            if (y_offset > 5.0f) {
+                y_offset--;
+                y_offset = std::max(y_offset, 5.0f);
+            }
         }
 
         float elevation = terrain->GetElevation(new_pos.x, new_pos.z);
-        new_pos.y = elevation + 5.0f;
+        new_pos.y = elevation + y_offset;
         camera_transform->set_position(new_pos);
         camera->SetView(glm::vec3(cam_forward), glm::vec3(0.0, 1.0, 0.0));
     }

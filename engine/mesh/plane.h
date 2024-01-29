@@ -2,21 +2,21 @@
 // Created by Nemo li on 2024/1/16.
 //
 
-#ifndef OGL_QUAD_H
-#define OGL_QUAD_H
+#ifndef OGL_PLANE_H
+#define OGL_PLANE_H
 
 
 #include "mesh.h"
 
-class Quad {
+class Plane {
 public:
-    Quad();
+    Plane();
 
-    Quad(float baseX, float baseY, float baseZ);
+    Plane(float baseX, float baseY, float baseZ);
 
     Mesh *mesh() { return mesh_; }
 
-    virtual ~Quad();
+    virtual ~Plane();
 
 private:
     Mesh *mesh_;
@@ -26,4 +26,4 @@ private:
 };
 
 
-#endif //OGL_QUAD_H
+#endif //OGL_PLANE_H

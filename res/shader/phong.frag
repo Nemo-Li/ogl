@@ -27,6 +27,5 @@ void main() {
 
     float shadowFactor = 1.0;
 
-    FragColor.rgb = textureColor.rgb;//* (ambientColor + shadowFactor * diffuseColor);
-    FragColor.a = 1.0;
+    FragColor = textureColor;//* (ambientColor + shadowFactor * diffuseColor);
 }

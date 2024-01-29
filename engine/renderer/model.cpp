@@ -101,9 +101,11 @@ void Model::initFacesWidthIndices() {
         texcoordMap->insert(std::pair<int, bool>(index3, true));
 
         Material *mat = loader->mtlLoader->obj_mtl_map_[loader->mtArr[i]];
-        mesh->textureIdBuffer[index1] = (short) mat->textureId.x;
-        mesh->textureIdBuffer[index2] = (short) mat->textureId.x;
-        mesh->textureIdBuffer[index3] = (short) mat->textureId.x;
+        if (mat) {
+            mesh->textureIdBuffer[index1] = (short) mat->textureId.x;
+            mesh->textureIdBuffer[index2] = (short) mat->textureId.x;
+            mesh->textureIdBuffer[index3] = (short) mat->textureId.x;
+        }
         mesh->vertex_num_ = dupIndex;
     }
 }

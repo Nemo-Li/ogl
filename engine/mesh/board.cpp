@@ -1,31 +1,25 @@
 //
-// Created by Nemo li on 2024/1/16.
+// Created by Nemo li on 2024/1/19.
 //
 
-#include "quad.h"
+#include "board.h"
 
-Quad::Quad() : Quad(1.0f, 1.0f, 1.0f) {
+Board::Board() : Board(1.0f, 1.0f, 1.0f, 0.0f, 0.0f) {
 
 }
 
-Quad::~Quad() {
+Board::Board(float baseX, float baseY, float baseZ) : Board(baseX, baseY, baseZ, 0.0f, 0.0f) {
+
+}
+
+Board::~Board() {
     if (mesh_) {
         delete mesh_;
         mesh_ = nullptr;
     }
 }
 
-Quad::Quad(float baseX, float baseY, float baseZ) : baseX(baseX), baseY(baseY), baseZ(baseZ) {
-    mesh_ = new Mesh();
-    mesh_->name_ = "quad";
-    mesh_->vertex_num_ = 4;
-    mesh_->vertex_data_ = new Vertex[mesh_->vertex_num_];
-    mesh_->vertex_index_num_ = 6;
-    mesh_->vertex_index_data_ = new unsigned short[mesh_->vertex_index_num_];
-    initMesh();
-}
-
-void Quad::initMesh() {
+void Board::initMesh() {
     Vertex vertex0 = Vertex();
     vertex0.position_ = glm::vec3(-0.5f, 0.0f, -0.5f);
     vertex0.uv_ = glm::vec2(0, 1);
@@ -58,8 +52,21 @@ void Quad::initMesh() {
     mesh_->vertex_index_data_[5] = 3;
 
     for (int i = 0; i < 4; i++) {
+        mesh_->vertex_data_[i].position_.x += biasX;
+        mesh_->vertex_data_[i].position_.y += biasY;
         mesh_->vertex_data_[i].position_.x *= baseX;
         mesh_->vertex_data_[i].position_.y *= baseY;
         mesh_->vertex_data_[i].position_.z *= baseZ;
     }
+}
+
+Board::Board(float baseX, float baseY, float baseZ, float offX, float offY) : baseX(baseX), baseY(baseY), baseZ(baseZ),
+                                                                              biasX(offX), biasY(offY) {
+    mesh_ = new Mesh();
+    mesh_->name_ = "board";
+    mesh_->vertex_num_ = 4;
+    mesh_->vertex_data_ = new Vertex[mesh_->vertex_num_];
+    mesh_->vertex_index_num_ = 6;
+    mesh_->vertex_index_data_ = new unsigned short[mesh_->vertex_index_num_];
+    initMesh();
 }
