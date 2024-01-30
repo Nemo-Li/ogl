@@ -6,7 +6,10 @@
 #define OGL_INSTANCE_RENDER_H
 
 
+#include <mesh/mesh.h>
 #include "mesh_renderer.h"
+#include "terrain.h"
+#include <mesh/board.h>
 
 class InstanceRender : public MeshRenderer {
 public:
@@ -15,6 +18,16 @@ public:
     virtual ~InstanceRender();
 
     void Render() override;
+
+    void InitInstance(Terrain *terrain);
+
+private:
+    //顶点数组object
+    unsigned int vao_ = 0;
+    Mesh *mesh = nullptr;
+    Board *board = nullptr;
+    unsigned int count = 50;
+    float *position_ = nullptr;
 
 RTTR_ENABLE(MeshRenderer);
 };

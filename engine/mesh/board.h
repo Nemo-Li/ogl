@@ -9,6 +9,7 @@
 #include "mesh.h"
 
 class Board {
+public:
     Board();
 
     Board(float baseX, float baseY, float baseZ);

@@ -24,6 +24,8 @@
 #include "renderer/animation_clip.h"
 #include "renderer/terrain.h"
 #include <math.h>
+#include <renderer/instance_render.h>
+#include "mesh/board.h"
 
 class MeshAnimationScene : public Component {
 public:
@@ -142,15 +144,12 @@ public:
         tree_mesh_filter->SetModel(tree_model);
         go_tree->AddComponent<MeshRenderer>();
 
-        auto go_quad = new GameObject("quad");
-        auto *quadTrans = go_quad->AddComponent<Transform>();
-        quadTrans->set_rotation(glm::vec3(90, 0, 0));
-        quadTrans->set_position(glm::vec3(10, terrain->GetElevation(10, 0) + 5, 0));
-        Plane *plane = new Plane(10, 10, 10);
-        go_quad->AddComponent<MeshFilter>()->SetMesh(plane->mesh());
-        auto *quad_m = new Material();
-        quad_m->Load("material/tree.mat");
-        go_quad->AddComponent<MeshRenderer>()->SetMaterial(quad_m);
+        auto go_billboard = new GameObject("billboard");
+        auto *billboard_m = new Material();
+        billboard_m->Load("material/tree.mat");
+        auto instanceRender = go_billboard->AddComponent<InstanceRender>();
+        instanceRender->InitInstance(terrain);
+        instanceRender->SetMaterial(billboard_m);
     }
 
     void Update() override {
@@ -190,6 +189,10 @@ public:
                 y_offset--;
                 y_offset = std::max(y_offset, 5.0f);
             }
+        }
+
+        if (Input::GetKeyDown(KEY_CODE_Z)) {
+            y_offset--;
         }
 
         float elevation = terrain->GetElevation(new_pos.x, new_pos.z);
