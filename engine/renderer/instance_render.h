@@ -9,6 +9,7 @@
 #include <mesh/mesh.h>
 #include "mesh_renderer.h"
 #include "terrain.h"
+#include "model.h"
 #include <mesh/board.h>
 
 class InstanceRender : public MeshRenderer {
@@ -28,6 +29,7 @@ private:
     Board *board = nullptr;
     unsigned int count = 50;
     float *position_ = nullptr;
+    Model *tree_model = nullptr;
 
 RTTR_ENABLE(MeshRenderer);
 };

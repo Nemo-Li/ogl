@@ -17,8 +17,10 @@ RTTR_REGISTRATION {
 }
 
 InstanceRender::InstanceRender() {
-    board = new Board(5.0, 5.0, 5.0, 0, 0);
-    mesh = board->mesh();
+//    board = new Board(5.0, 5.0, 5.0, 0, 0);
+//    mesh = board->mesh();
+    tree_model = new Model("model/firc/firc", 2);
+    mesh = tree_model->GetMesh();
 }
 
 InstanceRender::~InstanceRender() {
@@ -51,7 +53,7 @@ void InstanceRender::Render() {
     glm::mat4 model = glm::mat4(1.0f);
 
     if (vao_ == 0) {
-        unsigned int vertexVbo, ebo, pos_vbo;
+        unsigned int vertexVbo, ebo, pos_vbo, texture_vbo;
         glGenVertexArrays(1, &vao_);
         glBindVertexArray(vao_);
 
@@ -71,6 +73,15 @@ void InstanceRender::Render() {
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
         glEnableVertexAttribArray(2);
 
+        if (mesh->textureIdBuffer) {
+            glGenBuffers(1, &texture_vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, texture_vbo);
+            glBufferData(GL_ARRAY_BUFFER, mesh->vertex_num_ * 1 * sizeof(short), mesh->textureIdBuffer,
+                         GL_STATIC_DRAW);
+            glVertexAttribPointer(3, 1, GL_SHORT, GL_FALSE, 0, (void *) 0);
+            glEnableVertexAttribArray(3);
+        }
+
         glGenBuffers(1, &ebo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * mesh->vertex_index_num_,
@@ -87,17 +98,23 @@ void InstanceRender::Render() {
     shader->setMat4("viewProjectMatrix", vp_mat);
     shader->setVec3("viewRight", right);
     shader->setMat4("model", model);
+    shader->setBool("billborad", false);
+    shader->setInt("textureArray", 1);
+    
 
     //从Pass节点拿到保存的Texture
-    std::vector<std::pair<std::string, Texture2D *>> textures = material()->textures();
-    for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
-        shader->setInt(textures[texture_index].first, texture_index);
-        textures[texture_index].second->bind(texture_index);
-    }
+//    std::vector<std::pair<std::string, Texture2D *>> textures = material()->textures();
+//    for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
+//        shader->setInt(textures[texture_index].first, texture_index);
+//        textures[texture_index].second->bind(texture_index);
+//    }
+
+    tree_model->texture3D->use(1);
 
     glBindVertexArray(vao_);
-    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void *) 0, count);
+    glDrawElementsInstanced(GL_TRIANGLES, mesh->vertex_index_num_, GL_UNSIGNED_SHORT, (void *) 0, count);
     glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
 void InstanceRender::InitInstance(Terrain *terrain) {
@@ -107,6 +124,6 @@ void InstanceRender::InitInstance(Terrain *terrain) {
         float z = rand() % 100;
         position_[i * 3 + 0] = x;
         position_[i * 3 + 2] = z;
-        position_[i * 3 + 1] = terrain->GetElevation((int) x, (int) z) + 2.5f;
+        position_[i * 3 + 1] = terrain->GetElevation((int) x, (int) z) /*+ 2.5f*/;
     }
 }
