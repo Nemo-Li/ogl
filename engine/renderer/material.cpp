@@ -56,6 +56,10 @@ void Material::Load(const std::string &material_path) {
         printf("tese: %s\n", tese->value());
     }
 
+    if (geom != nullptr) {
+        printf("geom: %s\n", geom->value());
+    }
+
     shader_ = Shader::Find(material_shader_attribute->value(), geom != nullptr, tesc != nullptr, tese != nullptr);
 
     //解析Texture

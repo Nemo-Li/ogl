@@ -16,6 +16,7 @@
 #include <renderer/sky_box.h>
 #include <renderer/terrain.h>
 #include <renderer/instance_render.h>
+#include <renderer/grass.h>
 #include "component/game_object.h"
 #include "renderer/mesh_renderer.h"
 #include "helpers/debug.h"
@@ -149,6 +150,11 @@ void Application::Render() {
             auto *terrain = game_object->GetComponent<Terrain>();
             if (terrain != nullptr) {
                 terrain->Render();
+            }
+
+            auto *grass = game_object->GetComponent<Grass>();
+            if (grass != nullptr) {
+                grass->Render();
             }
 
             auto *instanceRender = game_object->GetComponent<InstanceRender>();

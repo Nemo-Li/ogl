@@ -1,0 +1,2 @@
+<material shader="shader/grass" tesc="true" tese="true" geom="true">
+</material>

@@ -27,7 +27,7 @@ private:
     unsigned int vao_ = 0;
     Mesh *mesh = nullptr;
     Board *board = nullptr;
-    unsigned int count = 50;
+    unsigned int count = 200;
     float *position_ = nullptr;
     Model *tree_model = nullptr;
 

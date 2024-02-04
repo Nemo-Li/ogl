@@ -25,6 +25,7 @@
 #include "renderer/terrain.h"
 #include <math.h>
 #include <renderer/instance_render.h>
+#include <renderer/grass.h>
 #include "mesh/board.h"
 
 class MeshAnimationScene : public Component {
@@ -101,6 +102,13 @@ public:
         terrain->SetMaterial(terrain_m);
         terrain->LoadTerrainTexture("image/terrain1024.png");
         auto *terrainTrans = go_terrain->AddComponent<Transform>();
+
+        auto go_grass = new GameObject("grass");
+        auto grass = go_grass->AddComponent<Grass>();
+        auto *grass_m = new Material();
+        grass_m->Load("material/grass.mat");
+        grass->SetMaterial(grass_m);
+        grass->LoadTerrainTexture("image/terrain1024.png");
 
         player_transform->set_position(glm::vec3(8, terrain->GetElevation(8, -2), -2));
 
