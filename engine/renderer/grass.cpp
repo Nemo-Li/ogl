@@ -14,6 +14,7 @@
 #include <framework/application.h>
 #include "texture2d.h"
 #include <glm/gtx/string_cast.hpp>
+#include <helpers/time.h>
 
 RTTR_REGISTRATION {
     rttr::registration::class_<Grass>("grass")
@@ -63,6 +64,10 @@ void Grass::Render() {
     tessHeightMapShader->setMat4("projection", projection);
     tessHeightMapShader->setMat4("view", view);
     tessHeightMapShader->setMat4("viewProjectMatrix", vp_mat4);
+
+    float time = Time::TimeSinceStartup() / 5.0f;
+    tessHeightMapShader->setFloat("time", time);
+
     __CHECK_GL_ERROR__
 
     //高度图纹理，暂时单独处理（与其它不同，后续考虑是否合并到材质中）
@@ -70,11 +75,11 @@ void Grass::Render() {
     glBindTexture(GL_TEXTURE_2D, texture);
 
     //从Pass节点拿到保存的Texture
-//    std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
-//    for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
-//        tessHeightMapShader->setInt(textures[texture_index].first, texture_index + 1);
-//        textures[texture_index].second->bind(texture_index + 1);
-//    }
+    std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
+    for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
+        tessHeightMapShader->setInt(textures[texture_index].first, texture_index + 1);
+        textures[texture_index].second->bind(texture_index + 1);
+    }
 
     __CHECK_GL_ERROR__
     // render the terrain

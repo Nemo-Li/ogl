@@ -50,7 +50,7 @@ public:
 
     //-z 方向的夹角 前进方向的夹角
     float degrees_step = 1.0f;
-    float y_offset = 5.0f;
+    float y_offset = 10.0f;
 
     void Awake() override {
         //创建主相机游戏对象

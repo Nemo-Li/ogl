@@ -1,2 +1,3 @@
 <material shader="shader/grass" tesc="true" tese="true" geom="true">
+    <texture name="u_distortion_texture" image="image/distortion.png"/>
 </material>
