@@ -8,6 +8,7 @@
 #include <glm/gtx/transform2.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glad/glad.h>
+#include <helpers/time.h>
 #include "component/game_object.h"
 #include "component/transform.h"
 #include "mesh_filter.h"
@@ -108,7 +109,7 @@ void MeshRenderer::Render() {
         //将缓冲区对象指定为顶点索引缓冲区对象
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
         //上传顶点索引数据到缓冲区对象
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->vertex_index_num_ * sizeof(unsigned short),
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->vertex_index_num_ * sizeof(unsigned int),
                      mesh->vertex_index_data_, GL_STATIC_DRAW);
 
         glGenVertexArrays(1, &vao_);
@@ -161,13 +162,25 @@ void MeshRenderer::Render() {
         shader->setMat4("model", model);
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
+        shader->setMat4("viewProjectMatrix", projection * view);
+        float time = Time::TimeSinceStartup();
+        shader->setFloat("time", time);
+        shader->setVec3("eyePos", current_camera->pos_vec3());
 
         if (material_) {
-            //从Pass节点拿到保存的Texture
-            std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
-            for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
-                shader->setInt(textures[texture_index].first, texture_index);
-                textures[texture_index].second->bind(texture_index);
+            if (material_->GetCubeMap()) {
+                //有cube map 使用cube map
+                shader->setInt("textureEnv", 0);
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, material_->GetCubeMap()->textureID);
+                shader->setVec2("waterBias", glm::vec2(0.05, -0.05));
+            } else {
+                //从Pass节点拿到保存的Texture
+                std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
+                for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
+                    shader->setInt(textures[texture_index].first, texture_index);
+                    textures[texture_index].second->bind(texture_index);
+                }
             }
         }
 
@@ -178,11 +191,9 @@ void MeshRenderer::Render() {
         glBindVertexArray(vao_);
         {
             //使用顶点索引进行绘制，最后的0表示数据偏移量。
-            glDrawElements(GL_TRIANGLES, mesh->vertex_index_num_, GL_UNSIGNED_SHORT, 0);
+            glDrawElements(GL_TRIANGLES, mesh->vertex_index_num_, GL_UNSIGNED_INT, 0);
         }
         glBindVertexArray(0); __CHECK_GL_ERROR__
-        glBindTexture(GL_TEXTURE_2D, 0); __CHECK_GL_ERROR__
-        glBindTexture(GL_TEXTURE_2D_ARRAY, 0); __CHECK_GL_ERROR__
     }
 }
 

@@ -161,14 +161,14 @@ public:
         instanceRender->InitInstance(terrain);
         instanceRender->SetMaterial(billboard_m);
 
-//        auto go_water = new GameObject("water");
-//        go_water->AddComponent<Transform>();
-//        auto water_mesh_filter = go_water->AddComponent<MeshFilter>();
-//        auto water = new Water(50, 16);
-//        water_mesh_filter->SetMesh(water->GetMesh());
-//        auto *water_m = new Material();
-//        water_m->Load("material/water.mat");
-//        go_water->AddComponent<MeshRenderer>()->SetMaterial(water_m);
+        auto go_water = new GameObject("water");
+        go_water->AddComponent<Transform>();
+        auto water_mesh_filter = go_water->AddComponent<MeshFilter>();
+        auto water = new Water(256, 16);
+        water_mesh_filter->SetMesh(water->GetMesh());
+        auto *water_m = new Material();
+        water_m->Load("material/water.mat");
+        go_water->AddComponent<MeshRenderer>()->SetMaterial(water_m);
     }
 
     void Update() override {

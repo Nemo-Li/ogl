@@ -29,7 +29,7 @@ struct Mesh {
     unsigned int vertex_num_;//顶点个数
     unsigned int vertex_index_num_;//索引个数
     Vertex *vertex_data_;//顶点数据
-    unsigned short *vertex_index_data_;//顶点索引数据
+    unsigned int *vertex_index_data_;//顶点索引数据
     short *textureIdBuffer;//纹理对应数据
 
     Mesh() {
@@ -60,7 +60,7 @@ struct Mesh {
     /// 获取字节数
     unsigned short size() {
         auto total_bytes_ = sizeof(vertex_num_) + vertex_num_ * sizeof(Vertex) + sizeof(vertex_index_num_) +
-                            vertex_index_num_ * sizeof(unsigned short);
+                            vertex_index_num_ * sizeof(unsigned int);
         return total_bytes_;
     }
 };

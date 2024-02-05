@@ -35,6 +35,8 @@ public:
 
     glm::mat4 &projection_mat4() { return projection_mat4_; }
 
+    glm::vec3 &pos_vec3() { return pos_vec3_; }
+
     /// 设置正交相机矩阵
     /// \param left
     /// \param right
@@ -80,6 +82,8 @@ public:
 protected:
     glm::mat4 view_mat4_;//指定相机坐标和朝向
     glm::mat4 projection_mat4_;//指定相机范围
+    //相机的位置
+    glm::vec3 pos_vec3_;
 
     glm::vec4 clear_color_;//清屏颜色
     unsigned int clear_flag_;//刷新数据标志

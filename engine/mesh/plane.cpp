@@ -21,7 +21,7 @@ Plane::Plane(float baseX, float baseY, float baseZ) : baseX(baseX), baseY(baseY)
     mesh_->vertex_num_ = 4;
     mesh_->vertex_data_ = new Vertex[mesh_->vertex_num_];
     mesh_->vertex_index_num_ = 6;
-    mesh_->vertex_index_data_ = new unsigned short[mesh_->vertex_index_num_];
+    mesh_->vertex_index_data_ = new unsigned int[mesh_->vertex_index_num_];
     initMesh();
 }
 

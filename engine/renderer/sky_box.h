@@ -19,6 +19,8 @@ public:
 
     void Render();
 
+    CubeMap *GetCubeMap() { return cubeMap; }
+
 private:
     // skybox VAO
     unsigned int skyboxVAO, skyboxVBO;

@@ -1,3 +1,2 @@
-<material shader="shader/unlit">
-    <texture name="u_diffuse_texture" image="image/urban.jpg"/>
+<material shader="shader/water">
 </material>

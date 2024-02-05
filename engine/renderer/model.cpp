@@ -35,7 +35,7 @@ void Model::initFacesWidthIndices() {
         mesh->vertex_data_[i] = vertex;
     }
 
-    mesh->vertex_index_data_ = new unsigned short[indexCount];
+    mesh->vertex_index_data_ = new unsigned int[indexCount];
     mesh->textureIdBuffer = new short[indexCount];
 
     auto *texcoordMap = new std::map<int, bool>();

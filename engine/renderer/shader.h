@@ -39,6 +39,8 @@ public:
 
     void setVec3(const std::string &name, const glm::vec3 &vec3) const;
 
+    void setVec2(const std::string &name, const glm::vec2 &vec2) const;
+
 private:
     //shader名
     std::string shader_name_;

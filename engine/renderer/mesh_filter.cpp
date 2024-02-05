@@ -49,7 +49,10 @@ void MeshFilter::LoadMesh(std::string mesh_file_path) {
     mesh_->vertex_num_ = mesh_file_head.vertex_num_;
     mesh_->vertex_index_num_ = mesh_file_head.vertex_index_num_;
     mesh_->vertex_data_ = (Vertex *) vertex_data;
-    mesh_->vertex_index_data_ = vertex_index_data;
+    mesh_->vertex_index_data_ = (unsigned int *) malloc(mesh_file_head.vertex_index_num_ * sizeof(unsigned int));
+    for (int i = 0; i < mesh_file_head.vertex_index_num_; ++i) {
+        mesh_->vertex_index_data_[i] = vertex_index_data[i];
+    }
 }
 
 const char *MeshFilter::GetMeshName() {
@@ -70,7 +73,7 @@ void MeshFilter::CreateMesh(std::vector<Vertex> &vertex_data, std::vector<unsign
     memcpy(mesh_->vertex_data_, &vertex_data[0], vertex_data_size);
 
     unsigned int vertex_index_data_size = mesh_->vertex_index_num_ * sizeof(Vertex);
-    mesh_->vertex_index_data_ = static_cast<unsigned short *>(malloc(vertex_index_data_size));
+    mesh_->vertex_index_data_ = static_cast<unsigned int *>(malloc(vertex_index_data_size));
     memcpy(mesh_->vertex_index_data_, &vertex_index_data[0], vertex_index_data_size);
 }
 
@@ -87,8 +90,8 @@ void MeshFilter::CreateMesh(std::vector<float> &vertex_data, std::vector<unsigne
     mesh_->vertex_data_ = static_cast<Vertex *>(malloc(vertex_data_size));
     memcpy(mesh_->vertex_data_, &vertex_data[0], vertex_data_size);
 
-    unsigned short vertex_index_data_size = mesh_->vertex_index_num_ * sizeof(unsigned short);
-    mesh_->vertex_index_data_ = static_cast<unsigned short *>(malloc(vertex_index_data_size));
+    unsigned int vertex_index_data_size = mesh_->vertex_index_num_ * sizeof(unsigned int);
+    mesh_->vertex_index_data_ = static_cast<unsigned int *>(malloc(vertex_index_data_size));
     memcpy(mesh_->vertex_index_data_, &vertex_index_data[0], vertex_index_data_size);
 }
 

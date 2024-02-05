@@ -18,6 +18,7 @@ Material::Material() {
     lightEffect->diffuse = glm::vec3(0.6, 0.6, 0.6);
     lightEffect->specular = glm::vec3(0, 0, 0);
     id_ = -1;
+    cubeMap_ = nullptr;
 }
 
 Material::~Material() {
@@ -25,6 +26,10 @@ Material::~Material() {
     if (shader_) {
         delete shader_;
         shader_ = nullptr;
+    }
+    if (cubeMap_) {
+        delete cubeMap_;
+        cubeMap_ = nullptr;
     }
 }
 

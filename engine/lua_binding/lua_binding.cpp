@@ -221,8 +221,7 @@ void LuaBinding::BindLua() {
         );
 
         cpp_ns_table.new_usertype<Material>("Material", sol::call_constructor, sol::constructors<Material()>(),
-                                            "Load", &Material::Load,
-                                            "SetUniform1i", &Material::SetUniform1i
+                                            "Load", &Material::Load
         );
 
         cpp_ns_table.new_usertype<MeshFilter>("MeshFilter", sol::call_constructor, sol::constructors<MeshFilter()>(),

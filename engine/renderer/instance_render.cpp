@@ -84,7 +84,7 @@ void InstanceRender::Render() {
 
         glGenBuffers(1, &ebo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * mesh->vertex_index_num_,
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mesh->vertex_index_num_,
                      mesh->vertex_index_data_, GL_STATIC_DRAW);
 
         glVertexAttribDivisor(0, 0);
@@ -112,7 +112,7 @@ void InstanceRender::Render() {
 //    tree_model->texture3D->use(1);
 
     glBindVertexArray(vao_);
-    glDrawElementsInstanced(GL_TRIANGLES, mesh->vertex_index_num_, GL_UNSIGNED_SHORT, (void *) 0, count);
+    glDrawElementsInstanced(GL_TRIANGLES, mesh->vertex_index_num_, GL_UNSIGNED_INT, (void *) 0, count);
     glBindVertexArray(0);
 //    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }

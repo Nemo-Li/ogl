@@ -12,7 +12,7 @@ Water::Water(int size, float height) {
     mesh->vertex_num_ = waterSize * waterSize;
     mesh->vertex_data_ = new Vertex[mesh->vertex_num_];
     mesh->vertex_index_num_ = (waterSize - 1) * (waterSize - 1) * 6;
-    mesh->vertex_index_data_ = new unsigned short[mesh->vertex_index_num_];
+    mesh->vertex_index_data_ = new unsigned int[mesh->vertex_index_num_];
     initFaces();
 }
 
@@ -29,7 +29,7 @@ void Water::initFaces() {
         for (int j = 0, col = 0; col < stepCount + 1; j++, col++) {
             x = j;
             z = i;
-            y = 16;
+            y = 1;
             u = col / 4.0;
             v = row / 4.0;
             Vertex vertex = Vertex();
@@ -40,11 +40,6 @@ void Water::initFaces() {
             mesh->vertex_data_[currentVertex] = vertex;
             currentVertex++;
         }
-    }
-
-    if (waterSize >= 2) {
-        mesh->vertex_data_[0].position_.y = waterHeight;
-        mesh->vertex_data_[1].position_.y = -waterHeight;
     }
 
     int currentIndex = 0, blockFirstIndex = 0;

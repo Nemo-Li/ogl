@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
+#include "cube_map.h"
 
 class Shader;
 
@@ -33,9 +34,9 @@ public:
 
     std::vector<std::pair<std::string, Texture2D *>> &textures() { return textures_; }
 
-    void SetUniformMatrix4fv(const std::string &shader_property_name, float *pointer) {}
+    void SetCubeMap(CubeMap *cubeMap) { cubeMap_ = cubeMap; }
 
-    void SetUniform1i(const std::string &shader_property_name, int value) {}
+    CubeMap *GetCubeMap() { return cubeMap_; }
 
 public:
     int id_;
@@ -44,6 +45,9 @@ public:
     Shader *shader_;
     LightEffect *lightEffect;
     std::vector<std::pair<std::string, Texture2D *>> textures_;
+
+private:
+    CubeMap *cubeMap_;
 };
 
 

@@ -58,7 +58,7 @@ public:
         std::vector<float> vertex_data_vec;
         vertex_data_vec.insert(vertex_data_vec.end(), &vertex_data[0], &vertex_data[0] + 72);
 
-        std::vector<unsigned short> vertex_index_data_vec;
+        std::vector<unsigned int> vertex_index_data_vec;
         vertex_index_data_vec.insert(vertex_index_data_vec.end(),
                                      &vertex_index_data[0], &vertex_index_data[0] + 12);
 
