@@ -26,6 +26,7 @@
 #include <math.h>
 #include <renderer/instance_render.h>
 #include <renderer/grass.h>
+#include <mesh/water.h>
 #include "mesh/board.h"
 
 class MeshAnimationScene : public Component {
@@ -46,6 +47,7 @@ public:
 
     glm::vec4 cam_forward = glm::vec4(0.0, 0.0, -0.5, 1.0);
     glm::vec4 cam_left = glm::vec4(-1.0, 0.0, 0.0, 1.0);
+    glm::vec4 cam_pitch = glm::vec4(cam_forward);
     glm::mat4 unit_mat4 = glm::mat4(1.0f);
 
     //-z 方向的夹角 前进方向的夹角
@@ -92,7 +94,7 @@ public:
 //                            "skybox/sky_rt.png", "skybox/sky_lf.png");
 
         skyBox->LoadCubeMap("skybox/xpos.png", "skybox/xneg.png",
-                            "skybox/yneg.png", "skybox/ypos.png",
+                            "skybox/ypos.png", "skybox/yneg.png",
                             "skybox/zpos.png", "skybox/zneg.png");
 
         go_terrain = new GameObject("terrain");
@@ -158,6 +160,15 @@ public:
         auto instanceRender = go_billboard->AddComponent<InstanceRender>();
         instanceRender->InitInstance(terrain);
         instanceRender->SetMaterial(billboard_m);
+
+//        auto go_water = new GameObject("water");
+//        go_water->AddComponent<Transform>();
+//        auto water_mesh_filter = go_water->AddComponent<MeshFilter>();
+//        auto water = new Water(50, 16);
+//        water_mesh_filter->SetMesh(water->GetMesh());
+//        auto *water_m = new Material();
+//        water_m->Load("material/water.mat");
+//        go_water->AddComponent<MeshRenderer>()->SetMaterial(water_m);
     }
 
     void Update() override {
@@ -172,6 +183,15 @@ public:
             }
             cam_forward = r * cam_forward;
             cam_left = r * cam_left;
+        }
+
+        //上下俯视仰视相机
+        if (Input::GetKeyDown(KEY_CODE_DOWN) || Input::GetKeyDown(KEY_CODE_UP)) {
+            glm::mat4 r = glm::rotate(unit_mat4, glm::radians(-degrees_step), glm::vec3(1, 0, 0));
+            if (Input::GetKeyDown(KEY_CODE_UP)) {
+                r = glm::rotate(unit_mat4, glm::radians(degrees_step), glm::vec3(1, 0, 0));
+            }
+            cam_pitch = r * cam_pitch;
         }
 
         if (Input::GetKeyDown(KEY_CODE_W)) {
@@ -193,10 +213,10 @@ public:
         if (Input::GetKeyDown(KEY_CODE_SPACE)) {
             y_offset++;
         } else {
-            if (y_offset > 5.0f) {
-                y_offset--;
-                y_offset = std::max(y_offset, 5.0f);
-            }
+//            if (y_offset > 5.0f) {
+//                y_offset--;
+//                y_offset = std::max(y_offset, 5.0f);
+//            }
         }
 
         if (Input::GetKeyDown(KEY_CODE_Z)) {
@@ -206,7 +226,8 @@ public:
         float elevation = terrain->GetElevation(new_pos.x, new_pos.z);
         new_pos.y = elevation + y_offset;
         camera_transform->set_position(new_pos);
-        camera->SetView(glm::vec3(cam_forward), glm::vec3(0.0, 1.0, 0.0));
+        camera->SetView(glm::vec3(cam_forward.x, cam_forward.y + cam_pitch.y, cam_forward.z),
+                        glm::vec3(0.0, 1.0, 0.0));
     }
 };
 

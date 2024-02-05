@@ -26,8 +26,8 @@ struct MeshFileHead {
 //Mesh数据
 struct Mesh {
     const char *name_;//名字
-    unsigned short vertex_num_;//顶点个数
-    unsigned short vertex_index_num_;//索引个数
+    unsigned int vertex_num_;//顶点个数
+    unsigned int vertex_index_num_;//索引个数
     Vertex *vertex_data_;//顶点数据
     unsigned short *vertex_index_data_;//顶点索引数据
     short *textureIdBuffer;//纹理对应数据

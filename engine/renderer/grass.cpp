@@ -65,7 +65,7 @@ void Grass::Render() {
     tessHeightMapShader->setMat4("view", view);
     tessHeightMapShader->setMat4("viewProjectMatrix", vp_mat4);
 
-    float time = Time::TimeSinceStartup() / 5.0f;
+    float time = Time::TimeSinceStartup();
     tessHeightMapShader->setFloat("time", time);
 
     __CHECK_GL_ERROR__

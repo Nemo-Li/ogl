@@ -1,4 +1,4 @@
 <material shader="shader/terrain" tesc="true" tese="true">
-    <texture name="u_diffuse_texture" image="image/ground.png"/>
+    <texture name="u_diffuse_texture" image="image/ground_s.png"/>
     <texture name="terrain_tex_ground_r" image="image/ground_r.png"/>
 </material>
