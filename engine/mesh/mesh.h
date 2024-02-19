@@ -30,7 +30,7 @@ struct Mesh {
     unsigned int vertex_index_num_;//索引个数
     Vertex *vertex_data_;//顶点数据
     unsigned int *vertex_index_data_;//顶点索引数据
-    short *textureIdBuffer;//纹理对应数据
+    int *textureIdBuffer;//纹理对应数据
 
     Mesh() {
         name_ = nullptr;

@@ -67,7 +67,7 @@ public:
 
         go_skeleton = new GameObject("skeleton");
         player_transform = go_skeleton->AddComponent<Transform>();
-        player_transform->set_scale(glm::vec3(2, 2, 2));
+        player_transform->set_scale(glm::vec3(4, 4, 4));
         player_transform->set_rotation(glm::vec3(-90, 0, 0));
 
         Animation *animation = go_skeleton->AddComponent<Animation>();
@@ -102,7 +102,7 @@ public:
         auto *terrain_m = new Material();
         terrain_m->Load("material/terrain.mat");
         terrain->SetMaterial(terrain_m);
-        terrain->LoadTerrainTexture("image/terrain1024.png");
+        terrain->LoadTerrainTexture("image/terrain.png");
         auto *terrainTrans = go_terrain->AddComponent<Transform>();
 
         auto go_grass = new GameObject("grass");
@@ -110,7 +110,7 @@ public:
         auto *grass_m = new Material();
         grass_m->Load("material/grass.mat");
         grass->SetMaterial(grass_m);
-        grass->LoadTerrainTexture("image/terrain1024.png");
+        grass->LoadTerrainTexture("image/terrain.png");
 
         player_transform->set_position(glm::vec3(8, terrain->GetElevation(8, -2), -2));
 

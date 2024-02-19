@@ -6,6 +6,12 @@
 #include "framework/application.h"
 #include "shader.h"
 #include <map>
+#include <fstream>
+
+using std::ofstream;
+using std::ios;
+
+//ofstream out_stream("logs/model.txt", std::ios::binary);
 
 Model::Model(const char *obj, const char *mtl, int vt) {
     loadModelSimple(obj, mtl, vt);
@@ -13,6 +19,10 @@ Model::Model(const char *obj, const char *mtl, int vt) {
 
 void Model::loadModelSimple(const char *obj, const char *mtl, int vt) {
     loader = new ObjLoader(obj, mtl, vt);
+    std::string strObj = std::string(obj);
+    int index = strObj.find_last_of('/');
+    name = strObj.substr(index + 1, strObj.length());
+    printf("model name %s\n", name.c_str());
     texture3D = loader->mtlLoader->texture3D;
     initFacesWidthIndices();
 }
@@ -20,7 +30,7 @@ void Model::loadModelSimple(const char *obj, const char *mtl, int vt) {
 void Model::initFacesWidthIndices() {
     printf("mt count %d \n", loader->mtCount);
     mesh = new Mesh();
-    mesh->name_ = std::string("sponza").c_str();
+    mesh->name_ = name.c_str();
     int vertexCount = loader->vCount;
     mesh->vertex_num_ = vertexCount;
     int indexCount = loader->faceCount * 3;
@@ -36,7 +46,7 @@ void Model::initFacesWidthIndices() {
     }
 
     mesh->vertex_index_data_ = new unsigned int[indexCount];
-    mesh->textureIdBuffer = new short[indexCount];
+    mesh->textureIdBuffer = new int [indexCount];
 
     auto *texcoordMap = new std::map<int, bool>();
     texcoordMap->clear();
@@ -102,12 +112,23 @@ void Model::initFacesWidthIndices() {
 
         Material *mat = loader->mtlLoader->obj_mtl_map_[loader->mtArr[i]];
         if (mat) {
-            mesh->textureIdBuffer[index1] = (short) mat->textureId.x;
-            mesh->textureIdBuffer[index2] = (short) mat->textureId.x;
-            mesh->textureIdBuffer[index3] = (short) mat->textureId.x;
+            mesh->textureIdBuffer[index1] = (int) mat->textureId.x;
+            mesh->textureIdBuffer[index2] = (int) mat->textureId.x;
+            mesh->textureIdBuffer[index3] = (int) mat->textureId.x;
         }
         mesh->vertex_num_ = dupIndex;
     }
+//    unsigned long find = name.find("treeA");
+//    if (find != std::string::npos) {
+//        for (int i = 0; i < mesh->vertex_index_num_; ++i) {
+//            glm::vec3 &pos = mesh->vertex_data_[mesh->vertex_index_data_[i]].position_;
+//            out_stream
+//                    << pos.x << " "
+//                    << pos.y << " "
+//                    << pos.z << " "
+//                    << mesh->textureIdBuffer[mesh->vertex_index_data_[i]] << std::endl;
+//        }
+//    }
 }
 
 Model::Model(const char *model_path, int vt) {

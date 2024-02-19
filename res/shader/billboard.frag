@@ -1,7 +1,7 @@
 #version 410 core
 
 uniform sampler2D u_diffuse_texture;
-uniform sampler2DArray textureArray;
+//uniform sampler2DArray textureArray;
 uniform bool billborad;
 
 in vec2 vTexcoord;

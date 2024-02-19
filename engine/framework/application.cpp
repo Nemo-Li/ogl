@@ -87,13 +87,13 @@ void Application::Init() {
     glfwMakeContextCurrent(glfw_window_);
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 
-    GLint n = 0;
-    glGetIntegerv(GL_NUM_EXTENSIONS, &n);
-    for (GLint i = 0; i < n; i++) {
-        const char *extension =
-                (const char *) glGetStringi(GL_EXTENSIONS, i);
-        printf("Ext %d: %s\n", i, extension);
-    }
+//    GLint n = 0;
+//    glGetIntegerv(GL_NUM_EXTENSIONS, &n);
+//    for (GLint i = 0; i < n; i++) {
+//        const char *extension =
+//                (const char *) glGetStringi(GL_EXTENSIONS, i);
+//        printf("Ext %d: %s\n", i, extension);
+//    }
 
     UpdateScreenSize();
     glfwSwapInterval(1);

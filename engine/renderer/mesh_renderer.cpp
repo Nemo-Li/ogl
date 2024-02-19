@@ -100,7 +100,7 @@ void MeshRenderer::Render() {
         if (mesh->textureIdBuffer) {
             glGenBuffers(1, &texture_vbo_);
             glBindBuffer(GL_ARRAY_BUFFER, texture_vbo_);
-            glBufferData(GL_ARRAY_BUFFER, mesh->vertex_num_ * 1 * sizeof(short), mesh->textureIdBuffer,
+            glBufferData(GL_ARRAY_BUFFER, mesh->vertex_num_ * sizeof(int), mesh->textureIdBuffer,
                          GL_STATIC_DRAW);__CHECK_GL_ERROR__
         }
 
@@ -132,7 +132,7 @@ void MeshRenderer::Render() {
 
             if (mesh->textureIdBuffer) {
                 glBindBuffer(GL_ARRAY_BUFFER, texture_vbo_);__CHECK_GL_ERROR__
-                glVertexAttribPointer(3, 1, GL_SHORT, GL_FALSE, 0, (void *) 0);__CHECK_GL_ERROR__
+                glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, 0, (void *) 0);__CHECK_GL_ERROR__
                 glEnableVertexAttribArray(3);
             }
 
@@ -185,6 +185,7 @@ void MeshRenderer::Render() {
         }
 
         if (filterType == MODEL) {
+            shader->setInt("textureArray", 0);
             mesh_filter->GetModel()->texture3D->use(0);__CHECK_GL_ERROR__
         }
 
@@ -193,6 +194,8 @@ void MeshRenderer::Render() {
             //使用顶点索引进行绘制，最后的0表示数据偏移量。
             glDrawElements(GL_TRIANGLES, mesh->vertex_index_num_, GL_UNSIGNED_INT, 0);
         }
+        glBindTexture(GL_TEXTURE_2D, 0); __CHECK_GL_ERROR__
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0); __CHECK_GL_ERROR__
         glBindVertexArray(0); __CHECK_GL_ERROR__
     }
 }

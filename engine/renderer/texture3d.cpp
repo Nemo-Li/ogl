@@ -67,11 +67,11 @@ void Texture3D::initTexture3D(std::string &dir) {
         printf("image name %s \n", imageFile.c_str());
         unsigned char *pixels = stbi_load(imageFile.c_str(), &width, &height,
                                           &components, 4);
-        if (i == 0)
+        if (i == 0) {
             glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA,
                          width, height,
                          imageNames.size(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);__CHECK_GL_ERROR__
-
+        }
         glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i,
                         width, height,
                         1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);__CHECK_GL_ERROR__

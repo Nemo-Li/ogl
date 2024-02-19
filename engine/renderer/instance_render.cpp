@@ -76,9 +76,9 @@ void InstanceRender::Render() {
         if (mesh->textureIdBuffer) {
             glGenBuffers(1, &texture_vbo);
             glBindBuffer(GL_ARRAY_BUFFER, texture_vbo);
-            glBufferData(GL_ARRAY_BUFFER, mesh->vertex_num_ * 1 * sizeof(short), mesh->textureIdBuffer,
+            glBufferData(GL_ARRAY_BUFFER, mesh->vertex_num_ * sizeof(int), mesh->textureIdBuffer,
                          GL_STATIC_DRAW);
-            glVertexAttribPointer(3, 1, GL_SHORT, GL_FALSE, 0, (void *) 0);
+            glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, 0, (void *) 0);
             glEnableVertexAttribArray(3);
         }
 

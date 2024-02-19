@@ -30,6 +30,8 @@ public:
 private:
     Mesh *mesh = nullptr;
 
+    std::string name;
+
     ObjLoader *loader = nullptr;
 
     void initFacesWidthIndices();
