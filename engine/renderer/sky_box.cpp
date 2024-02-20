@@ -8,6 +8,7 @@
 #include "shader.h"
 #include "camera.h"
 #include "component/game_object.h"
+#include "light.h"
 
 RTTR_REGISTRATION {
     rttr::registration::class_<SkyBox>("SkyBox")
@@ -23,6 +24,13 @@ void SkyBox::Render() {
     //判断相机的 culling_mask 是否包含当前物体 layer
     if ((current_camera->culling_mask() & game_object()->layer()) == 0x00) {
         return;
+    }
+
+    float lightStrength = 0.1f;
+    auto go_light = GameObject::Find("light");
+    if (go_light) {
+        auto light = go_light->GetComponent<Light>();
+        lightStrength = light->lightStrength();
     }
 
     //我们通过取4x4矩阵左上角的3x3矩阵来移除变换矩阵的位移部分
@@ -50,6 +58,7 @@ void SkyBox::Render() {
 
     skyboxShader->setMat4("view", view);
     skyboxShader->setMat4("projection", projection);
+    skyboxShader->setFloat("lightStrength", lightStrength);
 
     // skybox cube
     glBindVertexArray(skyboxVAO);

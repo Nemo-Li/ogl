@@ -15,6 +15,7 @@
 #include "texture2d.h"
 #include <glm/gtx/string_cast.hpp>
 #include <helpers/time.h>
+#include "light.h"
 
 RTTR_REGISTRATION {
     rttr::registration::class_<Grass>("grass")
@@ -28,6 +29,13 @@ void Grass::Render() {
     glm::mat4 projection = current_camera->projection_mat4();
     glm::mat4 model = glm::mat4(1.0);
 //    printf("model: %s\n", glm::to_string(model).c_str());
+
+    float lightStrength = 0.1f;
+    auto go_light = GameObject::Find("light");
+    if (go_light) {
+        auto light = go_light->GetComponent<Light>();
+        lightStrength = light->lightStrength();
+    }
 
     glm::mat4 vp_mat4 = projection * view;
     Shader *tessHeightMapShader = material_->shader();
@@ -64,6 +72,7 @@ void Grass::Render() {
     tessHeightMapShader->setMat4("projection", projection);
     tessHeightMapShader->setMat4("view", view);
     tessHeightMapShader->setMat4("viewProjectMatrix", vp_mat4);
+    tessHeightMapShader->setFloat("lightStrength", lightStrength);
 
     float time = Time::TimeSinceStartup();
     tessHeightMapShader->setFloat("time", time);

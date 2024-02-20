@@ -27,6 +27,7 @@
 #include <renderer/instance_render.h>
 #include <renderer/grass.h>
 #include <mesh/water.h>
+#include <renderer/light.h>
 #include "mesh/board.h"
 
 class MeshAnimationScene : public Component {
@@ -41,6 +42,9 @@ public:
     GameObject *go_house;
     GameObject *go_cottage;
     Terrain *terrain;
+    SkyBox *skyBox;
+    Grass *grass;
+    Light *light;
 
     Model *house_model;
     Model *cottage_model;
@@ -65,6 +69,9 @@ public:
         camera->set_depth(0);
         camera->SetPerspective(60, Screen::aspect_ratio(), 0.01, 1000);
 
+        auto go_light = new GameObject("light");
+        light = go_light->AddComponent<Light>();
+
         go_skeleton = new GameObject("skeleton");
         player_transform = go_skeleton->AddComponent<Transform>();
         player_transform->set_scale(glm::vec3(4, 4, 4));
@@ -87,7 +94,7 @@ public:
         go_skeleton->GetComponent<Animation>()->Play("play");
 
         go_skybox = new GameObject("skybox");
-        SkyBox *skyBox = go_skybox->AddComponent<SkyBox>();
+        skyBox = go_skybox->AddComponent<SkyBox>();
 
 //        skyBox->LoadCubeMap("skybox/sky_ft.png", "skybox/sky_bk.png",
 //                            "skybox/sky_dn.png", "skybox/sky_up.png",
@@ -106,7 +113,7 @@ public:
         auto *terrainTrans = go_terrain->AddComponent<Transform>();
 
         auto go_grass = new GameObject("grass");
-        auto grass = go_grass->AddComponent<Grass>();
+        grass = go_grass->AddComponent<Grass>();
         auto *grass_m = new Material();
         grass_m->Load("material/grass.mat");
         grass->SetMaterial(grass_m);
@@ -208,6 +215,21 @@ public:
 
         if (Input::GetKeyDown(KEY_CODE_D)) {
             new_pos -= glm::vec3(cam_left);
+        }
+
+        if (Input::GetKeyUp(KEY_CODE_Q)) {
+            float strength = light->lightStrength();
+            printf("key q up\n");
+            strength -= 0.1f;
+            strength = std::max(strength, 0.1f);
+            light->SetLightStrength(strength);
+        }
+
+        if (Input::GetKeyUp(KEY_CODE_E)) {
+            float strength = light->lightStrength();
+            strength += 0.1f;
+            strength = std::min(strength, 1.0f);
+            light->SetLightStrength(strength);
         }
 
         if (Input::GetKeyDown(KEY_CODE_SPACE)) {

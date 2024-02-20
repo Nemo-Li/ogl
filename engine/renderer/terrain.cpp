@@ -16,6 +16,7 @@
 #include <framework/application.h>
 #include <glm/gtx/string_cast.hpp>
 #include "texture2d.h"
+#include "light.h"
 
 RTTR_REGISTRATION {
     rttr::registration::class_<Terrain>("Terrain")
@@ -33,6 +34,13 @@ void Terrain::Render() {
     auto transform = dynamic_cast<Transform *>(component_transform);
     if (!transform) {
         return;
+    }
+
+    float lightStrength = 0.1f;
+    auto go_light = GameObject::Find("light");
+    if (go_light) {
+        auto light = go_light->GetComponent<Light>();
+        lightStrength = light->lightStrength();
     }
 
     glm::mat4 trans = glm::translate(transform->position());
@@ -78,6 +86,7 @@ void Terrain::Render() {
         tessHeightMapShader->setMat4("model", model);
         tessHeightMapShader->setMat4("projection", projection);
         tessHeightMapShader->setMat4("view", view);
+        tessHeightMapShader->setFloat("lightStrength", lightStrength);
         __CHECK_GL_ERROR__
 
         //高度图纹理，暂时单独处理（与其它不同，后续考虑是否合并到材质中）
