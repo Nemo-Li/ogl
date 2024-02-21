@@ -18,6 +18,7 @@ namespace Engine {
         glm::vec3 position_;
         glm::vec4 color_;
         glm::vec2 uv_;
+        glm::vec3 normal_;
     };
 
     //Mesh文件头

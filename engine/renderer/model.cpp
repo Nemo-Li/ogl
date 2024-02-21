@@ -42,11 +42,12 @@ void Model::initFacesWidthIndices() {
         vertex.position_ = glm::vec3(loader->vArr[i][0], loader->vArr[i][1], loader->vArr[i][2]);
         vertex.color_ = glm::vec4(1.0, 1.0, 1.0, 1.0);
         vertex.uv_ = glm::vec2();
+        vertex.normal_ = glm::vec3();
         mesh->vertex_data_[i] = vertex;
     }
 
     mesh->vertex_index_data_ = new unsigned int[indexCount];
-    mesh->textureIdBuffer = new int [indexCount];
+    mesh->textureIdBuffer = new int[indexCount];
 
     auto *texcoordMap = new std::map<int, bool>();
     texcoordMap->clear();
@@ -56,6 +57,16 @@ void Model::initFacesWidthIndices() {
         int index1 = loader->fvArr[i][0] - 1;
         int index2 = loader->fvArr[i][1] - 1;
         int index3 = loader->fvArr[i][2] - 1;
+
+        glm::vec3 n1(loader->vnArr[loader->fnArr[i][0] - 1][0],
+                     loader->vnArr[loader->fnArr[i][0] - 1][1],
+                     loader->vnArr[loader->fnArr[i][0] - 1][2]);
+        glm::vec3 n2(loader->vnArr[loader->fnArr[i][1] - 1][0],
+                     loader->vnArr[loader->fnArr[i][1] - 1][1],
+                     loader->vnArr[loader->fnArr[i][1] - 1][2]);
+        glm::vec3 n3(loader->vnArr[loader->fnArr[i][2] - 1][0],
+                     loader->vnArr[loader->fnArr[i][2] - 1][1],
+                     loader->vnArr[loader->fnArr[i][2] - 1][2]);
 
         glm::vec2 c1(loader->vtArr[loader->ftArr[i][0] - 1][0],
                      loader->vtArr[loader->ftArr[i][0] - 1][1]);
@@ -72,6 +83,7 @@ void Model::initFacesWidthIndices() {
             vertex.position_ = glm::vec3(vertex1.position_.x, vertex1.position_.y, vertex1.position_.z);
             vertex.color_ = glm::vec4(1.0, 1.0, 1.0, 1.0);
             vertex.uv_ = glm::vec2();
+            vertex.normal_ = glm::vec3(vertex1.normal_.x, vertex1.normal_.y, vertex1.normal_.z);
             mesh->vertex_data_[newIndex] = vertex;
             index1 = newIndex;
         }
@@ -83,6 +95,7 @@ void Model::initFacesWidthIndices() {
             vertex.position_ = glm::vec3(vertex2.position_.x, vertex2.position_.y, vertex2.position_.z);
             vertex.color_ = glm::vec4(1.0, 1.0, 1.0, 1.0);
             vertex.uv_ = glm::vec2();
+            vertex.normal_ = glm::vec3(vertex2.normal_.x, vertex2.normal_.y, vertex2.normal_.z);
             mesh->vertex_data_[newIndex] = vertex;
             index2 = newIndex;
         }
@@ -94,6 +107,7 @@ void Model::initFacesWidthIndices() {
             vertex.position_ = glm::vec3(vertex3.position_.x, vertex3.position_.y, vertex3.position_.z);
             vertex.color_ = glm::vec4(1.0, 1.0, 1.0, 1.0);
             vertex.uv_ = glm::vec2();
+            vertex.normal_ = glm::vec3(vertex3.normal_.x, vertex3.normal_.y, vertex3.normal_.z);
             mesh->vertex_data_[newIndex] = vertex;
             index3 = newIndex;
         }
@@ -105,6 +119,10 @@ void Model::initFacesWidthIndices() {
         mesh->vertex_data_[index1].uv_ = c1;
         mesh->vertex_data_[index2].uv_ = c2;
         mesh->vertex_data_[index3].uv_ = c3;
+
+        mesh->vertex_data_[index1].normal_ = n1;
+        mesh->vertex_data_[index2].normal_ = n2;
+        mesh->vertex_data_[index3].normal_ = n3;
 
         texcoordMap->insert(std::pair<int, bool>(index1, true));
         texcoordMap->insert(std::pair<int, bool>(index2, true));

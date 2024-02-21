@@ -26,7 +26,7 @@ void SkyBox::Render() {
         return;
     }
 
-    float lightStrength = 0.1f;
+    float lightStrength = 1.0f;
     auto go_light = GameObject::Find("light");
     if (go_light) {
         auto light = go_light->GetComponent<Light>();

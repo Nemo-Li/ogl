@@ -13,7 +13,6 @@ private:
     const char *objFilePath;
     const char *mtlFilePath;
     int vtNumber;
-    int vtCount, vnCount;
 
     void readObjInfo();
 
@@ -21,6 +20,7 @@ private:
 
 public:
     int vCount = 0, faceCount = 0;
+    int vtCount, vnCount;
     //材质数量 不同材质mesh 不同渲染
     int mtCount = 0;
     float **vArr;

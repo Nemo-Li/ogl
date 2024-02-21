@@ -48,6 +48,7 @@ void ObjLoader::readObjInfo() {
     }
     infile.close();
     printf("vCount %d \n", vCount);
+    printf("vnCount %d \n", vnCount);
     printf("faceCount %d \n", faceCount);
 }
 

@@ -16,6 +16,7 @@
 #include "shader.h"
 #include "texture2d.h"
 #include "camera.h"
+#include "light.h"
 
 RTTR_REGISTRATION {
     rttr::registration::class_<MeshRenderer>("MeshRenderer")
@@ -69,6 +70,16 @@ void MeshRenderer::Render() {
     if (!mesh_filter) {
         return;
     }
+
+    float lightStrength = 1.0f;
+    glm::vec3 lightDir = glm::vec3(0, 1, 0.2f);
+    auto go_light = GameObject::Find("light");
+    if (go_light) {
+        auto light = go_light->GetComponent<Light>();
+        lightStrength = light->lightStrength();
+        lightDir = light->lightDir();
+    }
+
     //当骨骼蒙皮动画生效时，渲染骨骼蒙皮Mesh
     int filterType = mesh_filter->GetMeshFilterType();
     Mesh *mesh = mesh_filter->mesh();
@@ -129,11 +140,13 @@ void MeshRenderer::Render() {
             glVertexAttribPointer(2, 2, GL_FLOAT, false, sizeof(Vertex),
                                   (void *) (sizeof(float) * (3 + 4))); __CHECK_GL_ERROR__
             glEnableVertexAttribArray(2);
+            glVertexAttribPointer(3, 3, GL_FLOAT, false, sizeof(Vertex), (void *) (sizeof(float) * (3 + 4 + 2))); __CHECK_GL_ERROR__
+            glEnableVertexAttribArray(3);
 
             if (mesh->textureIdBuffer) {
                 glBindBuffer(GL_ARRAY_BUFFER, texture_vbo_);__CHECK_GL_ERROR__
-                glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, 0, (void *) 0);__CHECK_GL_ERROR__
-                glEnableVertexAttribArray(3);
+                glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, 0, (void *) 0);__CHECK_GL_ERROR__
+                glEnableVertexAttribArray(4);
             }
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);__CHECK_GL_ERROR__
@@ -166,6 +179,8 @@ void MeshRenderer::Render() {
         float time = Time::TimeSinceStartup();
         shader->setFloat("time", time);
         shader->setVec3("eyePos", current_camera->pos_vec3());
+        shader->setFloat("lightStrength", lightStrength);
+        shader->setVec3("lightDir", lightDir);
 
         if (material_) {
             if (material_->GetCubeMap()) {

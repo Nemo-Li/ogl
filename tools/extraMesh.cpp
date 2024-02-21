@@ -15,8 +15,9 @@ namespace Engine {
     //顶点
     struct Vertex {
         glm::vec3 position_;
-        glm::vec3 color_;
+        glm::vec4 color_;
         glm::vec2 uv_;
+        glm::vec3 normal_;
     };
 
     //Mesh文件头
@@ -75,7 +76,7 @@ int main(int argc, char **argv) {
     std::printf("hello nemo!");
     Debug::Init();
 
-    src_file_path = "../../res/model/mill-scene.fbx";
+    src_file_path = "../../res/model/fbx_extra.fbx";
 
     if (argc > 1) {
         src_file_path = argv[1];
@@ -296,6 +297,7 @@ void ParseMesh(const FbxMesh *pMesh) {
         meshFile.vertex_[i].position_ = glm::vec3(lVertices[i * 3], lVertices[i * 3 + 1], lVertices[i * 3 + 2]);
         meshFile.vertex_[i].color_ = glm::vec4(1.0f);
         meshFile.vertex_[i].uv_ = glm::vec2(lUVs[i * 2], lUVs[i * 2 + 1]);
+        meshFile.vertex_[i].normal_ = glm::vec3(1.0f);
     }
     // 填充索引
     meshFile.index_ = lIndices;

@@ -30,7 +30,7 @@ void Grass::Render() {
     glm::mat4 model = glm::mat4(1.0);
 //    printf("model: %s\n", glm::to_string(model).c_str());
 
-    float lightStrength = 0.1f;
+    float lightStrength = 1.0f;
     auto go_light = GameObject::Find("light");
     if (go_light) {
         auto light = go_light->GetComponent<Light>();

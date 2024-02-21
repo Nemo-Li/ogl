@@ -232,6 +232,14 @@ public:
             light->SetLightStrength(strength);
         }
 
+        if (Input::GetKeyUp(KEY_CODE_X)) {
+            light->stepRotate(-10);
+        }
+
+        if (Input::GetKeyUp(KEY_CODE_C)) {
+            light->stepRotate(10);
+        }
+
         if (Input::GetKeyDown(KEY_CODE_SPACE)) {
             y_offset++;
         } else {
