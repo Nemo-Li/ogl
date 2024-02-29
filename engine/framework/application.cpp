@@ -22,6 +22,7 @@
 #include "renderer/mesh_renderer.h"
 #include "helpers/debug.h"
 #include "helpers/time.h"
+#include "renderer/anim_mesh_render.h"
 
 std::string Application::data_path_;
 std::string Application::title_;
@@ -170,6 +171,11 @@ void Application::Render() {
             auto *instanceRender = game_object->GetComponent<InstanceRender>();
             if (instanceRender) {
                 instanceRender->Render();
+            }
+
+            auto *animRender = game_object->GetComponent<AnimMeshRender>();
+            if (animRender) {
+                animRender->Render();
             }
         });
     });

@@ -31,6 +31,7 @@
 #include "mesh/board.h"
 #include "model/ass_loader.h"
 #include "model/ass_model.h"
+#include "renderer/anim_mesh_render.h"
 
 class MeshAnimationScene : public Component {
 public:
@@ -149,15 +150,15 @@ public:
         cottage_mesh_filter->SetModel(cottage_model);
         go_cottage->AddComponent<MeshRenderer>();
 
-        auto go_tree = new GameObject("tree");
-        auto *tree_transform = go_tree->AddComponent<Transform>();
-        tree_transform->set_scale(glm::vec3(1.0, 1.0, 1.0));
-        tree_transform->set_position(glm::vec3(0, terrain->GetElevation(0, 10), 10));
-        auto tree_mesh_filter = go_tree->AddComponent<MeshFilter>();
-        auto *tree_model = new Model("model/firc/firc", 2);
-        tree_model->shader = Shader::Find("shader/phong");
-        tree_mesh_filter->SetModel(tree_model);
-        go_tree->AddComponent<MeshRenderer>();
+//        auto go_tree = new GameObject("tree");
+//        auto *tree_transform = go_tree->AddComponent<Transform>();
+//        tree_transform->set_scale(glm::vec3(1.0, 1.0, 1.0));
+//        tree_transform->set_position(glm::vec3(0, terrain->GetElevation(0, 10), 10));
+//        auto tree_mesh_filter = go_tree->AddComponent<MeshFilter>();
+//        auto *tree_model = new Model("model/firc/firc", 2);
+//        tree_model->shader = Shader::Find("shader/phong");
+//        tree_mesh_filter->SetModel(tree_model);
+//        go_tree->AddComponent<MeshRenderer>();
 
         auto go_billboard = new GameObject("billboard");
         auto *billboard_m = new Material();
@@ -175,7 +176,13 @@ public:
         water_m->Load("material/water.mat");
         go_water->AddComponent<MeshRenderer>()->SetMaterial(water_m);
 
-        AssModel *assModel = new AssModel("model/ninja/ninja.mesh");
+        auto go_ninja = new GameObject("ninja");
+        AssLoader *assLoader = new AssLoader("model/ninja/ninja.mesh");
+        auto ninja_transform = go_ninja->AddComponent<Transform>();
+        ninja_transform->set_scale(glm::vec3(0.05, 0.05, 0.05));
+        ninja_transform->set_position(glm::vec3(0, terrain->GetElevation(0, 10), 10));
+        auto animRender = go_ninja->AddComponent<AnimMeshRender>();
+        animRender->SetAnimation(assLoader->assAnimation);
     }
 
     void Update() override {

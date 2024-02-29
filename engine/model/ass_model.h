@@ -7,9 +7,19 @@
 
 class AssLoader;
 
+class Texture3D;
+
+class Shader;
+
 class AssModel {
 private:
     AssLoader *assLoader;
+
+    void loadAssModel(const char *path);
+
+public:
+    Texture3D *texture3D = nullptr;
+    Shader *shader = nullptr;
 
 public:
     AssModel(const char *path);

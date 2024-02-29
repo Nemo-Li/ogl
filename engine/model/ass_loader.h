@@ -23,10 +23,11 @@ struct BoneInfo {
     aiMatrix4x4 transformation;
 };
 
+class Texture3D;
+
 class AssLoader {
 private:
-    AssAnimation *assAnimation;
-    Assimp::Importer importer;
+    Assimp::Importer *importer;
     const aiScene *scene;
     Entry *entries;
     std::map<std::string, int> boneMap;
@@ -34,6 +35,7 @@ private:
     aiMatrix4x4 rootToModelMat;
     std::map<std::string, aiNodeAnim *> *channelMaps;
     std::map<int, int> materialMap;
+    std::string path_;
 
 private:
     void loadModel();
@@ -67,6 +69,10 @@ private:
     void prepareFrameData(int animIndex, aiAnimation *asAnimation, AnimFrame *animation);
 
 public:
+    AssAnimation *assAnimation;
+
+    Texture3D *texture3D;
+
     AssLoader(const char *path);
 
     virtual ~AssLoader();

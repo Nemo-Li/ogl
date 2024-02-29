@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <renderer/material.h>
+#include <renderer/texture3d.h>
 #include "glm/glm.hpp"
 
 struct Frame {
@@ -60,19 +61,20 @@ class AssAnimation {
 public:
     std::string name;
     bool inverseYZ;
+    Texture3D *texture3D;
 public:
     int faceCount = 0, vertCount = 0, boneCount = 0;
     std::vector<glm::vec3> aVertices;
     std::vector<glm::vec3> aNormals;
     std::vector<glm::vec3> aTangents;
     std::vector<glm::vec2> aTexcoords;
-    std::vector<int> aMids;
+    std::vector<unsigned int> aMids;
     std::vector<Material *> aTextures;
     std::vector<glm::vec3> aAmbients;
     std::vector<glm::vec3> aDiffuses;
     std::vector<glm::vec3> aSpeculars;
-    std::vector<int> aIndices;
-    std::vector<glm::vec4> aBoneids;
+    std::vector<unsigned int> aIndices;
+    std::vector<glm::uvec4> aBoneids;
     std::vector<glm::vec4> aWeights;
     std::vector<AnimFrame *> datasToExport;
 public:

@@ -59,7 +59,7 @@ std::string AssAnimation::convertTexPath(const std::string &path) {
     lc = lc > ld ? lc : ld;
     if (lc == std::string::npos) lc = 0;
     else lc += 1;
-    std::string res = Application::data_path() + "textures/" + path.substr(lc);
+    std::string res = path.substr(lc); //Application::data_path() + "textures/" + path.substr(lc);
     printf("convert %s\n", res.data());
     return res;
 }

@@ -8,13 +8,17 @@
 #include "framework/application.h"
 #include "helpers/debug.h"
 #include "helpers/material_manager.h"
+#include "renderer/texture3d.h"
 
 AssLoader::AssLoader(const char *path) {
     assAnimation = new AssAnimation();
+    texture3D = new Texture3D;
     boneMap.clear();
     boneInfos.clear();
     materialMap.clear();
-    scene = importer.ReadFile(std::string(Application::data_path()) + path,
+    importer = new Assimp::Importer();
+    path_ = std::string(Application::data_path()) + path;
+    scene = importer->ReadFile(path_,
                               aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs |
                               aiProcess_JoinIdenticalVertices);
 
@@ -30,6 +34,7 @@ AssLoader::AssLoader(const char *path) {
 
 AssLoader::~AssLoader() {
     delete[] entries;
+    delete texture3D;
 
     boneMap.clear();
     for (unsigned int i = 0; i < boneInfos.size(); i++)
@@ -40,14 +45,14 @@ AssLoader::~AssLoader() {
         channelMaps[i].clear();
     delete[] channelMaps;
 
-    importer.FreeScene();
+    importer->FreeScene();
     materialMap.clear();
 }
 
 void AssLoader::loadModel() {
     loadMaterials();
     int meshCount = scene->mNumMeshes;
-    DEBUG_LOG_INFO("meshCount {}", meshCount);
+//    DEBUG_LOG_INFO("meshCount {}", meshCount);
     entries = new Entry[meshCount];
     int base = 0;
     for (int i = 0; i < meshCount; i++) {
@@ -62,7 +67,7 @@ void AssLoader::loadModel() {
     assAnimation->aBoneids.resize(assAnimation->vertCount);
     assAnimation->aWeights.resize(assAnimation->vertCount);
     for (int i = 0; i < assAnimation->vertCount; i++) {
-        assAnimation->aBoneids[i] = glm::vec4(0, 0, 0, 0);
+        assAnimation->aBoneids[i] = glm::uvec4(0, 0, 0, 0);
         assAnimation->aWeights[i] = glm::vec4(0, 0, 0, 0);
     }
     for (int i = 0; i < meshCount; i++) {
@@ -75,6 +80,14 @@ void AssLoader::loadModel() {
 
     channelMaps = new std::map<std::string, aiNodeAnim *>[scene->mNumAnimations];
     initChannels();
+
+    std::string l_file = path_;
+    int index = l_file.find_last_of('/');
+    std::string path = l_file.substr(0, index);
+    printf("ass model path: %s\n", path.c_str());
+    texture3D->initTexture3D(path.append("/textures"));
+
+    assAnimation->texture3D = texture3D;
 }
 
 void AssLoader::loadMaterials() {
@@ -108,7 +121,10 @@ void AssLoader::loadMaterials() {
         mtl->specular.x = specular.r;
         mtl->specular.y = specular.g;
         mtl->specular.z = specular.b;
-        materialMap[i] = MaterialManager::instance->add(mtl);
+//        materialMap[i] = MaterialManager::instance->add(mtl);
+        if (texture3D->findImage(mtl->tex1.c_str()) < 0)
+            texture3D->addImage(mtl->tex1.c_str());
+        materialMap[i] = texture3D->findImage(mtl->tex1.c_str());
     }
 }
 
@@ -120,6 +136,7 @@ void AssLoader::loadMeshes(Entry *entry) {
         aiVector3D *vertex = &aMesh->mVertices[i];
         aiVector3D *normal = &aMesh->mNormals[i];
         assAnimation->aVertices.emplace_back(vertex->x, vertex->y, vertex->z);
+//        DEBUG_LOG_INFO("vertex: {} {} {}", vertex->x, vertex->y, vertex->z);
         assAnimation->aNormals.emplace_back(normal->x, normal->y, normal->z);
         if (aMesh->HasTangentsAndBitangents()) {
             aiVector3D *tangent = &aMesh->mTangents[i];
@@ -131,38 +148,39 @@ void AssLoader::loadMeshes(Entry *entry) {
         } else
             assAnimation->aTexcoords.emplace_back(0, 0);
 
-        int mid = materialMap[entry->materialIndex];
-        Material *mat = MaterialManager::instance->find(mid);
-        if (!mat) {
-            mid = 0;
-            mat = MaterialManager::instance->find(mid);
-        }
+        unsigned int mid = materialMap[entry->materialIndex];
+//        Material *mat = MaterialManager::instance->find(mid);
+//        if (!mat) {
+//            mid = 0;
+//            mat = MaterialManager::instance->find(mid);
+//        }
         assAnimation->aMids.push_back(mid);
-        assAnimation->aTextures.push_back(mat);
-        assAnimation->aAmbients.push_back(mat->ambient);
-        assAnimation->aDiffuses.push_back(mat->diffuse);
-        assAnimation->aSpeculars.push_back(mat->specular);
+//        assAnimation->aTextures.push_back(mat);
+//        assAnimation->aAmbients.push_back(mat->ambient);
+//        assAnimation->aDiffuses.push_back(mat->diffuse);
+//        assAnimation->aSpeculars.push_back(mat->specular);
     }
     int aFaceCount = aMesh->mNumFaces;
     assAnimation->faceCount += aFaceCount;
     for (int i = 0; i < aFaceCount; i++) {
         aiFace face = aMesh->mFaces[i];
-        int index1 = entry->baseVertex + face.mIndices[0];
-        int index2 = entry->baseVertex + face.mIndices[1];
-        int index3 = entry->baseVertex + face.mIndices[2];
+        unsigned int index1 = entry->baseVertex + face.mIndices[0];
+        unsigned int index2 = entry->baseVertex + face.mIndices[1];
+        unsigned int index3 = entry->baseVertex + face.mIndices[2];
+//        DEBUG_LOG_INFO("index: {} {} {}", index1, index2, index3);
 
         assAnimation->aIndices.push_back(index1);
         assAnimation->aIndices.push_back(index2);
         assAnimation->aIndices.push_back(index3);
     }
-    DEBUG_LOG_INFO("vertCount {} faceCount {}", assAnimation->vertCount, assAnimation->faceCount);
+//    DEBUG_LOG_INFO("vertCount {} faceCount {}", assAnimation->vertCount, assAnimation->faceCount);
 }
 
 void AssLoader::loadBones(aiMesh *mesh, int meshIndex) {
     for (unsigned int i = 0; i < mesh->mNumBones; i++) {
         aiBone *bone = mesh->mBones[i];
         std::string boneName = bone->mName.data;
-        DEBUG_LOG_INFO("boneName {}", boneName);
+//        DEBUG_LOG_INFO("boneName {}", boneName);
         int boneIndex = 0;
         if (boneMap.find(boneName) == boneMap.end()) {
             boneIndex = assAnimation->boneCount;

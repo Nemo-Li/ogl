@@ -6,5 +6,9 @@
 #include "ass_loader.h"
 
 AssModel::AssModel(const char *path) {
-    assLoader = new AssLoader(path);
+//    loadAssModel(path);
+}
+
+void AssModel::loadAssModel(const char *path) {
+//    assLoader = new AssLoader(path);
 }
