@@ -6,6 +6,7 @@
 #include <memory>
 #include <rttr/registration>
 #include <glad/glad.h>
+#include "helpers/material_manager.h"
 
 #define GLFW_INCLUDE_NONE
 
@@ -65,6 +66,7 @@ void Application::Init() {
     Debug::Init();
     DEBUG_LOG_INFO("game start");
     Time::Init();
+    MaterialManager::Init();
     if (!glfwInit()) {
         DEBUG_LOG_ERROR("glfw init failed!");
         exit(EXIT_FAILURE);
@@ -184,8 +186,9 @@ void Application::Destroy() {
     GameObject::Foreach([](GameObject *game_object) {
         if (game_object->active()) {
             game_object->ForeachComponent([](Component *component) {
-                component->Update();
+                component->OnDestroy();
             });
         }
     });
+    MaterialManager::Release();
 }

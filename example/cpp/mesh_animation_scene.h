@@ -29,6 +29,8 @@
 #include <mesh/water.h>
 #include <renderer/light.h>
 #include "mesh/board.h"
+#include "model/ass_loader.h"
+#include "model/ass_model.h"
 
 class MeshAnimationScene : public Component {
 public:
@@ -95,10 +97,6 @@ public:
 
         go_skybox = new GameObject("skybox");
         skyBox = go_skybox->AddComponent<SkyBox>();
-
-//        skyBox->LoadCubeMap("skybox/sky_ft.png", "skybox/sky_bk.png",
-//                            "skybox/sky_dn.png", "skybox/sky_up.png",
-//                            "skybox/sky_rt.png", "skybox/sky_lf.png");
 
         skyBox->LoadCubeMap("skybox/xpos.png", "skybox/xneg.png",
                             "skybox/ypos.png", "skybox/yneg.png",
@@ -176,6 +174,8 @@ public:
         auto *water_m = new Material();
         water_m->Load("material/water.mat");
         go_water->AddComponent<MeshRenderer>()->SetMaterial(water_m);
+
+        AssModel *assModel = new AssModel("model/ninja/ninja.mesh");
     }
 
     void Update() override {

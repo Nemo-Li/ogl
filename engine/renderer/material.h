@@ -38,6 +38,8 @@ public:
 
     CubeMap *GetCubeMap() { return cubeMap_; }
 
+    std::string name() { return name_; }
+
 public:
     int id_;
     std::string name_;
@@ -45,6 +47,8 @@ public:
     Shader *shader_;
     LightEffect *lightEffect;
     std::vector<std::pair<std::string, Texture2D *>> textures_;
+    std::string tex1, tex2, tex3, tex4;
+    glm::vec3 ambient, diffuse, specular;
 
 private:
     CubeMap *cubeMap_;

@@ -16,9 +16,7 @@ RTTR_REGISTRATION {
 
 SkinnedMeshRenderer::SkinnedMeshRenderer() {}
 
-SkinnedMeshRenderer::~SkinnedMeshRenderer() {
-
-}
+SkinnedMeshRenderer::~SkinnedMeshRenderer() {}
 
 void SkinnedMeshRenderer::Update() {
     //主动获取 MeshFilter 组件
