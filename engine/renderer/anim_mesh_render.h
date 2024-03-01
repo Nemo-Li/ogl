@@ -18,12 +18,18 @@ class Shader;
 
 class AnimMeshRender : public Component {
 public:
+    int curAnimation = 0;
+    float animStartTime;
+    bool playerActionEnd;
+public:
     AnimMeshRender();
 
     //渲染
     virtual void Render();
 
     void SetAnimation(AssAnimation *animation);
+
+    void updateBoneTransform(Frame *frame);
 
 private:
     unsigned int vao_;

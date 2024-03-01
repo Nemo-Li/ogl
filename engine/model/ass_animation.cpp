@@ -80,8 +80,8 @@ void AssAnimation::exportAnims(std::string path) {
         for (unsigned int f = 0; f < frameCount; ++f) {
             Frame *frame = animation->frames[f];
             for (unsigned int b = 0; b < boneCount; ++b) {
-                for (unsigned int inn = 0; inn < 12; ++inn)
-                    of << frame->data[b * 12 + inn] << " ";
+                for (unsigned int inn = 0; inn < 16; ++inn)
+                    of << frame->data[b * 16 + inn] << " ";
                 of << std::endl;
             }
         }

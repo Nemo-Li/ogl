@@ -18,7 +18,7 @@ struct Frame {
 
     Frame(int bc) {
         boneCount = bc;
-        data = (float *) malloc(boneCount * 12 * sizeof(float));
+        data = (float *) malloc(boneCount * 16 * sizeof(float));
     }
 
     ~Frame() {

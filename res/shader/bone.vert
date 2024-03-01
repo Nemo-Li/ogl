@@ -21,6 +21,14 @@ struct Material {
     vec4 params;
 };
 
+mat4 convertMat(mat3x4 srcMat) {
+    mat4x3 transMat = transpose(srcMat);
+    return mat4(transMat[0], 0.0,
+    transMat[1], 0.0,
+    transMat[2], 0.0,
+    transMat[3], 1.0);
+}
+
 layout(binding = 1, std140) uniform InMaterial {
     Material inMaterials[MAX_MAT];
 };

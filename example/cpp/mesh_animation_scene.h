@@ -28,6 +28,7 @@
 #include <renderer/grass.h>
 #include <mesh/water.h>
 #include <renderer/light.h>
+#include <helpers/time.h>
 #include "mesh/board.h"
 #include "model/ass_loader.h"
 #include "model/ass_model.h"
@@ -36,8 +37,9 @@
 class MeshAnimationScene : public Component {
 public:
     Camera *camera;
-    Transform *player_transform;
     Transform *camera_transform;
+    Transform *player_transform;
+
     GameObject *go_skeleton;
     GameObject *go_skybox;
     GameObject *go_terrain;
@@ -48,6 +50,7 @@ public:
     SkyBox *skyBox;
     Grass *grass;
     Light *light;
+    AnimMeshRender *animRender;
 
     Model *house_model;
     Model *cottage_model;
@@ -76,9 +79,9 @@ public:
         light = go_light->AddComponent<Light>();
 
         go_skeleton = new GameObject("skeleton");
-        player_transform = go_skeleton->AddComponent<Transform>();
-        player_transform->set_scale(glm::vec3(4, 4, 4));
-        player_transform->set_rotation(glm::vec3(-90, 0, 0));
+        auto npc_transform = go_skeleton->AddComponent<Transform>();
+        npc_transform->set_scale(glm::vec3(4, 4, 4));
+        npc_transform->set_rotation(glm::vec3(-90, 0, 0));
 
         Animation *animation = go_skeleton->AddComponent<Animation>();
         animation->LoadAnimationClipFromFile("animation/fbx_extra_bip001_bip001_take_001_baselayer.skeleton_anim",
@@ -118,7 +121,7 @@ public:
         grass->SetMaterial(grass_m);
         grass->LoadTerrainTexture("image/terrain.png");
 
-        player_transform->set_position(glm::vec3(8, terrain->GetElevation(8, -2), -2));
+        npc_transform->set_position(glm::vec3(8, terrain->GetElevation(8, -2), -2));
 
         go_tank = new GameObject("tank");
         auto *tank_transform = go_tank->AddComponent<Transform>();
@@ -178,11 +181,18 @@ public:
 
         auto go_ninja = new GameObject("ninja");
         AssLoader *assLoader = new AssLoader("model/ninja/ninja.mesh");
-        auto ninja_transform = go_ninja->AddComponent<Transform>();
-        ninja_transform->set_scale(glm::vec3(0.05, 0.05, 0.05));
-        ninja_transform->set_position(glm::vec3(0, terrain->GetElevation(0, 10), 10));
-        auto animRender = go_ninja->AddComponent<AnimMeshRender>();
+        player_transform = go_ninja->AddComponent<Transform>();
+        player_transform->set_scale(glm::vec3(0.05, 0.05, 0.05));
+        player_transform->set_position(glm::vec3(0, terrain->GetElevation(0, 10), 10));
+        animRender = go_ninja->AddComponent<AnimMeshRender>();
         animRender->SetAnimation(assLoader->assAnimation);
+    }
+
+    void runPlayerAction(int actionId) {
+        animRender->curAnimation = actionId;
+        if (animRender->playerActionEnd) {
+            animRender->animStartTime = Time::TimeSinceStartup();
+        }
     }
 
     void Update() override {
@@ -210,18 +220,22 @@ public:
 
         if (Input::GetKeyDown(KEY_CODE_W)) {
             new_pos += glm::vec3(cam_forward);
+            runPlayerAction(19);
         }
 
         if (Input::GetKeyDown(KEY_CODE_S)) {
             new_pos -= glm::vec3(cam_forward);
+            runPlayerAction(19);
         }
 
         if (Input::GetKeyDown(KEY_CODE_A)) {
             new_pos += glm::vec3(cam_left);
+            runPlayerAction(19);
         }
 
         if (Input::GetKeyDown(KEY_CODE_D)) {
             new_pos -= glm::vec3(cam_left);
+            runPlayerAction(19);
         }
 
         if (Input::GetKeyUp(KEY_CODE_Q)) {
@@ -247,13 +261,15 @@ public:
             light->stepRotate(10);
         }
 
+        if (Input::GetKeyUp(KEY_CODE_T)) {
+            animRender->curAnimation++;
+            if (animRender->curAnimation >= 20) {
+                animRender->curAnimation = 0;
+            }
+        }
+
         if (Input::GetKeyDown(KEY_CODE_SPACE)) {
-            y_offset++;
-        } else {
-//            if (y_offset > 5.0f) {
-//                y_offset--;
-//                y_offset = std::max(y_offset, 5.0f);
-//            }
+            runPlayerAction(3);
         }
 
         if (Input::GetKeyDown(KEY_CODE_Z)) {
@@ -265,6 +281,10 @@ public:
         camera_transform->set_position(new_pos);
         camera->SetView(glm::vec3(cam_forward.x, cam_forward.y + cam_pitch.y, cam_forward.z),
                         glm::vec3(0.0, 1.0, 0.0));
+
+        glm::vec3 player_pos = new_pos + 30 * glm::vec3(cam_forward);
+        player_pos.y -= y_offset;
+        player_transform->set_position(player_pos);
     }
 };
 

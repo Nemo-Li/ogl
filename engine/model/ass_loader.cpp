@@ -9,6 +9,7 @@
 #include "helpers/debug.h"
 #include "helpers/material_manager.h"
 #include "renderer/texture3d.h"
+#include <glm/gtx/string_cast.hpp>
 
 AssLoader::AssLoader(const char *path) {
     assAnimation = new AssAnimation();
@@ -385,11 +386,14 @@ void AssLoader::prepareFrameData(int animIndex, aiAnimation *asAnimation, AnimFr
             mat4[3][2] = boneInfos[bi]->transformation.c4;
             mat4[3][3] = boneInfos[bi]->transformation.d4;
             mat4 = glm::transpose(mat4);
-            for (int m = 0; m < 12; m++) {
+            for (int m = 0; m < 16; m++) {
                 int i = m / 4;
                 int j = m % 4;
+//                DEBUG_LOG_INFO("{} {}", i, j);
                 frame->data[currIndex++] = mat4[i][j];
             }
+//            DEBUG_LOG_INFO("{}", glm::to_string(mat4));
+//            DEBUG_LOG_INFO("{}", glm::to_string(mat4[3]));
         }
         animation->frames.push_back(frame);
     }
