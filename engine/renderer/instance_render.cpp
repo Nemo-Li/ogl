@@ -17,10 +17,10 @@ RTTR_REGISTRATION {
 }
 
 InstanceRender::InstanceRender() {
-    board = new Board(5.0, 5.0, 5.0, 0, 0);
-    mesh = board->mesh();
-//    tree_model = new Model("model/firc/firc", 2);
-//    mesh = tree_model->GetMesh();
+//    board = new Board(5.0, 5.0, 5.0, 0, 0);
+//    mesh = board->mesh();
+    tree_model = new Model("model/firc/firc", 2);
+    mesh = tree_model->GetMesh();
 }
 
 InstanceRender::~InstanceRender() {
@@ -98,8 +98,8 @@ void InstanceRender::Render() {
     shader->setMat4("viewProjectMatrix", vp_mat);
     shader->setVec3("viewRight", right);
     shader->setMat4("model", model);
-    shader->setBool("billborad", true);
-//    shader->setInt("textureArray", 1);
+    shader->setBool("billborad", false);
+    shader->setInt("textureArray", 1);
     
 
     //从Pass节点拿到保存的Texture
@@ -109,12 +109,12 @@ void InstanceRender::Render() {
         textures[texture_index].second->bind(texture_index);
     }
 
-//    tree_model->texture3D->use(1);
+    tree_model->texture3D->use(1);
 
     glBindVertexArray(vao_);
     glDrawElementsInstanced(GL_TRIANGLES, mesh->vertex_index_num_, GL_UNSIGNED_INT, (void *) 0, count);
     glBindVertexArray(0);
-//    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
 void InstanceRender::InitInstance(Terrain *terrain) {

@@ -59,6 +59,7 @@ include_directories(
         ${ASSIMP_INCLUDE_DIR}
 )
 include_directories("thirdparty")
+include_directories("thirdparty/effekseer/include")
 
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
@@ -70,6 +71,14 @@ add_executable(${PROJECT_NAME} ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/ma
 target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})
 
 add_executable(main ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/cpp/main.cpp)
-target_link_libraries(main "-framework OpenGL" ${LIBS})
+file(COPY "thirdparty/effekseer/lib/libEffekseer.a" DESTINATION "./")
+file(COPY "thirdparty/effekseer/lib/libEffekseerRendererGL.a" DESTINATION "./")
+
+find_library(EFFEKSEER_LIBRARY Effekseer HINTS "./")
+find_library(EFFEKSEERRENDERERGL_LIBRARY EffekseerRendererGL HINTS "./")
+message(${EFFEKSEER_LIBRARY})
+message(${EFFEKSEERRENDERERGL_LIBRARY})
+
+target_link_libraries(main "-framework OpenGL" ${LIBS} ${EFFEKSEER_LIBRARY} ${EFFEKSEERRENDERERGL_LIBRARY})
 
 add_subdirectory(tools)

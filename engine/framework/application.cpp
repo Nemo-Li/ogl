@@ -23,6 +23,7 @@
 #include "helpers/debug.h"
 #include "helpers/time.h"
 #include "renderer/anim_mesh_render.h"
+#include "effect/effekseer_effect.h"
 
 std::string Application::data_path_;
 std::string Application::title_;
@@ -176,6 +177,11 @@ void Application::Render() {
             auto *animRender = game_object->GetComponent<AnimMeshRender>();
             if (animRender) {
                 animRender->Render();
+            }
+
+            auto *effekseer = game_object->GetComponent<EffekseerEffect>();
+            if (effekseer) {
+                effekseer->Render();
             }
         });
     });

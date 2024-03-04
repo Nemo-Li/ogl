@@ -1,3 +1,3 @@
-<material shader="shader/billboard">
-    <texture name="u_diffuse_texture" image="image/grass02.png"/>
+<material shader="shader/instance">
+    <texture name="u_diffuse_texture" image="image/treeA.png"/>
 </material>

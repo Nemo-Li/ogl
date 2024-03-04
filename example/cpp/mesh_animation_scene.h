@@ -33,6 +33,7 @@
 #include "model/ass_loader.h"
 #include "model/ass_model.h"
 #include "renderer/anim_mesh_render.h"
+#include "effect/effekseer_effect.h"
 
 class MeshAnimationScene : public Component {
 public:
@@ -55,9 +56,9 @@ public:
     Model *house_model;
     Model *cottage_model;
 
-    glm::vec4 cam_forward = glm::vec4(0.0, 0.0, -0.5, 1.0);
-    glm::vec4 cam_left = glm::vec4(-1.0, 0.0, 0.0, 1.0);
-    glm::vec4 cam_pitch = glm::vec4(cam_forward);
+    glm::vec4 player_forward = glm::vec4(0.0, 0.0, -0.5, 1.0);
+    glm::vec4 player_left = glm::vec4(-1.0, 0.0, 0.0, 1.0);
+    glm::vec4 cam_pitch = glm::vec4(player_forward);
     glm::mat4 unit_mat4 = glm::mat4(1.0f);
 
     //-z 方向的夹角 前进方向的夹角
@@ -69,7 +70,7 @@ public:
         auto *go_camera = new GameObject("main_camera");
         //挂上Transform 组件
         camera_transform = go_camera->AddComponent<Transform>();
-        camera_transform->set_position(glm::vec3(0, 0, 5));
+        camera_transform->set_position(glm::vec3(0, 0, 0));
         //挂上Camera 组件
         camera = go_camera->AddComponent<Camera>();
         camera->set_depth(0);
@@ -153,22 +154,12 @@ public:
         cottage_mesh_filter->SetModel(cottage_model);
         go_cottage->AddComponent<MeshRenderer>();
 
-//        auto go_tree = new GameObject("tree");
-//        auto *tree_transform = go_tree->AddComponent<Transform>();
-//        tree_transform->set_scale(glm::vec3(1.0, 1.0, 1.0));
-//        tree_transform->set_position(glm::vec3(0, terrain->GetElevation(0, 10), 10));
-//        auto tree_mesh_filter = go_tree->AddComponent<MeshFilter>();
-//        auto *tree_model = new Model("model/firc/firc", 2);
-//        tree_model->shader = Shader::Find("shader/phong");
-//        tree_mesh_filter->SetModel(tree_model);
-//        go_tree->AddComponent<MeshRenderer>();
-
-        auto go_billboard = new GameObject("billboard");
-        auto *billboard_m = new Material();
-        billboard_m->Load("material/tree.mat");
-        auto instanceRender = go_billboard->AddComponent<InstanceRender>();
+        auto go_tree = new GameObject("tree");
+        auto *tree_m = new Material();
+        tree_m->Load("material/tree.mat");
+        auto instanceRender = go_tree->AddComponent<InstanceRender>();
         instanceRender->InitInstance(terrain);
-        instanceRender->SetMaterial(billboard_m);
+        instanceRender->SetMaterial(tree_m);
 
         auto go_water = new GameObject("water");
         go_water->AddComponent<Transform>();
@@ -186,6 +177,9 @@ public:
         player_transform->set_position(glm::vec3(0, terrain->GetElevation(0, 10), 10));
         animRender = go_ninja->AddComponent<AnimMeshRender>();
         animRender->SetAnimation(assLoader->assAnimation);
+
+        auto go_effect = new GameObject("effect");
+        go_effect->AddComponent<EffekseerEffect>();
     }
 
     void runPlayerAction(int actionId) {
@@ -196,17 +190,24 @@ public:
     }
 
     void Update() override {
-        glm::vec3 old_pos = camera_transform->position();
+        glm::vec3 old_pos = player_transform->position();
         glm::vec3 new_pos = glm::vec3(old_pos.x, old_pos.y, old_pos.z);
 
         //旋转相机
         if (Input::GetKeyDown(KEY_CODE_RIGHT) || Input::GetKeyDown(KEY_CODE_LEFT)) {
             glm::mat4 r = glm::rotate(unit_mat4, glm::radians(-degrees_step), glm::vec3(0, 1, 0));
+            glm::vec3 playerR = glm::vec3(0, 0, 0);
             if (Input::GetKeyDown(KEY_CODE_LEFT)) {
                 r = glm::rotate(unit_mat4, glm::radians(degrees_step), glm::vec3(0, 1, 0));
+                playerR = player_transform->rotation() + glm::vec3(0, degrees_step, 0);
+                player_transform->set_rotation(playerR);
+            } else {
+                playerR = player_transform->rotation() - glm::vec3(0, degrees_step, 0);
+                player_transform->set_rotation(playerR);
             }
-            cam_forward = r * cam_forward;
-            cam_left = r * cam_left;
+            player_forward = r * player_forward;
+            player_left = r * player_left;
+            runPlayerAction(19);
         }
 
         //上下俯视仰视相机
@@ -219,22 +220,22 @@ public:
         }
 
         if (Input::GetKeyDown(KEY_CODE_W)) {
-            new_pos += glm::vec3(cam_forward);
+            new_pos += glm::vec3(player_forward);
             runPlayerAction(19);
         }
 
         if (Input::GetKeyDown(KEY_CODE_S)) {
-            new_pos -= glm::vec3(cam_forward);
+            new_pos -= glm::vec3(player_forward);
             runPlayerAction(19);
         }
 
         if (Input::GetKeyDown(KEY_CODE_A)) {
-            new_pos += glm::vec3(cam_left);
+            new_pos += glm::vec3(player_left);
             runPlayerAction(19);
         }
 
         if (Input::GetKeyDown(KEY_CODE_D)) {
-            new_pos -= glm::vec3(cam_left);
+            new_pos -= glm::vec3(player_left);
             runPlayerAction(19);
         }
 
@@ -277,14 +278,15 @@ public:
         }
 
         float elevation = terrain->GetElevation(new_pos.x, new_pos.z);
-        new_pos.y = elevation + y_offset;
-        camera_transform->set_position(new_pos);
-        camera->SetView(glm::vec3(cam_forward.x, cam_forward.y + cam_pitch.y, cam_forward.z),
+        new_pos.y = elevation;
+        player_transform->set_position(new_pos);
+
+        glm::vec3 camera_pos = new_pos - 30 * glm::vec3(player_forward);
+        camera_pos.y += y_offset;
+        camera_transform->set_position(camera_pos);
+        camera->SetView(glm::vec3(player_forward.x, player_forward.y + cam_pitch.y, player_forward.z),
                         glm::vec3(0.0, 1.0, 0.0));
 
-        glm::vec3 player_pos = new_pos + 30 * glm::vec3(cam_forward);
-        player_pos.y -= y_offset;
-        player_transform->set_position(player_pos);
     }
 };
 
