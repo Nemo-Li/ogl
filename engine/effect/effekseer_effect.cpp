@@ -66,18 +66,6 @@ EffekseerEffect::EffekseerEffect() {
 }
 
 void EffekseerEffect::Render() {
-    if (time % 120 == 0) {
-        // Play an effect
-        // エフェクトの再生
-        efkHandle = efkManager->Play(effect, 0, 0, 0);
-    }
-
-    if (time % 120 == 119) {
-        // Stop effects
-        // エフェクトの停止
-        efkManager->StopEffect(efkHandle);
-    }
-
     // Move the effect
     // エフェクトの移動
     efkManager->AddLocation(efkHandle, ::Effekseer::Vector3D(0.0f, 0.0f, 0.0f));
@@ -127,5 +115,13 @@ void EffekseerEffect::Render() {
 void EffekseerEffect::OnDestroy() {
     efkRenderer.Reset();
     efkManager.Reset();
+}
+
+void EffekseerEffect::PlayEffect() {
+    efkHandle = efkManager->Play(effect, 0, 0, 0);
+}
+
+void EffekseerEffect::StopEffect() {
+    efkManager->StopEffect(efkHandle);
 }
 

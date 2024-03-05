@@ -82,6 +82,7 @@ void Application::Init() {
 #endif
 
     glfw_window_ = glfwCreateWindow(960, 640, title_.c_str(), nullptr, nullptr);
+//    glfw_window_ = glfwCreateWindow(1920, 1080, title_.c_str(), nullptr, nullptr);
     if (!glfw_window_) {
         DEBUG_LOG_ERROR("glfwCreateWindow error!");
         glfwTerminate();

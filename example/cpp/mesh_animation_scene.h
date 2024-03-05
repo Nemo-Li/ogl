@@ -38,6 +38,7 @@
 class MeshAnimationScene : public Component {
 public:
     Camera *camera;
+    Camera *debug_camera;
     Transform *camera_transform;
     Transform *player_transform;
 
@@ -52,6 +53,7 @@ public:
     Grass *grass;
     Light *light;
     AnimMeshRender *animRender;
+    EffekseerEffect *effekseerEffect;
 
     Model *house_model;
     Model *cottage_model;
@@ -75,6 +77,18 @@ public:
         camera = go_camera->AddComponent<Camera>();
         camera->set_depth(0);
         camera->SetPerspective(60, Screen::aspect_ratio(), 0.01, 1000);
+//        camera->set_culling_mask(0x00);
+
+        //调试窗口相机
+        auto *go_debug_camera = new GameObject("debug_camera");
+        go_debug_camera->AddComponent<Transform>();
+        debug_camera = go_debug_camera->AddComponent<Camera>();
+        debug_camera->set_depth(1);
+        debug_camera->set_culling_mask(0x02);
+        debug_camera->set_clear_flag(GL_DEPTH_BUFFER_BIT);
+        debug_camera->SetOrthographic(-1.0f, 1.0f,
+                                      -1.0f,
+                                      1.0f, 0.01, 100);
 
         auto go_light = new GameObject("light");
         light = go_light->AddComponent<Light>();
@@ -179,7 +193,19 @@ public:
         animRender->SetAnimation(assLoader->assAnimation);
 
         auto go_effect = new GameObject("effect");
-        go_effect->AddComponent<EffekseerEffect>();
+        effekseerEffect = go_effect->AddComponent<EffekseerEffect>();
+
+        auto go_quad = new GameObject("quad");
+        go_quad->set_layer(0x02);
+        auto *quadTrans = go_quad->AddComponent<Transform>();
+        quadTrans->set_rotation(glm::vec3(90, 0, 0));
+//        quadTrans->set_position(glm::vec3(0.5, -0.5, 1));
+        quadTrans->set_position(glm::vec3(0, 0, 1));
+        auto *plane = new Plane(2, 2, 2);
+        go_quad->AddComponent<MeshFilter>()->SetMesh(plane->mesh());
+        auto *quad_m = new Material();
+        quad_m->Load("material/mesh.mat");
+        go_quad->AddComponent<MeshRenderer>()->SetMaterial(quad_m);
     }
 
     void runPlayerAction(int actionId) {
@@ -271,6 +297,7 @@ public:
 
         if (Input::GetKeyDown(KEY_CODE_SPACE)) {
             runPlayerAction(3);
+            effekseerEffect->PlayEffect();
         }
 
         if (Input::GetKeyDown(KEY_CODE_Z)) {
@@ -287,6 +314,7 @@ public:
         camera->SetView(glm::vec3(player_forward.x, player_forward.y + cam_pitch.y, player_forward.z),
                         glm::vec3(0.0, 1.0, 0.0));
 
+        debug_camera->SetView(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
     }
 };
 

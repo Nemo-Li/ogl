@@ -15,6 +15,10 @@ public:
 
     void Render();
 
+    void PlayEffect();
+
+    void StopEffect();
+
     void OnDestroy() override;
 
 private:
