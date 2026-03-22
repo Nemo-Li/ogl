@@ -25,7 +25,7 @@ public:
     AnimMeshRender();
 
     //渲染
-    virtual void Render();
+    void Render() override;
 
     void SetAnimation(AssAnimation *animation);
 

@@ -16,6 +16,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <helpers/time.h>
 #include "light.h"
+#include "renderer/render_queue.h"
 
 RTTR_REGISTRATION {
     rttr::registration::class_<Grass>("grass")
@@ -23,88 +24,91 @@ RTTR_REGISTRATION {
 }
 
 void Grass::Render() {
-    Camera *current_camera = Camera::current_camera();
-    if (current_camera == nullptr) {
-        return;
-    }
-    //判断相机的 culling_mask 是否包含当前物体 layer
-    if ((current_camera->culling_mask() & game_object()->layer()) == 0x00) {
-        return;
-    }
+    RenderQueue::Push({[this]() {
+        Camera *current_camera = Camera::current_camera();
+        if (current_camera == nullptr) {
+            return;
+        }
+        //判断相机的 culling_mask 是否包含当前物体 layer
+        if ((current_camera->culling_mask() & game_object()->layer()) == 0x00) {
+            return;
+        }
 
-    glm::mat4 view = current_camera->view_mat4();
-    glm::mat4 projection = current_camera->projection_mat4();
-    glm::mat4 model = glm::mat4(1.0);
+        glm::mat4 view = current_camera->view_mat4();
+        glm::mat4 projection = current_camera->projection_mat4();
+        glm::mat4 model = glm::mat4(1.0);
 //    printf("model: %s\n", glm::to_string(model).c_str());
 
-    float lightStrength = 1.0f;
-    auto go_light = GameObject::Find("light");
-    if (go_light) {
-        auto light = go_light->GetComponent<Light>();
-        lightStrength = light->lightStrength();
-    }
+        float lightStrength = 1.0f;
+        auto go_light = GameObject::Find("light");
+        if (go_light) {
+            auto light = go_light->GetComponent<Light>();
+            lightStrength = light->lightStrength();
+        }
 
-    glm::mat4 vp_mat4 = projection * view;
-    Shader *tessHeightMapShader = material_->shader();
+        glm::mat4 vp_mat4 = projection * view;
+        Shader *tessHeightMapShader = material_->shader();
 
-    if (vao_ == 0) {
-        // first, configure the cube's VAO (and terrainVBO)
-        unsigned int terrainVBO;
-        glGenVertexArrays(1, &vao_);
+        if (vao_ == 0) {
+            // first, configure the cube's VAO (and terrainVBO)
+            unsigned int terrainVBO;
+            glGenVertexArrays(1, &vao_);
+            glBindVertexArray(vao_);
+
+            glGenBuffers(1, &terrainVBO);
+            glBindBuffer(GL_ARRAY_BUFFER, terrainVBO);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+
+            // position attribute
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
+            glEnableVertexAttribArray(0);
+            // texCoord attribute
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (sizeof(float) * 3));
+            glEnableVertexAttribArray(1);
+
+            glPatchParameteri(GL_PATCH_VERTICES, NUM_PATCH_PTS);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
+
+        __CHECK_GL_ERROR__
+
+        tessHeightMapShader->Use();
+        glEnable(GL_DEPTH_TEST);
+
+        // world transformation
+        tessHeightMapShader->setMat4("model", model);
+        tessHeightMapShader->setMat4("projection", projection);
+        tessHeightMapShader->setMat4("view", view);
+        tessHeightMapShader->setMat4("viewProjectMatrix", vp_mat4);
+        tessHeightMapShader->setFloat("lightStrength", lightStrength);
+
+        float time = Time::TimeSinceStartup();
+        tessHeightMapShader->setFloat("time", time);
+
+        __CHECK_GL_ERROR__
+
+        //高度图纹理，暂时单独处理（与其它不同，后续考虑是否合并到材质中）
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        //从Pass节点拿到保存的Texture
+        std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
+        for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
+            tessHeightMapShader->setInt(textures[texture_index].first, texture_index + 1);
+            textures[texture_index].second->bind(texture_index + 1);
+        }
+
+        __CHECK_GL_ERROR__
+
+        // render the terrain
         glBindVertexArray(vao_);
-
-        glGenBuffers(1, &terrainVBO);
-        glBindBuffer(GL_ARRAY_BUFFER, terrainVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-        // position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
-        glEnableVertexAttribArray(0);
-        // texCoord attribute
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (sizeof(float) * 3));
-        glEnableVertexAttribArray(1);
-
-        glPatchParameteri(GL_PATCH_VERTICES, NUM_PATCH_PTS);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        __CHECK_GL_ERROR__
+        glDrawArrays(GL_PATCHES, 0, vertices.size() / 5);
+        __CHECK_GL_ERROR__
         glBindVertexArray(0);
-    }
-
-    __CHECK_GL_ERROR__
-
-    tessHeightMapShader->Use();
-    glEnable(GL_DEPTH_TEST);
-
-    // world transformation
-    tessHeightMapShader->setMat4("model", model);
-    tessHeightMapShader->setMat4("projection", projection);
-    tessHeightMapShader->setMat4("view", view);
-    tessHeightMapShader->setMat4("viewProjectMatrix", vp_mat4);
-    tessHeightMapShader->setFloat("lightStrength", lightStrength);
-
-    float time = Time::TimeSinceStartup();
-    tessHeightMapShader->setFloat("time", time);
-
-    __CHECK_GL_ERROR__
-
-    //高度图纹理，暂时单独处理（与其它不同，后续考虑是否合并到材质中）
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    //从Pass节点拿到保存的Texture
-    std::vector<std::pair<std::string, Texture2D *>> textures = material_->textures();
-    for (int texture_index = 0; texture_index < textures.size(); ++texture_index) {
-        tessHeightMapShader->setInt(textures[texture_index].first, texture_index + 1);
-        textures[texture_index].second->bind(texture_index + 1);
-    }
-
-    __CHECK_GL_ERROR__
-    // render the terrain
-    glBindVertexArray(vao_);
-    __CHECK_GL_ERROR__
-    glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
-    __CHECK_GL_ERROR__
-    glBindVertexArray(0);
-    __CHECK_GL_ERROR__
+        __CHECK_GL_ERROR__
+    }});
 }
 
 void Grass::LoadTerrainTexture(const std::string &terrainTex) {

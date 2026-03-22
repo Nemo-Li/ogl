@@ -80,15 +80,15 @@ public:
 //        camera->set_culling_mask(0x00);
 
         //调试窗口相机
-        auto *go_debug_camera = new GameObject("debug_camera");
-        go_debug_camera->AddComponent<Transform>();
-        debug_camera = go_debug_camera->AddComponent<Camera>();
-        debug_camera->set_depth(1);
-        debug_camera->set_culling_mask(0x02);
-        debug_camera->set_clear_flag(GL_DEPTH_BUFFER_BIT);
-        debug_camera->SetOrthographic(-1.0f, 1.0f,
-                                      -1.0f,
-                                      1.0f, 0.01, 100);
+        // auto *go_debug_camera = new GameObject("debug_camera");
+        // go_debug_camera->AddComponent<Transform>();
+        // debug_camera = go_debug_camera->AddComponent<Camera>();
+        // debug_camera->set_depth(1);
+        // debug_camera->set_culling_mask(0x02);
+        // debug_camera->set_clear_flag(GL_DEPTH_BUFFER_BIT);
+        // debug_camera->SetOrthographic(-1.0f, 1.0f,
+        //                               -1.0f,
+        //                               1.0f, 0.01, 100);
 
         auto go_light = new GameObject("light");
         light = go_light->AddComponent<Light>();
@@ -117,9 +117,9 @@ public:
         go_skybox = new GameObject("skybox");
         skyBox = go_skybox->AddComponent<SkyBox>();
 
-        skyBox->LoadCubeMap("skybox/xpos.png", "skybox/xneg.png",
-                            "skybox/ypos.png", "skybox/yneg.png",
-                            "skybox/zpos.png", "skybox/zneg.png");
+        skyBox->LoadCubeMap("skybox/px.png", "skybox/nx.png",
+                            "skybox/py.png", "skybox/ny.png",
+                            "skybox/pz.png", "skybox/nz.png");
 
         go_terrain = new GameObject("terrain");
         terrain = go_terrain->AddComponent<Terrain>();
@@ -314,7 +314,7 @@ public:
         camera->SetView(glm::vec3(player_forward.x, player_forward.y + cam_pitch.y, player_forward.z),
                         glm::vec3(0.0, 1.0, 0.0));
 
-        debug_camera->SetView(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+        // debug_camera->SetView(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
     }
 };
 

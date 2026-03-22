@@ -17,7 +17,7 @@ public:
     void LoadCubeMap(const char *x_pos, const char *x_neg, const char *y_pos, const char *y_neg, const char *z_pos,
                      const char *z_neg);
 
-    void Render();
+    void Render() override;
 
     CubeMap *GetCubeMap() { return cubeMap; }
 

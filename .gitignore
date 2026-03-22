@@ -1,3 +1,6 @@
 .idea
 cmake-build-debug
 plan
+.cache
+.idea
+build

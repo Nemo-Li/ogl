@@ -4,6 +4,7 @@
 
 #include <rttr/registration>
 #include <helpers/screen.h>
+#include "renderer/render_queue.h"
 #include "effekseer_effect.h"
 #include "EffekseerRendererGL/EffekseerRendererGL.h"
 
@@ -66,50 +67,52 @@ EffekseerEffect::EffekseerEffect() {
 }
 
 void EffekseerEffect::Render() {
-    // Move the effect
-    // エフェクトの移動
-    efkManager->AddLocation(efkHandle, ::Effekseer::Vector3D(0.0f, 0.0f, 0.0f));
+    RenderQueue::Push({[this]() {
+        // Move the effect
+        // エフェクトの移動
+        efkManager->AddLocation(efkHandle, ::Effekseer::Vector3D(0.0f, 0.0f, 0.0f));
 
-    // Set layer parameters
-    // レイヤーパラメータの設定
-    Effekseer::Manager::LayerParameter layerParameter;
-    layerParameter.ViewerPosition = viewerPosition;
-    efkManager->SetLayerParameter(0, layerParameter);
+        // Set layer parameters
+        // レイヤーパラメータの設定
+        Effekseer::Manager::LayerParameter layerParameter;
+        layerParameter.ViewerPosition = viewerPosition;
+        efkManager->SetLayerParameter(0, layerParameter);
 
-    // Update the manager
-    // マネージャーの更新
-    Effekseer::Manager::UpdateParameter updateParameter;
-    efkManager->Update(updateParameter);
+        // Update the manager
+        // マネージャーの更新
+        Effekseer::Manager::UpdateParameter updateParameter;
+        efkManager->Update(updateParameter);
 
-    // Update a time
-    // 時間を更新する
-    efkRenderer->SetTime(time);
+        // Update a time
+        // 時間を更新する
+        efkRenderer->SetTime(time);
 
-    // Specify a projection matrix
-    // 投影行列を設定
-    efkRenderer->SetProjectionMatrix(projectionMatrix);
+        // Specify a projection matrix
+        // 投影行列を設定
+        efkRenderer->SetProjectionMatrix(projectionMatrix);
 
-    // Specify a camera matrix
-    // カメラ行列を設定
-    efkRenderer->SetCameraMatrix(cameraMatrix);
+        // Specify a camera matrix
+        // カメラ行列を設定
+        efkRenderer->SetCameraMatrix(cameraMatrix);
 
-    // Begin to rendering effects
-    // エフェクトの描画開始処理を行う。
-    efkRenderer->BeginRendering();
+        // Begin to rendering effects
+        // エフェクトの描画開始処理を行う。
+        efkRenderer->BeginRendering();
 
-    // Render effects
-    // エフェクトの描画を行う。
-    Effekseer::Manager::DrawParameter drawParameter;
-    drawParameter.ZNear = 0.0f;
-    drawParameter.ZFar = 1.0f;
-    drawParameter.ViewProjectionMatrix = efkRenderer->GetCameraProjectionMatrix();
-    efkManager->Draw(drawParameter);
+        // Render effects
+        // エフェクトの描画を行う。
+        Effekseer::Manager::DrawParameter drawParameter;
+        drawParameter.ZNear = 0.0f;
+        drawParameter.ZFar = 1.0f;
+        drawParameter.ViewProjectionMatrix = efkRenderer->GetCameraProjectionMatrix();
+        efkManager->Draw(drawParameter);
 
-    // Finish to rendering effects
-    // エフェクトの描画終了処理を行う。
-    efkRenderer->EndRendering();
+        // Finish to rendering effects
+        // エフェクトの描画終了処理を行う。
+        efkRenderer->EndRendering();
 
-    time++;
+        time += 1.0f / 60.0f;
+    }});
 }
 
 void EffekseerEffect::OnDestroy() {

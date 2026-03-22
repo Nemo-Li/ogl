@@ -13,7 +13,7 @@ public:
 
     EffekseerEffect();
 
-    void Render();
+    void Render() override;
 
     void PlayEffect();
 

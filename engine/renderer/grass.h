@@ -13,7 +13,7 @@ class Grass : public Component {
 public:
     Grass();
 
-    void Render();
+    void Render() override;
 
     void LoadTerrainTexture(const std::string &terrainTex);
 

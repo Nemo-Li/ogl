@@ -54,6 +54,11 @@ void Component::Update() {
     SyncLuaComponent("Update");
 }
 
+void Component::Render() {
+//    DEBUG_LOG_INFO("Cpp.Component Render");
+    SyncLuaComponent("Render");
+}
+
 void Component::OnPreRender() {
 //    DEBUG_LOG_INFO("Cpp.Component OnPreRender");
     SyncLuaComponent("OnPreRender");

@@ -38,6 +38,9 @@ public:
 
     virtual void Update();
 
+    /// 用于向渲染队列提交渲染命令。
+    virtual void Render();
+
     /// 渲染之前
     virtual void OnPreRender();
 

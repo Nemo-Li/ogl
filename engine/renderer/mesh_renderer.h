@@ -20,7 +20,7 @@ public:
     void SetMaterial(Material *material);
 
     //渲染
-    virtual void Render();
+    void Render() override;
 
     Material *material() { return material_; }
 

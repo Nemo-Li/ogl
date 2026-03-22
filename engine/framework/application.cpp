@@ -22,8 +22,7 @@
 #include "renderer/mesh_renderer.h"
 #include "helpers/debug.h"
 #include "helpers/time.h"
-#include "renderer/anim_mesh_render.h"
-#include "effect/effekseer_effect.h"
+#include "renderer/render_queue.h"
 
 std::string Application::data_path_;
 std::string Application::title_;
@@ -144,47 +143,23 @@ void Application::Update() {
 }
 
 void Application::Render() {
-    //遍历所有相机，每个相机的View Projection，都用来做一次渲染。
+    // 遍历所有相机，每个相机的 View Projection，都用来做一次渲染。
     Camera::Foreach([&]() {
+        // 1. 清空渲染队列，准备收集当前相机的命令
+        RenderQueue::Clear();
+
+        // 2. 遍历所有 GameObject，让组件提交渲染命令
         GameObject::Foreach([](GameObject *game_object) {
             if (!game_object->active()) {
                 return;
             }
-            auto *mesh_renderer = game_object->GetComponent<MeshRenderer>();
-            if (mesh_renderer != nullptr) {
-                mesh_renderer->Render();
-            }
-
-            auto *skyBox = game_object->GetComponent<SkyBox>();
-            if (skyBox != nullptr) {
-                skyBox->Render();
-            }
-
-            auto *terrain = game_object->GetComponent<Terrain>();
-            if (terrain != nullptr) {
-                terrain->Render();
-            }
-
-            auto *grass = game_object->GetComponent<Grass>();
-            if (grass != nullptr) {
-                grass->Render();
-            }
-
-            auto *instanceRender = game_object->GetComponent<InstanceRender>();
-            if (instanceRender) {
-                instanceRender->Render();
-            }
-
-            auto *animRender = game_object->GetComponent<AnimMeshRender>();
-            if (animRender) {
-                animRender->Render();
-            }
-
-            auto *effekseer = game_object->GetComponent<EffekseerEffect>();
-            if (effekseer) {
-                effekseer->Render();
-            }
+            game_object->ForeachComponent([](Component *component) {
+                component->Render();
+            });
         });
+
+        // 3. 执行当前相机收集到的所有渲染命令
+        RenderQueue::Execute();
     });
 }
 

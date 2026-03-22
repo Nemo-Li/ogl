@@ -14,7 +14,7 @@ class Terrain : public Component {
 public:
     Terrain();
 
-    void Render();
+    void Render() override;
 
     void LoadTerrainTexture(const std::string &terrainTex);
 
