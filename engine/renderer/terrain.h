@@ -25,6 +25,13 @@ public:
 
     float GetElevation(int x, int z);
 
+    int get_width() const { return width; }
+    int get_height() const { return height; }
+    const std::vector<float>& get_elevation_vec() const { return elevation_vec; }
+    
+    float get_min_height() const;
+    float get_max_height() const;
+
 private:
     const unsigned int NUM_PATCH_PTS = 4;
     unsigned rez = 20;

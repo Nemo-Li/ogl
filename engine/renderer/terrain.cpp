@@ -226,3 +226,21 @@ float Terrain::GetElevation(int x, int z) {
     return elevation_vec[index];
 }
 
+float Terrain::get_min_height() const {
+    if (elevation_vec.empty()) return 0;
+    float minH = elevation_vec[0];
+    for (float h : elevation_vec) {
+        if (h < minH) minH = h;
+    }
+    return minH;
+}
+
+float Terrain::get_max_height() const {
+    if (elevation_vec.empty()) return 0;
+    float maxH = elevation_vec[0];
+    for (float h : elevation_vec) {
+        if (h > maxH) maxH = h;
+    }
+    return maxH;
+}
+

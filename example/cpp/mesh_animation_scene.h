@@ -6,6 +6,9 @@
 #define OGL_SKIN_MESH_SCENE_H
 
 #include "component/component.h"
+#include "component/game_object.h"
+#include "component/transform.h"
+#include "renderer/camera.h"
 #include "helpers/screen.h"
 #include "renderer/mesh_filter.h"
 #include "renderer/mesh_renderer.h"
@@ -34,6 +37,9 @@
 #include "model/ass_model.h"
 #include "renderer/anim_mesh_render.h"
 #include "effect/effekseer_effect.h"
+#include "physics/rigid_body.h"
+#include <btBulletDynamicsCommon.h>
+#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
 class MeshAnimationScene : public Component {
 public:
@@ -48,6 +54,7 @@ public:
     GameObject *go_tank;
     GameObject *go_house;
     GameObject *go_cottage;
+    GameObject *go_ninja;
     Terrain *terrain;
     SkyBox *skyBox;
     Grass *grass;
@@ -128,6 +135,37 @@ public:
         terrain->SetMaterial(terrain_m);
         terrain->LoadTerrainTexture("image/terrain.png");
         auto *terrainTrans = go_terrain->AddComponent<Transform>();
+        
+        // Add physics to terrain (using HeightfieldTerrainShape)
+        auto* terrain_rb = go_terrain->AddComponent<RigidBody>();
+        
+        int terrainW = terrain->get_width();
+        int terrainH = terrain->get_height();
+        float minH = terrain->get_min_height();
+        float maxH = terrain->get_max_height();
+        const float* heightData = terrain->get_elevation_vec().data();
+
+        // upAxis: 1 = Y axis
+        // heightScale: 1.0f (already scaled in elevation_vec)
+        // heightDataType: PHY_FLOAT
+        // flipQuadEdges: false
+        btHeightfieldTerrainShape* heightfieldShape = new btHeightfieldTerrainShape(
+            terrainW, terrainH, heightData, 1.0f, minH, maxH, 1, PHY_FLOAT, false);
+        
+        // Bullet heightfield local origin is its center.
+        // We need to move the collider to match our terrain's position.
+        // Our terrain is centered in X-Z but Y is based on elevation values.
+        // The midpoint of minHeight and maxHeight is where Bullet puts the local origin (y=0).
+        float midH = (minH + maxH) / 2.0f;
+        
+        terrain_rb->Init(heightfieldShape, 0.0f); // mass 0 = static
+        
+        // Set the world position to match the terrain.
+        // Note: Init uses the current transform position.
+        // We need to adjust it for the midH offset that Bullet introduces.
+        btTransform btTrans = terrain_rb->GetBtRigidBody()->getWorldTransform();
+        btTrans.setOrigin(btVector3(0, midH, 0));
+        terrain_rb->GetBtRigidBody()->setWorldTransform(btTrans);
 
         auto go_grass = new GameObject("grass");
         grass = go_grass->AddComponent<Grass>();
@@ -136,7 +174,14 @@ public:
         grass->SetMaterial(grass_m);
         grass->LoadTerrainTexture("image/terrain.png");
 
+        // Set NPC position before physics init
         npc_transform->set_position(glm::vec3(8, terrain->GetElevation(8, -2), -2));
+
+        // Add physics to NPC
+        auto* npc_rb = go_skeleton->AddComponent<RigidBody>();
+        btCapsuleShape* npc_shape = new btCapsuleShape(2.0f, 8.0f); 
+        npc_rb->Init(npc_shape, 1.0f);
+        npc_rb->GetBtRigidBody()->setAngularFactor(btVector3(0, 0, 0));
 
         go_tank = new GameObject("tank");
         auto *tank_transform = go_tank->AddComponent<Transform>();
@@ -148,6 +193,11 @@ public:
         tank_mesh_filter->SetModel(model);
         go_tank->AddComponent<MeshRenderer>();
 
+        // Add physics to tank
+        auto* tank_rb = go_tank->AddComponent<RigidBody>();
+        btBoxShape* tank_shape = new btBoxShape(btVector3(5, 5, 5));
+        tank_rb->Init(tank_shape, 0.0f);
+
         go_house = new GameObject("house");
         auto *house_transform = go_house->AddComponent<Transform>();
         house_transform->set_scale(glm::vec3(5.0, 5.0, 5.0));
@@ -158,6 +208,11 @@ public:
         house_mesh_filter->SetModel(house_model);
         go_house->AddComponent<MeshRenderer>();
 
+        // Add physics to house
+        // auto* house_rb = go_house->AddComponent<RigidBody>();
+        // btBoxShape* house_shape = new btBoxShape(btVector3(15, 10, 15));
+        // house_rb->Init(house_shape, 0.0f);
+
         go_cottage = new GameObject("cottage");
         auto *go_cottage_transform = go_cottage->AddComponent<Transform>();
         go_cottage_transform->set_scale(glm::vec3(1.0, 1.0, 1.0));
@@ -167,6 +222,11 @@ public:
         cottage_model->shader = Shader::Find("shader/phong");
         cottage_mesh_filter->SetModel(cottage_model);
         go_cottage->AddComponent<MeshRenderer>();
+
+        // Add physics to cottage
+        // auto* cottage_rb = go_cottage->AddComponent<RigidBody>();
+        // btBoxShape* cottage_shape = new btBoxShape(btVector3(10, 8, 10));
+        // cottage_rb->Init(cottage_shape, 0.0f);
 
         auto go_tree = new GameObject("tree");
         auto *tree_m = new Material();
@@ -184,13 +244,21 @@ public:
         water_m->Load("material/water.mat");
         go_water->AddComponent<MeshRenderer>()->SetMaterial(water_m);
 
-        auto go_ninja = new GameObject("ninja");
+        go_ninja = new GameObject("ninja");
         AssLoader *assLoader = new AssLoader("model/ninja/ninja.mesh");
         player_transform = go_ninja->AddComponent<Transform>();
         player_transform->set_scale(glm::vec3(0.05, 0.05, 0.05));
-        player_transform->set_position(glm::vec3(0, terrain->GetElevation(0, 10), 10));
+        player_transform->set_position(glm::vec3(0, terrain->GetElevation(0, 10) + 1.1f, 10));
         animRender = go_ninja->AddComponent<AnimMeshRender>();
         animRender->SetAnimation(assLoader->assAnimation);
+
+        // Add physics to player
+        auto* player_rb = go_ninja->AddComponent<RigidBody>();
+        // Use a capsule shape (height 2.0, radius 0.5)
+        btCapsuleShape* player_shape = new btCapsuleShape(0.5f, 2.0f);
+        player_rb->Init(player_shape, 1.0f);
+        // Lock rotation for the player to keep them upright
+        player_rb->GetBtRigidBody()->setAngularFactor(btVector3(0, 0, 0));
 
         auto go_effect = new GameObject("effect");
         effekseerEffect = go_effect->AddComponent<EffekseerEffect>();
@@ -216,8 +284,7 @@ public:
     }
 
     void Update() override {
-        glm::vec3 old_pos = player_transform->position();
-        glm::vec3 new_pos = glm::vec3(old_pos.x, old_pos.y, old_pos.z);
+        glm::vec3 new_pos = glm::vec3(0, 0, 0); // This will store the desired velocity direction
 
         //旋转相机
         if (Input::GetKeyDown(KEY_CODE_RIGHT) || Input::GetKeyDown(KEY_CODE_LEFT)) {
@@ -265,6 +332,28 @@ public:
             runPlayerAction(19);
         }
 
+        // Apply movement via physics
+        auto* rb = go_ninja->GetComponent<RigidBody>();
+        if (rb) {
+            btRigidBody* bt_rb = rb->GetBtRigidBody();
+            if (bt_rb) {
+                if (glm::length(new_pos) > 0) {
+                    new_pos = glm::normalize(new_pos);
+                }
+                
+                // Keep the current Y velocity (for gravity) and only change X/Z
+                btVector3 currentVel = bt_rb->getLinearVelocity();
+                float speed = 10.0f; // Adjusted speed for physics
+                bt_rb->setLinearVelocity(btVector3(new_pos.x * speed, currentVel.getY(), new_pos.z * speed));
+                bt_rb->activate(true);
+                
+                // If no input, slow down X/Z movement (friction/damping)
+                if (glm::length(new_pos) == 0) {
+                    bt_rb->setLinearVelocity(btVector3(currentVel.getX() * 0.9f, currentVel.getY(), currentVel.getZ() * 0.9f));
+                }
+            }
+        }
+
         if (Input::GetKeyUp(KEY_CODE_Q)) {
             float strength = light->lightStrength();
             printf("key q up\n");
@@ -295,26 +384,36 @@ public:
             }
         }
 
-        if (Input::GetKeyDown(KEY_CODE_SPACE)) {
-            runPlayerAction(3);
-            effekseerEffect->PlayEffect();
+        if (Input::GetKeyUp(KEY_CODE_SPACE)) {
+            //runPlayerAction(3);
+            //effekseerEffect->PlayEffect();
+            
+            // Apply jump impulse via physics
+            auto* rb = go_ninja->GetComponent<RigidBody>();
+            if (rb) {
+                btRigidBody* bt_rb = rb->GetBtRigidBody();
+                if (bt_rb) {
+                    // Check if player is somewhat grounded before jumping (optional but better)
+                    // For now, just apply an impulse
+                    bt_rb->applyCentralImpulse(btVector3(0, 5.0, 0));
+                    std::cout << "jump up" << std::endl;
+                }
+            }
         }
 
         if (Input::GetKeyDown(KEY_CODE_Z)) {
             y_offset--;
         }
 
-        float elevation = terrain->GetElevation(new_pos.x, new_pos.z);
-        new_pos.y = elevation;
-        player_transform->set_position(new_pos);
-
-        glm::vec3 camera_pos = new_pos - 30 * glm::vec3(player_forward);
+        glm::vec3 player_pos = player_transform->position();
+        glm::vec3 camera_pos = player_pos - 30.0f * glm::vec3(player_forward);
         camera_pos.y += y_offset;
         camera_transform->set_position(camera_pos);
         camera->SetView(glm::vec3(player_forward.x, player_forward.y + cam_pitch.y, player_forward.z),
                         glm::vec3(0.0, 1.0, 0.0));
 
-        // debug_camera->SetView(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+        // Log player position
+        std::cout << "Player Position: x=" << player_pos.x << ", y=" << player_pos.y << ", z=" << player_pos.z << std::endl;
     }
 };
 

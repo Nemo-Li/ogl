@@ -15,8 +15,8 @@ int main() {
     Application::set_data_path("../res/");
     Application::Init();
 
-    GameObject *go_physics_scene = new GameObject("PhysicsSceneGo");
-    go_physics_scene->AddComponent<PhysicsScene>();
+    GameObject *go_mesh_animation_scene = new GameObject("MeshAnimationSceneGo");
+    go_mesh_animation_scene->AddComponent<MeshAnimationScene>();
 
     Application::Run();
 }
