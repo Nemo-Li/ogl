@@ -45,7 +45,7 @@ GameObject *GameObject::Find(std::string name) {
     GameObject *game_object_find = nullptr;
     game_object_tree_.Find(game_object_tree_.root_node(), [&name](Tree::Node *node) {
         GameObject *game_object = dynamic_cast<GameObject *>(node);
-        if (game_object->name() == name) {
+        if (game_object && game_object->name() == name) {
             return true;
         }
         return false;

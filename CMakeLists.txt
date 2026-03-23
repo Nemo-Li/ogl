@@ -39,13 +39,20 @@ find_package(ASSIMP REQUIRED)
 message(STATUS "Found ASSIMP in ${ASSIMP_INCLUDE_DIR}")
 message(STATUS "Found ASSIMP: ${ASSIMP_LIBRARY}")
 
+# Bullet
+find_package(Bullet REQUIRED)
+if(BULLET_FOUND)
+    message(STATUS "Found Bullet in ${BULLET_INCLUDE_DIRS}")
+    message(STATUS "Found Bullet libraries: ${BULLET_LIBRARIES}")
+endif()
+
 # STB_IMAGE
 add_library(STB_IMAGE "thirdparty/stb_image/stb_image.cpp")
 # GLAD
 add_library(GLAD "thirdparty/glad/glad.c")
 
 # Put all libraries into a variable
-set(LIBS ${ASSIMP_LIBRARY} ${GLFW3_LIBRARY} STB_IMAGE GLAD)
+set(LIBS ${ASSIMP_LIBRARY} ${GLFW3_LIBRARY} ${BULLET_LIBRARIES} STB_IMAGE GLAD)
 
 # Define the include DIRs
 include_directories("/usr/local/include")
@@ -57,6 +64,7 @@ include_directories(
         ${GLM_INCLUDE_DIR}
         ${GLFW3_INCLUDE_DIR}
         ${ASSIMP_INCLUDE_DIR}
+        ${BULLET_INCLUDE_DIRS}
 )
 include_directories("thirdparty")
 include_directories("thirdparty/effekseer/include")
@@ -68,7 +76,7 @@ file(GLOB_RECURSE RTTR_CPP "thirdparty/rttr/*.cpp")
 add_executable(${PROJECT_NAME} ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/main.cpp)
 
 # Define the link libraries
-target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS})
+target_link_libraries(${PROJECT_NAME} "-framework OpenGL" ${LIBS} ${EFFEKSEER_LIBRARY} ${EFFEKSEERRENDERERGL_LIBRARY})
 
 add_executable(main ${RTTR_CPP} ${SOURCE_FILES} ${LUA_SRC} example/cpp/main.cpp)
 file(COPY "thirdparty/effekseer/lib/libEffekseer.a" DESTINATION "./")

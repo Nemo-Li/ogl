@@ -8,6 +8,7 @@
 
 ### 核心模块职责：
 - **`framework/`**: 应用生命周期管理 (`Application`)，封装了 GLFW 窗口创建与主循环。
+- **`physics/`**: 物理引擎模块。集成 Bullet Physics，支持重力模拟与碰撞检测。提供 `PhysicsManager` 全局管理类与 `RigidBody` 组件。
 - **`component/`**: 核心组件系统。`GameObject` 作为容器，`Transform` 管理空间属性。
 - **`renderer/`**: 渲染核心。包含 `Camera` (相机)、`Shader` (着色器)、`Material` (材质) 以及各种渲染器组件 (`MeshRenderer`, `SkyBox` 等)。
 - **`model/`**: 模型与动画加载。集成了 Assimp，支持 `.obj` 和骨骼动画模型的解析。
@@ -40,11 +41,17 @@
 ## 3. 与成熟游戏引擎的差距
 
 ### 3.1 功能缺失
-- **物理引擎**: 完全缺失碰撞检测、重力模拟等物理逻辑。
 - **UI 系统**: 缺乏 Canvas、按钮、文本等 UI 框架支持。
 - **场景管理**: 缺乏场景文件的序列化与反序列化（如从 JSON/XML 加载关卡）。
 - **光照与阴影**: 仅有极简的平行光方向支持，缺乏多光源系统、实时阴影 (Shadow Mapping) 和 HDR/PBR。
 - **后处理**: 缺乏 Bloom, SSAO, 色调映射等后处理管线。
+
+---
+
+## 4. 已集成功能 (2026-03-23)
+- **物理引擎**: 集成了 Bullet Physics。
+  - **`PhysicsManager`**: 封装了 Bullet 的动力学世界 (`btDiscreteDynamicsWorld`)，提供初始化、步进更新和清理。
+  - **`RigidBody`**: 物理组件，支持质量、惯性、碰撞形状设置，并将物理状态实时同步至 `Transform`。
 
 ### 3.2 易用性与工具链
 - **无可视化编辑器**: 所有物体和组件都需要在 C++ 代码中硬编码创建。

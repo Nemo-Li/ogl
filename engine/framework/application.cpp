@@ -23,6 +23,7 @@
 #include "helpers/debug.h"
 #include "helpers/time.h"
 #include "renderer/render_queue.h"
+#include "physics/physics_manager.h"
 
 std::string Application::data_path_;
 std::string Application::title_;
@@ -70,6 +71,7 @@ void Application::Init() {
     DEBUG_LOG_INFO("game start");
     Time::Init();
     MaterialManager::Init();
+    PhysicsManager::GetInstance().Init();
 
     // 初始化场景与渲染管线
     scene_ = std::make_unique<Scene>();
@@ -137,6 +139,8 @@ void Application::Run() {
 
 void Application::Update() {
     UpdateScreenSize();
+    Time::Update();
+    PhysicsManager::GetInstance().Update(Time::delta_time());
 
     // 遍历场景中的所有物体进行更新
     for (auto* game_object : scene_->game_objects()) {
@@ -173,5 +177,6 @@ void Application::Destroy() {
             });
         }
     });
+    PhysicsManager::GetInstance().Cleanup();
     MaterialManager::Release();
 }
