@@ -287,19 +287,30 @@ public:
         glm::vec3 new_pos = glm::vec3(0, 0, 0); // This will store the desired velocity direction
 
         //旋转相机
-        if (Input::GetKeyDown(KEY_CODE_RIGHT) || Input::GetKeyDown(KEY_CODE_LEFT)) {
-            glm::mat4 r = glm::rotate(unit_mat4, glm::radians(-degrees_step), glm::vec3(0, 1, 0));
-            glm::vec3 playerR = glm::vec3(0, 0, 0);
-            if (Input::GetKeyDown(KEY_CODE_LEFT)) {
-                r = glm::rotate(unit_mat4, glm::radians(degrees_step), glm::vec3(0, 1, 0));
-                playerR = player_transform->rotation() + glm::vec3(0, degrees_step, 0);
-                player_transform->set_rotation(playerR);
-            } else {
-                playerR = player_transform->rotation() - glm::vec3(0, degrees_step, 0);
-                player_transform->set_rotation(playerR);
+        if (Input::GetKey(KEY_CODE_RIGHT) || Input::GetKey(KEY_CODE_LEFT)) {
+            float angle = degrees_step;
+            if (Input::GetKey(KEY_CODE_RIGHT)) {
+                angle = -degrees_step;
             }
+            
+            glm::mat4 r = glm::rotate(unit_mat4, glm::radians(angle), glm::vec3(0, 1, 0));
             player_forward = r * player_forward;
             player_left = r * player_left;
+
+            // Sync RigidBody rotation
+            auto* rb = go_ninja->GetComponent<RigidBody>();
+            if (rb && rb->GetBtRigidBody()) {
+                btRigidBody* bt_rb = rb->GetBtRigidBody();
+                btTransform trans = bt_rb->getWorldTransform();
+                btQuaternion rot = trans.getRotation();
+                btQuaternion diff(btVector3(0, 1, 0), glm::radians(angle));
+                trans.setRotation(rot * diff);
+                bt_rb->setWorldTransform(trans);
+                if (bt_rb->getMotionState()) {
+                    bt_rb->getMotionState()->setWorldTransform(trans);
+                }
+            }
+            
             runPlayerAction(19);
         }
 
@@ -413,7 +424,7 @@ public:
                         glm::vec3(0.0, 1.0, 0.0));
 
         // Log player position
-        std::cout << "Player Position: x=" << player_pos.x << ", y=" << player_pos.y << ", z=" << player_pos.z << std::endl;
+        // std::cout << "Player Position: x=" << player_pos.x << ", y=" << player_pos.y << ", z=" << player_pos.z << std::endl;
     }
 };
 

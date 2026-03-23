@@ -72,7 +72,8 @@ void AssAnimation::exportAnims(std::string path) {
         float duration = animation->duration;
         float ticksPerSecond = animation->ticksPerSecond;
 
-        const char *savePath = (path + "\\" + getName() + "_" + animation->getName() + ".t3a").data();
+        std::string savePathStr = path + "\\" + getName() + "_" + animation->getName() + ".t3a";
+        const char *savePath = savePathStr.c_str();
         if (access(savePath, 0) == 0) continue;
 
         std::ofstream of(savePath, std::ios::binary);
