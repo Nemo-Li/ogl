@@ -27,8 +27,8 @@
 std::string Application::data_path_;
 std::string Application::title_;
 GLFWwindow *Application::glfw_window_;
-std::unique_ptr<Octree> Application::octree_;
-Frustum Application::frustum_;
+std::unique_ptr<Scene> Application::scene_;
+std::unique_ptr<RenderPipeline> Application::render_pipeline_;
 
 /// 键盘回调
 /// \param window
@@ -71,8 +71,9 @@ void Application::Init() {
     Time::Init();
     MaterialManager::Init();
 
-    // Initialize Octree with some large bounds
-    octree_ = std::make_unique<Octree>(AABB(glm::vec3(-1000, -1000, -1000), glm::vec3(1000, 1000, 1000)));
+    // 初始化场景与渲染管线
+    scene_ = std::make_unique<Scene>();
+    render_pipeline_ = std::make_unique<ForwardRenderPipeline>();
 
     if (!glfwInit()) {
         DEBUG_LOG_ERROR("glfw init failed!");
@@ -137,70 +138,24 @@ void Application::Run() {
 void Application::Update() {
     UpdateScreenSize();
 
-    GameObject::Foreach([](GameObject *game_object) {
+    // 遍历场景中的所有物体进行更新
+    for (auto* game_object : scene_->game_objects()) {
         if (game_object->active()) {
             game_object->ForeachComponent([](Component *component) {
                 component->Update();
             });
-            // Update GameObject in Octree
-            // In a real engine, we'd only update if the object moved
-            octree_->Update(game_object);
+            // 更新物体在空间管理系统中的位置
+            scene_->UpdateGameObject(game_object);
         }
-    });
+    }
 
     Input::Update();
 }
 
 void Application::Render() {
-    Camera::Foreach([&]() {
-        RenderQueue::Clear();
-
-        // 1. Update Frustum with camera's VP matrix
-        frustum_.Update(Camera::current_camera()->projection_mat4() * Camera::current_camera()->view_mat4());
-
-        // 2. Query Octree for visible objects
-        std::vector<GameObject*> visibleObjects;
-        octree_->GetVisibleObjects([](const AABB& aabb) {
-            return frustum_.IsBoxVisible(aabb);
-        }, visibleObjects);
-
-        // 3. Always render SkyBox and Terrain (bypassing Octree)
-        // Note: This is a bit slow if there are many GameObjects, 
-        // but for typical usage it's fine.
-        GameObject::Foreach([](GameObject *game_object) {
-            if (!game_object->active()) return;
-            
-            auto* skybox = game_object->GetComponent<SkyBox>();
-            if (skybox) {
-                skybox->Render();
-            }
-            
-            auto* terrain = game_object->GetComponent<Terrain>();
-            if (terrain) {
-                terrain->Render();
-            }
-
-            auto* grass = game_object->GetComponent<Grass>();
-            if (grass) {
-                grass->Render();
-            }
-        });
-
-        // 4. Let visible objects submit render commands
-        for (auto* game_object : visibleObjects) {
-            if (!game_object->active()) continue;
-            
-            game_object->ForeachComponent([](Component *component) {
-                // Avoid rendering SkyBox and Terrain again
-                if (dynamic_cast<SkyBox*>(component) || dynamic_cast<Terrain*>(component) || dynamic_cast<Grass*>(component)) {
-                    return;
-                }
-                component->Render();
-            });
-        }
-
-        RenderQueue::Execute();
-    });
+    if (render_pipeline_ && scene_) {
+        render_pipeline_->Render(scene_.get());
+    }
 }
 
 void Application::UpdateScreenSize() {

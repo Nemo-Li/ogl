@@ -17,6 +17,8 @@
 #include <helpers/time.h>
 #include "light.h"
 #include "renderer/render_queue.h"
+#include "framework/application.h"
+#include "framework/scene.h"
 
 RTTR_REGISTRATION {
     rttr::registration::class_<Grass>("grass")
@@ -137,6 +139,18 @@ void Grass::LoadTerrainTexture(const std::string &terrainTex) {
         glGenerateMipmap(GL_TEXTURE_2D);
         heightMapShader->setInt("heightMap", 0);
         std::cout << "Loaded heightmap of size " << height << " x " << width << std::endl;
+
+        // Set AABB for grass
+        if (game_object()) {
+            float halfW = float(width) / 2.0f;
+            float halfH = float(height) / 2.0f;
+            game_object()->set_local_aabb(AABB(glm::vec3(-halfW, -32.0f, -halfH), glm::vec3(halfW, 64.0f, halfH)));
+            game_object()->UpdateAABB();
+            
+            if (Application::scene()) {
+                Application::scene()->SetAlwaysVisible(game_object(), true);
+            }
+        }
     } else {
         std::cout << "Failed to load texture" << std::endl;
     }

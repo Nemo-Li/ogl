@@ -11,6 +11,9 @@
 #include "light.h"
 #include "renderer/render_queue.h"
 
+#include "framework/application.h"
+#include "framework/scene.h"
+
 RTTR_REGISTRATION {
     rttr::registration::class_<SkyBox>("SkyBox")
             .constructor<>()(rttr::policy::ctor::as_raw_ptr);
@@ -90,5 +93,10 @@ void SkyBox::LoadCubeMap(const char *x_pos, const char *x_neg, const char *y_pos
     skyboxShader = Shader::Find("shader/skybox");
     skyboxShader->Use();
     skyboxShader->setInt("skybox", 0);
+
+    // 标记为始终可见，避免被八叉树剔除
+    if (game_object() && Application::scene()) {
+        Application::scene()->SetAlwaysVisible(game_object(), true);
+    }
 }
 

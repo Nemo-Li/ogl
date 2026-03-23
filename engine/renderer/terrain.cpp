@@ -18,6 +18,8 @@
 #include "texture2d.h"
 #include "light.h"
 #include "renderer/render_queue.h"
+#include "framework/application.h"
+#include "framework/scene.h"
 
 RTTR_REGISTRATION {
     rttr::registration::class_<Terrain>("Terrain")
@@ -152,6 +154,11 @@ void Terrain::LoadTerrainTexture(const std::string &terrainTex) {
             // Elevation is roughly between -16 and 48 based on the code below
             game_object()->set_local_aabb(AABB(glm::vec3(-halfW, -32.0f, -halfH), glm::vec3(halfW, 64.0f, halfH)));
             game_object()->UpdateAABB();
+            
+            // 地形也建议标记为始终可见，或者通过大包围盒正确剔除
+            if (Application::scene()) {
+                Application::scene()->SetAlwaysVisible(game_object(), true);
+            }
         }
     } else {
         std::cout << "Failed to load texture" << std::endl;

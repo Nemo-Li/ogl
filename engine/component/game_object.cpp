@@ -20,15 +20,15 @@ GameObject::GameObject(std::string name) : Tree::Node(), layer_(0x01) {
     // Default AABB
     aabb_ = AABB(glm::vec3(-1, -1, -1), glm::vec3(1, 1, 1));
 
-    if (Application::octree()) {
-        Application::octree()->Insert(this);
+    if (Application::scene()) {
+        Application::scene()->AddGameObject(this);
     }
 }
 
 GameObject::~GameObject() {
     DEBUG_LOG_INFO("GameObject::~GameObject");
-    if (Application::octree()) {
-        Application::octree()->Remove(this);
+    if (Application::scene()) {
+        Application::scene()->RemoveGameObject(this);
     }
 }
 

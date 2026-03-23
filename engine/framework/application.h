@@ -7,8 +7,8 @@
 
 #include <string>
 #include <memory>
-#include <data_struct/octree.h>
-#include <helpers/frustum.h>
+#include <framework/scene.h>
+#include <renderer/render_pipeline.h>
 
 class GLFWwindow;
 
@@ -35,7 +35,8 @@ public:
 
     static void Destroy();
 
-    static Octree *octree() { return octree_.get(); }
+    static Scene* scene() { return scene_.get(); }
+    static RenderPipeline* render_pipeline() { return render_pipeline_.get(); }
 
 private:
     //标题栏显示
@@ -43,8 +44,8 @@ private:
     static std::string data_path_;
     static GLFWwindow *glfw_window_;
 
-    static std::unique_ptr<Octree> octree_;
-    static Frustum frustum_;
+    static std::unique_ptr<Scene> scene_;
+    static std::unique_ptr<RenderPipeline> render_pipeline_;
 };
 
 
