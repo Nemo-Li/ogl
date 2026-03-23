@@ -144,6 +144,15 @@ void Terrain::LoadTerrainTexture(const std::string &terrainTex) {
         glGenerateMipmap(GL_TEXTURE_2D);
         heightMapShader->setInt("heightMap", 0);
         std::cout << "Loaded heightmap of size " << height << " x " << width << std::endl;
+
+        // Set AABB for terrain
+        if (game_object()) {
+            float halfW = float(width) / 2.0f;
+            float halfH = float(height) / 2.0f;
+            // Elevation is roughly between -16 and 48 based on the code below
+            game_object()->set_local_aabb(AABB(glm::vec3(-halfW, -32.0f, -halfH), glm::vec3(halfW, 64.0f, halfH)));
+            game_object()->UpdateAABB();
+        }
     } else {
         std::cout << "Failed to load texture" << std::endl;
     }

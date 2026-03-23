@@ -164,11 +164,37 @@ void Application::Render() {
             return frustum_.IsBoxVisible(aabb);
         }, visibleObjects);
 
-        // 3. Let visible objects submit render commands
+        // 3. Always render SkyBox and Terrain (bypassing Octree)
+        // Note: This is a bit slow if there are many GameObjects, 
+        // but for typical usage it's fine.
+        GameObject::Foreach([](GameObject *game_object) {
+            if (!game_object->active()) return;
+            
+            auto* skybox = game_object->GetComponent<SkyBox>();
+            if (skybox) {
+                skybox->Render();
+            }
+            
+            auto* terrain = game_object->GetComponent<Terrain>();
+            if (terrain) {
+                terrain->Render();
+            }
+
+            auto* grass = game_object->GetComponent<Grass>();
+            if (grass) {
+                grass->Render();
+            }
+        });
+
+        // 4. Let visible objects submit render commands
         for (auto* game_object : visibleObjects) {
             if (!game_object->active()) continue;
             
             game_object->ForeachComponent([](Component *component) {
+                // Avoid rendering SkyBox and Terrain again
+                if (dynamic_cast<SkyBox*>(component) || dynamic_cast<Terrain*>(component) || dynamic_cast<Grass*>(component)) {
+                    return;
+                }
                 component->Render();
             });
         }
