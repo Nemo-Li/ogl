@@ -10,6 +10,7 @@
 #include <utility>
 #include <rttr/registration>
 #include <data_struct/tree.h>
+#include <helpers/aabb.h>
 
 class Component;
 
@@ -97,16 +98,28 @@ public:
     /// \param func
     static void Foreach(std::function<void(GameObject *game_object)> func);
 
+    AABB &aabb() { return aabb_; }
+    void set_aabb(const AABB &aabb) { aabb_ = aabb; }
+
+    AABB &local_aabb() { return local_aabb_; }
+    void set_local_aabb(const AABB &aabb) { local_aabb_ = aabb; }
+
+    /// 更新 AABB 基于 Transform
+    void UpdateAABB();
+
 private:
     std::string name_;
 
     //将物体分不同的层，用于相机分层、物理碰撞分层等。
-    unsigned char layer_;
+    unsigned char layer_ = 0x01;
 
     //是否激活
     bool active_ = true;
 
     std::unordered_map<std::string, std::vector<Component *>> components_map_;
+
+    AABB aabb_;
+    AABB local_aabb_;
 
     //用树存储所有的GameObject
     static Tree game_object_tree_;

@@ -6,6 +6,9 @@
 #define OGL_APPLICATION_H
 
 #include <string>
+#include <memory>
+#include <data_struct/octree.h>
+#include <helpers/frustum.h>
 
 class GLFWwindow;
 
@@ -32,11 +35,16 @@ public:
 
     static void Destroy();
 
+    static Octree *octree() { return octree_.get(); }
+
 private:
     //标题栏显示
     static std::string title_;
     static std::string data_path_;
     static GLFWwindow *glfw_window_;
+
+    static std::unique_ptr<Octree> octree_;
+    static Frustum frustum_;
 };
 
 

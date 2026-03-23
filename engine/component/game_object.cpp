@@ -5,7 +5,9 @@
 #include <utility>
 #include "game_object.h"
 #include "component.h"
+#include "transform.h"
 #include "helpers/debug.h"
+#include "framework/application.h"
 
 //用树存储所有的GameObject。
 Tree GameObject::game_object_tree_;
@@ -14,10 +16,20 @@ std::list<GameObject *> GameObject::game_object_list_;
 GameObject::GameObject(std::string name) : Tree::Node(), layer_(0x01) {
     set_name(std::move(name));
     game_object_tree_.root_node()->AddChild(this);
+    
+    // Default AABB
+    aabb_ = AABB(glm::vec3(-1, -1, -1), glm::vec3(1, 1, 1));
+
+    if (Application::octree()) {
+        Application::octree()->Insert(this);
+    }
 }
 
 GameObject::~GameObject() {
     DEBUG_LOG_INFO("GameObject::~GameObject");
+    if (Application::octree()) {
+        Application::octree()->Remove(this);
+    }
 }
 
 bool GameObject::SetParent(GameObject *parent) {
@@ -77,4 +89,14 @@ void GameObject::Foreach(std::function<void(GameObject *game_object)> func) {
         GameObject *game_object = dynamic_cast<GameObject *>(n);
         func(game_object);
     });
+}
+
+void GameObject::UpdateAABB() {
+    auto transform = GetComponent<Transform>();
+    if (transform) {
+        glm::vec3 pos = transform->position();
+        glm::vec3 scale = transform->scale();
+        aabb_.min = pos + local_aabb_.min * scale;
+        aabb_.max = pos + local_aabb_.max * scale;
+    }
 }

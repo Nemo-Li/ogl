@@ -27,6 +27,8 @@
 std::string Application::data_path_;
 std::string Application::title_;
 GLFWwindow *Application::glfw_window_;
+std::unique_ptr<Octree> Application::octree_;
+Frustum Application::frustum_;
 
 /// 键盘回调
 /// \param window
@@ -68,6 +70,10 @@ void Application::Init() {
     DEBUG_LOG_INFO("game start");
     Time::Init();
     MaterialManager::Init();
+
+    // Initialize Octree with some large bounds
+    octree_ = std::make_unique<Octree>(AABB(glm::vec3(-1000, -1000, -1000), glm::vec3(1000, 1000, 1000)));
+
     if (!glfwInit()) {
         DEBUG_LOG_ERROR("glfw init failed!");
         exit(EXIT_FAILURE);
@@ -136,6 +142,9 @@ void Application::Update() {
             game_object->ForeachComponent([](Component *component) {
                 component->Update();
             });
+            // Update GameObject in Octree
+            // In a real engine, we'd only update if the object moved
+            octree_->Update(game_object);
         }
     });
 
@@ -143,22 +152,27 @@ void Application::Update() {
 }
 
 void Application::Render() {
-    // 遍历所有相机，每个相机的 View Projection，都用来做一次渲染。
     Camera::Foreach([&]() {
-        // 1. 清空渲染队列，准备收集当前相机的命令
         RenderQueue::Clear();
 
-        // 2. 遍历所有 GameObject，让组件提交渲染命令
-        GameObject::Foreach([](GameObject *game_object) {
-            if (!game_object->active()) {
-                return;
-            }
+        // 1. Update Frustum with camera's VP matrix
+        frustum_.Update(Camera::current_camera()->projection_mat4() * Camera::current_camera()->view_mat4());
+
+        // 2. Query Octree for visible objects
+        std::vector<GameObject*> visibleObjects;
+        octree_->GetVisibleObjects([](const AABB& aabb) {
+            return frustum_.IsBoxVisible(aabb);
+        }, visibleObjects);
+
+        // 3. Let visible objects submit render commands
+        for (auto* game_object : visibleObjects) {
+            if (!game_object->active()) continue;
+            
             game_object->ForeachComponent([](Component *component) {
                 component->Render();
             });
-        });
+        }
 
-        // 3. 执行当前相机收集到的所有渲染命令
         RenderQueue::Execute();
     });
 }
